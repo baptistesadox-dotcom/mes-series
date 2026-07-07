@@ -1442,13 +1442,58 @@ function discoverCardG(n) {
 }
 
 function movieCard(m) {
-  return `<div class="mcard ${m.is_watched ? 'watched' : ''}" data-uuid="${m.uuid}">
+  return `<div class="mcard ${m.is_watched ? 'watched' : ''}" data-action="open-movie" data-uuid="${m.uuid}">
     ${m.is_favorite ? `<span class="mfav">${ICONS.star}</span>` : ''}
     ${posterHtml(m, 'movie')}
     <button class="mtoggle" data-action="toggle-movie" data-uuid="${m.uuid}" title="${m.is_watched ? 'Vu' : 'Marquer vu'}">${ICONS.check}</button>
     <div class="mtitle">${esc(m.title)}</div>
     <div class="myear">${m.year || ''}</div>
   </div>`;
+}
+
+/* ---------------- Fiche film (bibliothèque) ---------------- */
+function openMovieModal(uuid) {
+  const m = state.movies.find(x => x.uuid === uuid);
+  if (!m) return;
+  const meta = state.tmdb[uuid] || {};
+  $('#modal-root').innerHTML = `
+  <div class="modal-bg" data-action="close-modal">
+    <div class="modal">
+      <div class="grab"></div>
+      <div class="dmodal">
+        <div class="poster">${meta.poster ? `<img src="${meta.posterBig || meta.poster}" alt="">` : esc(initials(m.title))}</div>
+        <div class="dmi">
+          <h3>${esc(m.title)}</h3>
+          <div class="y">${m.year || ''} · Film</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+            ${m.is_watched
+              ? `<span class="badge ok">✓ Vu${m.watched_at ? ' le ' + fmtDate(m.watched_at) : ''}</span>`
+              : `<span class="badge acc">À voir</span>`}
+            ${m.is_favorite ? `<span class="badge warn">★ Favori</span>` : ''}
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn small" data-action="movie-watch" data-uuid="${uuid}">${m.is_watched ? 'Marquer à voir' : 'Marquer vu'}</button>
+            <button class="btn ghost small" data-action="movie-fav" data-uuid="${uuid}">${m.is_favorite ? '★ Favori' : '☆ Favori'}</button>
+            <button class="btn danger small" data-action="movie-del" data-uuid="${uuid}">Supprimer</button>
+          </div>
+        </div>
+      </div>
+      <div id="modal-extra"><div class="loadrow" style="text-align:left;padding:10px 0"><span class="spin"></span></div></div>
+      ${meta.overview ? `<p style="margin-top:6px;color:var(--txt2);font-size:13.5px">${esc(meta.overview)}</p>` : ''}
+    </div>
+  </div>`;
+  const clearExtra = () => { const b = $('#modal-extra'); if (b) b.innerHTML = ''; };
+  if (metaNeedsFetch(m, 'movie')) {
+    // référencé via IMDb sans clé, ou pas encore résolu → met à niveau puis réaffiche
+    pool(() => resolveMeta(m, 'movie')).then(mt => {
+      if (mt && mt.id && $('#modal-root .dmodal')) openMovieModal(uuid);
+      else clearExtra();
+    }).catch(clearExtra);
+  } else if (meta.id) {
+    enrichModal({ type: 'movie', provider: meta.provider, provId: meta.id });
+  } else {
+    clearExtra();
+  }
 }
 
 function viewMovies() {
@@ -1741,6 +1786,26 @@ document.body.addEventListener('click', async e => {
   else if (act === 'add-discover') { $('#modal-root').innerHTML = ''; addItem(JSON.parse(el.dataset.key)); }
   else if (act === 'add-discover-watched') { $('#modal-root').innerHTML = ''; addItem(JSON.parse(el.dataset.key), true); }
   else if (act === 'quick-add') addItem(JSON.parse(el.dataset.key));
+  else if (act === 'open-movie') openMovieModal(el.dataset.uuid);
+  else if (act === 'movie-watch') {
+    const m = state.movies.find(x => x.uuid === el.dataset.uuid);
+    if (m) { await toggleMovieWatched(m); openMovieModal(m.uuid); render(); }
+  }
+  else if (act === 'movie-fav') {
+    const m = state.movies.find(x => x.uuid === el.dataset.uuid);
+    if (m) { m.is_favorite = !m.is_favorite; await saveMovie(m); openMovieModal(m.uuid); render(); }
+  }
+  else if (act === 'movie-del') {
+    const m = state.movies.find(x => x.uuid === el.dataset.uuid);
+    if (m && confirm(`Supprimer « ${m.title} » de ta collection ?`)) {
+      state.movies = state.movies.filter(x => x.uuid !== m.uuid);
+      delete state.tmdb[m.uuid];
+      await DB.del('movies', m.uuid);
+      await DB.del('tmdb', m.uuid);
+      $('#modal-root').innerHTML = '';
+      render();
+    }
+  }
   else if (act === 'mark-next') {
     e.stopPropagation();
     const target = state.series.find(x => x.uuid === el.dataset.uuid);
