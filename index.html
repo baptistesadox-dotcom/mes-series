@@ -825,6 +825,7 @@ function normTmdb(x, type) {
   return {
     type, provider: 'tmdb', provId: x.id,
     title: x.title || x.name,
+    orig: x.original_title || x.original_name || null,
     year: +((x.release_date || x.first_air_date || '').slice(0, 4)) || null,
     poster: x.poster_path ? TMDB_IMG + 'w342' + x.poster_path : null,
     overview: x.overview || null,
@@ -833,11 +834,30 @@ function normTmdb(x, type) {
   };
 }
 
+/* Normalisation de titre : minuscules, sans accents ni ponctuation,
+   sans suffixe d'année « (2024) » — pour comparer malgré les variantes */
+function normTitle(t) {
+  return String(t || '').toLowerCase().normalize('NFD')
+    .replace(/[̀-ͯ]/g, '').replace(/\(\d{4}\)/g, '')
+    .replace(/[^a-z0-9]+/g, ' ').trim();
+}
+function titleYear(t) {
+  const m = String(t || '').match(/\((\d{4})\)/);
+  return m ? +m[1] : null;
+}
+
 function inLibrary(n) {
   if (Object.values(state.tmdb).some(m => m.provider === n.provider && m.id === n.provId && m.type === n.type)) return true;
-  const t = n.title.toLowerCase();
-  if (n.type === 'movie') return state.movies.some(m => m.title.toLowerCase() === t && (!n.year || !m.year || m.year === n.year));
-  return state.series.some(s => s.title.toLowerCase() === t);
+  const cands = [n.title, n.orig].filter(Boolean).map(normTitle);
+  const match = t => cands.includes(normTitle(t));
+  if (n.type === 'movie') return state.movies.some(m => match(m.title) && (!n.year || !m.year || Math.abs(m.year - n.year) <= 1));
+  // séries : si les deux années sont connues et diffèrent, ce sont deux séries
+  // distinctes (ex. Avatar 2005 animé vs Avatar 2024 Netflix)
+  return state.series.some(s => {
+    if (!match(s.title)) return false;
+    const sy = titleYear(s.title);
+    return !(sy && n.year && Math.abs(sy - n.year) > 1);
+  });
 }
 
 /* Genres : identifiants TMDB (films / séries n'ont pas les mêmes) */
@@ -1022,6 +1042,9 @@ async function addItem(n, watched = false) {
       };
       if (n.provider === 'tmdb') {
         const d = await tget(`/movie/${n.provId}`);
+        if (d.imdb_id && state.movies.some(x => x.id && x.id.imdb === d.imdb_id)) {
+          toast(`« ${n.title} » est déjà dans tes films`); render(); return;
+        }
         m.id.imdb = d.imdb_id || null;
         await saveMeta({ uuid: m.uuid, type: 'movie', provider: 'tmdb', id: d.id,
           poster: d.poster_path ? TMDB_IMG + 'w342' + d.poster_path : null,
@@ -1039,8 +1062,24 @@ async function addItem(n, watched = false) {
       await saveMovie(m);
       toast(watched ? `« ${n.title} » ajouté aux films vus ✓` : `« ${n.title} » ajouté aux films à voir ✓`);
     } else {
+      // récupère les identifiants externes pour bloquer les doublons
+      // même quand les titres diffèrent (import TV Time vs titre TMDB)
+      let extIds = { tvdb: null, imdb: null };
+      if (n.provider === 'tmdb') {
+        const ext = await tget(`/tv/${n.provId}/external_ids`).catch(() => ({}));
+        extIds = { tvdb: ext.tvdb_id || null, imdb: ext.imdb_id || null };
+      } else if (n.provider === 'tvmaze') {
+        const show = await jget(`${TVMAZE}/shows/${n.provId}`).catch(() => null);
+        if (show && show.externals) extIds = { tvdb: show.externals.thetvdb || null, imdb: show.externals.imdb || null };
+      }
+      if (extIds.tvdb && state.series.some(x => x.id && x.id.tvdb === extIds.tvdb)) {
+        toast(`« ${n.title} » est déjà dans tes séries`); render(); return;
+      }
+      if (extIds.imdb && state.series.some(x => x.id && x.id.imdb === extIds.imdb)) {
+        toast(`« ${n.title} » est déjà dans tes séries`); render(); return;
+      }
       const s = {
-        uuid: crypto.randomUUID(), id: { tvdb: null, imdb: null },
+        uuid: crypto.randomUUID(), id: extIds,
         created_at: nowISO(), title: n.title, status: 'not_started_yet',
         is_favorite: false, seasons: [],
       };
