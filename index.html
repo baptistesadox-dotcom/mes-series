@@ -285,6 +285,23 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 }
 .stat .l{font-size:12px;color:var(--txt2)}
 
+/* ---------- Statistiques ---------- */
+.chart{display:flex;gap:4px;height:150px;margin-top:14px}
+.chart.small{height:110px}
+.ccol{flex:1;display:flex;flex-direction:column;min-width:0}
+.ccol .bars{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:2px}
+.seg{border-radius:3px}
+.seg.ep{background:var(--grad)}
+.seg.mv{background:linear-gradient(135deg,#fbbf24,#f97316)}
+.clab{font-size:9.5px;color:var(--txt2);text-align:center;margin-top:5px;white-space:nowrap;overflow:hidden}
+.legend{display:flex;gap:14px;margin-top:10px;font-size:12px;color:var(--txt2)}
+.legend .dot{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:-1px}
+.grow{display:flex;align-items:center;gap:10px;margin:9px 0}
+.grow .gl{width:118px;font-size:12.5px;color:var(--txt2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:none}
+.grow .gb{flex:1;height:11px;background:var(--bg3);border-radius:6px;overflow:hidden}
+.grow .gb i{display:block;height:100%;background:var(--grad);border-radius:6px}
+.grow .gv{width:46px;font-size:11.5px;color:var(--txt2);flex:none}
+
 /* ---------- Filtres Découvrir ---------- */
 .fbar{display:flex;gap:7px;overflow-x:auto;padding:0 2px 12px;scrollbar-width:none}
 .fbar::-webkit-scrollbar{display:none}
@@ -1576,6 +1593,9 @@ function viewSettings() {
 
   <div class="panel">
     <h3>📊 Ma collection</h3>
+    <div class="row" style="margin-bottom:12px">
+      <button class="btn small" data-action="open-stats">📊 Statistiques détaillées</button>
+    </div>
     <div class="statgrid">
       <div class="stat"><div class="v">${state.series.length}</div><div class="l">séries</div></div>
       <div class="stat"><div class="v">${p.w.toLocaleString('fr-FR')}</div><div class="l">épisodes vus</div></div>
@@ -1608,6 +1628,179 @@ function viewSettings() {
   </p>`;
 }
 
+/* ---------------- Statistiques ---------------- */
+const GENRE_NAMES = {
+  28: 'Action', 12: 'Aventure', 16: 'Animation', 35: 'Comédie', 80: 'Crime',
+  99: 'Documentaire', 18: 'Drame', 10751: 'Familial', 14: 'Fantastique',
+  36: 'Histoire', 27: 'Horreur', 10402: 'Musique', 9648: 'Mystère',
+  10749: 'Romance', 878: 'Science-Fiction', 10770: 'Téléfilm', 53: 'Thriller',
+  10752: 'Guerre', 37: 'Western', 10759: 'Action & Aventure', 10762: 'Enfants',
+  10763: 'Actualités', 10764: 'Télé-réalité', 10765: 'SF & Fantastique',
+  10766: 'Feuilleton', 10767: 'Talk-show', 10768: 'Guerre & Politique',
+};
+const MOIS = ['janv', 'févr', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sept', 'oct', 'nov', 'déc'];
+
+let statsOpen = false;
+
+/* Complète les genres manquants (une fois, résultats mémorisés) */
+async function backfillGenres(cb) {
+  if (!tmdbKey()) return;
+  const targets = [];
+  for (const s of state.series) {
+    const m = state.tmdb[s.uuid];
+    if (m && m.provider === 'tmdb' && m.id && !m.genres) targets.push({ meta: m, type: 'tv' });
+  }
+  for (const mv of state.movies) {
+    if (!mv.is_watched) continue;
+    const m = state.tmdb[mv.uuid];
+    if (m && m.provider === 'tmdb' && m.id && !m.genres) targets.push({ meta: m, type: 'movie' });
+  }
+  const batch = targets.slice(0, 80);
+  if (!batch.length) return;
+  await Promise.all(batch.map(t => pool(async () => {
+    try {
+      const d = await tget(`/${t.type}/${t.meta.id}`);
+      t.meta.genres = (d.genres || []).map(g => g.id);
+      await saveMeta(t.meta);
+    } catch (e) {}
+  })));
+  cb && cb();
+}
+
+function openStats() {
+  statsOpen = true;
+  renderStats();
+  backfillGenres(() => { if (statsOpen) renderStats(); });
+}
+
+function renderStats() {
+  // événements datés (dates réelles de visionnage)
+  const events = [];
+  let epCount = 0;
+  for (const s of state.series)
+    for (const sea of s.seasons || [])
+      for (const ep of sea.episodes)
+        if (ep.is_watched) { epCount++; if (ep.watched_at) events.push({ d: ep.watched_at.slice(0, 10), t: 'ep' }); }
+  const mvWatched = state.movies.filter(m => m.is_watched);
+  for (const m of mvWatched) if (m.watched_at) events.push({ d: m.watched_at.slice(0, 10), t: 'mv' });
+
+  // 12 derniers mois
+  const now = new Date();
+  const months = [];
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({ key: `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`, lab: MOIS[d.getMonth()], ep: 0, mv: 0 });
+  }
+  const mIdx = Object.fromEntries(months.map((m, i) => [m.key, i]));
+  const perDay = {};
+  for (const e of events) perDay[e.d] = (perDay[e.d] || 0) + 1;
+  // les journées à +48 épisodes sont du cochage en masse (création du compte
+  // TV Time, « tout vu » sur de vieilles séries), pas du vrai visionnage
+  const bulk = new Set(Object.keys(perDay).filter(d => perDay[d] > 48));
+  const days = [0, 0, 0, 0, 0, 0, 0];
+  for (const e of events) {
+    const mk = e.d.slice(0, 7);
+    if (mk in mIdx) months[mIdx[mk]][e.t]++;
+    if (!bulk.has(e.d)) days[(new Date(e.d).getDay() + 6) % 7]++;
+  }
+  const maxM = Math.max(1, ...months.map(m => m.ep + m.mv));
+  const maxD = Math.max(1, ...days);
+  let recDay = null, recN = 0;
+  for (const [d, n] of Object.entries(perDay)) if (!bulk.has(d) && n > recN) { recN = n; recDay = d; }
+
+  // temps estimé
+  const minutes = epCount * 40 + mvWatched.length * 110;
+  const heures = Math.round(minutes / 60);
+
+  // genres (épisodes vus pondèrent les séries, un film compte 2)
+  const gcount = {};
+  for (const s of state.series) {
+    const m = state.tmdb[s.uuid];
+    if (!m || !m.genres) continue;
+    const w = progress(s).watched;
+    if (!w) continue;
+    for (const g of m.genres) gcount[g] = (gcount[g] || 0) + w;
+  }
+  for (const mv of mvWatched) {
+    const m = state.tmdb[mv.uuid];
+    if (!m || !m.genres) continue;
+    for (const g of m.genres) gcount[g] = (gcount[g] || 0) + 2;
+  }
+  const topG = Object.entries(gcount).filter(([g]) => GENRE_NAMES[g]).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const maxG = Math.max(1, ...topG.map(x => x[1]));
+
+  // top séries par épisodes vus
+  const topS = state.series.map(s => ({ s, w: progress(s).watched })).filter(x => x.w > 0)
+    .sort((a, b) => b.w - a.w).slice(0, 5);
+  const maxS = Math.max(1, ...topS.map(x => x.w));
+
+  const barChart = (cols, max, small) => `
+    <div class="chart ${small ? 'small' : ''}">
+      ${cols.map(c => `<div class="ccol" title="${c.title || ''}">
+        <div class="bars">
+          ${c.mv ? `<span class="seg mv" style="height:${c.mv / max * 100}%"></span>` : ''}
+          ${c.ep ? `<span class="seg ep" style="height:${c.ep / max * 100}%"></span>` : ''}
+        </div>
+        <span class="clab">${c.lab}</span>
+      </div>`).join('')}
+    </div>`;
+
+  $('#overlay-root').innerHTML = `
+  <div class="overlay">
+    <div class="detbar">
+      <button class="iconbtn" data-action="close-stats">${ICONS.back}</button>
+      <span class="t" style="flex:1;font-weight:700">📊 Statistiques</span>
+    </div>
+    <main style="padding-top:4px">
+      <div class="panel">
+        <div class="statgrid">
+          <div class="stat"><div class="v">${epCount.toLocaleString('fr-FR')}</div><div class="l">épisodes vus</div></div>
+          <div class="stat"><div class="v">${mvWatched.length.toLocaleString('fr-FR')}</div><div class="l">films vus</div></div>
+          <div class="stat"><div class="v">≈ ${heures.toLocaleString('fr-FR')} h</div><div class="l">devant l'écran*</div></div>
+          <div class="stat"><div class="v">${recN}</div><div class="l">record en 1 jour${recDay ? '<br>' + fmtDate(recDay) : ''}</div></div>
+        </div>
+        <p style="margin:10px 0 0;font-size:11px;color:var(--txt2)">* estimation : 40 min/épisode, 1h50/film</p>
+      </div>
+
+      <div class="panel">
+        <h3>📅 Activité des 12 derniers mois</h3>
+        ${barChart(months.map(m => ({ ...m, title: `${m.lab} : ${m.ep} ép. + ${m.mv} films` })), maxM)}
+        <div class="legend">
+          <span><span class="dot" style="background:var(--acc)"></span>Épisodes</span>
+          <span><span class="dot" style="background:#f97316"></span>Films</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>🗓️ Par jour de la semaine</h3>
+        ${barChart(['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((lab, i) =>
+          ({ lab, ep: days[i], mv: 0, title: `${lab} : ${days[i]}` })), maxD, true)}
+      </div>
+
+      <div class="panel">
+        <h3>🎭 Tes genres favoris</h3>
+        ${topG.length ? topG.map(([g, n]) => `
+          <div class="grow">
+            <span class="gl">${GENRE_NAMES[g]}</span>
+            <span class="gb"><i style="width:${n / maxG * 100}%"></i></span>
+            <span class="gv">${n}</span>
+          </div>`).join('')
+          : `<p style="color:var(--txt2);font-size:13px">Analyse en cours… <span class="spin"></span></p>`}
+      </div>
+
+      <div class="panel">
+        <h3>🏅 Tes séries les plus regardées</h3>
+        ${topS.map(({ s, w }) => `
+          <div class="grow" data-action="open-series" data-uuid="${s.uuid}">
+            <span class="gl">${esc(s.title)}</span>
+            <span class="gb"><i style="width:${w / maxS * 100}%"></i></span>
+            <span class="gv">${w} ép.</span>
+          </div>`).join('')}
+      </div>
+    </main>
+  </div>`;
+}
+
 /* ---------------- Vue détail série ---------------- */
 let detailUuid = null;
 
@@ -1621,6 +1814,7 @@ function openSeries(uuid) {
 }
 function closeDetail() {
   detailUuid = null;
+  if (statsOpen) { renderStats(); return; } // retour aux statistiques
   $('#overlay-root').innerHTML = '';
   render();
 }
@@ -1826,6 +2020,8 @@ document.body.addEventListener('click', async e => {
   else if (act === 'add-discover-watched') { $('#modal-root').innerHTML = ''; addItem(JSON.parse(el.dataset.key), true); }
   else if (act === 'quick-add') addItem(JSON.parse(el.dataset.key));
   else if (act === 'open-movie') openMovieModal(el.dataset.uuid);
+  else if (act === 'open-stats') openStats();
+  else if (act === 'close-stats') { statsOpen = false; $('#overlay-root').innerHTML = ''; }
   else if (act === 'movie-watch') {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
     if (m) { await toggleMovieWatched(m); openMovieModal(m.uuid); render(); }
