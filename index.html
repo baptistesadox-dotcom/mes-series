@@ -331,6 +331,7 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
   border-radius:12px;border:var(--card-border);
 }
 @keyframes shimmer{to{background-position:-200% 0}}
+@keyframes pop{0%{transform:scale(.5)}55%{transform:scale(1.3)}100%{transform:scale(1)}}
 
 /* ---------- Statistiques ---------- */
 .chart{display:flex;gap:4px;height:150px;margin-top:14px}
@@ -460,6 +461,7 @@ const state = {
   discoverResults: null, discoverLoading: false, trending: null,
   discoverTab: 'trending', genreSel: 0, discoverData: {}, discoverBusy: {},
   dFilters: { type: 'all', genre: -1, note: 0, annee: 'all' },
+  movieSort: 'recent', movieGenre: -1, movieDecade: 'all', movieLimit: 60,
   hidden: new Set(),
   refreshing: false, lastRefresh: null,
 };
@@ -728,7 +730,16 @@ function loadVisiblePosters() {
 let scrollTimer = null;
 const onScrollLoad = () => {
   if (scrollTimer) return;
-  scrollTimer = setTimeout(() => { scrollTimer = null; loadVisiblePosters(); }, 200);
+  scrollTimer = setTimeout(() => {
+    scrollTimer = null;
+    loadVisiblePosters();
+    // rendu progressif de la grille Films : 60 cartes de plus près du bas
+    if (state.tab === 'movies' && state._movieTotal > state.movieLimit &&
+        document.documentElement.scrollHeight - scrollY - innerHeight < 1200) {
+      state.movieLimit += 60;
+      render();
+    }
+  }, 200);
 };
 addEventListener('scroll', onScrollLoad, { passive: true, capture: true });
 
@@ -827,24 +838,28 @@ function mergeEpisodes(s, seasonNum, episodes, full) {
   return added;
 }
 
-async function refreshAll() {
+async function refreshAll(quiet = false) {
   if (state.refreshing) return;
   state.refreshing = true;
   const targets = state.series.filter(s => s.status === 'continuing' || s.status === 'up_to_date');
-  toast(`Recherche de nouveaux épisodes (${targets.length} séries)…`, 120000);
+  if (!quiet) toast(`Recherche de nouveaux épisodes (${targets.length} séries)…`, 120000);
   let totalAdded = 0, done = 0, errors = 0;
   await Promise.all(targets.map(s => pool(async () => {
     try { totalAdded += (await refreshSeries(s)).added; }
     catch (e) { errors++; }
     done++;
-    if (done % 10 === 0 && done < targets.length) toast(`Actualisation… ${done}/${targets.length}`, 120000);
+    if (!quiet && done % 10 === 0 && done < targets.length) toast(`Actualisation… ${done}/${targets.length}`, 120000);
   })));
   state.refreshing = false;
   state.lastRefresh = nowISO();
   await DB.kvSet('lastRefresh', state.lastRefresh);
-  toast(totalAdded
-    ? `${totalAdded} nouvel(s) épisode(s) trouvé(s) 🎉`
-    : `Tout est à jour ✓${errors ? ` (${errors} séries en erreur)` : ''}`);
+  if (!quiet) {
+    toast(totalAdded
+      ? `${totalAdded} nouvel(s) épisode(s) trouvé(s) 🎉`
+      : `Tout est à jour ✓${errors ? ` (${errors} séries en erreur)` : ''}`);
+  } else if (totalAdded) {
+    toast(`${totalAdded} nouvel(s) épisode(s) disponible(s) 🎉`, 4000);
+  }
   render();
 }
 
@@ -1187,9 +1202,12 @@ async function addItem(n, watched = false) {
       }
       state.series.push(s);
       await refreshSeries(s, true); // récupère toutes les saisons + épisodes
+      if (watched) await markAllWatched(s);
       await saveSeries(s);
       const p = progress(s);
-      toast(`« ${n.title} » ajouté (${p.total} épisodes) ✓`);
+      toast(watched
+        ? `« ${n.title} » ajoutée, ${p.watched} épisodes marqués vus ✓`
+        : `« ${n.title} » ajoutée (${p.total} épisodes) ✓`);
     }
     render();
   } catch (e) {
@@ -1250,9 +1268,9 @@ function download(name, data) {
 }
 
 /* ---------------- Actions ---------------- */
-async function toggleEpisode(s, seasonNum, epNum) {
+async function toggleEpisode(s, seasonNum, epNum, special = false) {
   const sea = s.seasons.find(x => x.number === seasonNum);
-  const ep = sea && sea.episodes.find(e => e.number === epNum && !e.special);
+  const ep = sea && sea.episodes.find(e => e.number === epNum && (special || !e.special));
   if (!ep) return;
   ep.is_watched = !ep.is_watched;
   ep.watched_at = ep.is_watched ? nowISO() : null;
@@ -1277,6 +1295,18 @@ async function markNext(s) {
   const nx = nextUnwatched(s);
   if (nx) await toggleEpisode(s, nx.season, nx.ep.number);
 }
+async function markAllWatched(s) {
+  for (const sea of s.seasons || [])
+    for (const ep of sea.episodes) {
+      if (ep.special || sea.is_specials || sea.number === 0) continue;
+      if (isFuture(ep) || ep.is_watched) continue;
+      ep.is_watched = true;
+      ep.watched_at = nowISO();
+      ep.watched_count = Math.max(1, ep.watched_count || 0);
+    }
+  autoStatus(s);
+  await saveSeries(s);
+}
 async function toggleMovieWatched(m) {
   m.is_watched = !m.is_watched;
   m.watched_at = m.is_watched ? nowISO() : null;
@@ -1286,7 +1316,28 @@ async function toggleMovieWatched(m) {
 /* ---------------- Rendu ---------------- */
 const TABS = { series: 'Séries', next: 'À suivre', discover: 'Découvrir', movies: 'Films', settings: 'Réglages' };
 
-function setTab(tab) { state.tab = tab; render(); }
+/* ---- Bouton retour Android : fiches, modales et onglets empilés
+   dans l'historique du navigateur. Retour = fermer la couche du
+   dessus, jamais quitter l'app par surprise. ---- */
+function pushLayer(layer) { history.pushState({ layer }, ''); }
+function closeModalViaHistory() { if ($('#modal-root').innerHTML) history.back(); }
+window.addEventListener('popstate', () => {
+  if ($('#modal-root').innerHTML) { $('#modal-root').innerHTML = ''; return; }
+  if (detailUuid) {
+    detailUuid = null;
+    if (statsOpen) renderStats();
+    else { $('#overlay-root').innerHTML = ''; render(); }
+    return;
+  }
+  if (statsOpen) { statsOpen = false; $('#overlay-root').innerHTML = ''; return; }
+  if (state.tab !== 'series') { state.tab = 'series'; render(); }
+});
+
+function setTab(tab) {
+  if (tab !== state.tab && state.tab === 'series') pushLayer('tab');
+  state.tab = tab;
+  render();
+}
 
 let lastRenderedTab = null;
 function render() {
@@ -1424,18 +1475,34 @@ function viewNext() {
         <button class="checkbtn" data-action="mark-next" data-uuid="${s.uuid}" title="Marquer vu">${ICONS.check}</button>
       </div>`).join('')}</div>`
       : `<div class="empty">Rien à regarder — tout est vu ! 🎉</div>`}
-    ${waiting.length ? `
-      <h2 class="section">En attente d'épisodes <span class="cnt">${waiting.length}</span></h2>
-      <div class="card-list">${waiting.map(({ s, nx }) => `
+    ${(() => {
+      if (!waiting.length) return '';
+      // calendrier des sorties : groupé par échéance
+      const day = n => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
+      const groups = [
+        { titre: '📅 Cette semaine', test: d => d && d <= day(7) },
+        { titre: '📅 Ce mois-ci', test: d => d && d <= day(31) },
+        { titre: '📅 Plus tard', test: d => !!d },
+        { titre: 'Sans date annoncée', test: () => true },
+      ];
+      const carte = ({ s, nx }) => `
         <div class="scard" data-action="open-series" data-uuid="${s.uuid}">
           ${posterHtml(s, 'tv')}
           <div class="mid">
             <div class="title">${esc(s.title)}</div>
             <div class="sub" style="margin-top:5px">${nx.ep.air_date
-              ? `<span class="badge warn">${epCode(nx.season, nx.ep.number)}</span> le ${fmtDate(nx.ep.air_date)}`
-              : 'Pas de date annoncée'}</div>
+              ? `<span class="badge warn">${epCode(nx.season, nx.ep.number)}</span> ${new Date(nx.ep.air_date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}`
+              : `<span class="badge">${epCode(nx.season, nx.ep.number)}</span> date inconnue`}</div>
           </div>
-        </div>`).join('')}</div>` : ''}`;
+        </div>`;
+      let rest = [...waiting], html = `<h2 class="section" style="margin-top:26px">🗓️ Calendrier des sorties <span class="cnt">${waiting.length}</span></h2>`;
+      for (const g of groups) {
+        const hits = rest.filter(x => g.test(x.nx.ep.air_date));
+        rest = rest.filter(x => !hits.includes(x));
+        if (hits.length) html += `<p style="font-size:12.5px;font-weight:700;color:var(--txt2);margin:14px 0 8px">${g.titre}</p><div class="card-list">${hits.map(carte).join('')}</div>`;
+      }
+      return html;
+    })()}`;
 }
 
 /* pastille sur l'affiche : date à venir sinon note */
@@ -1628,6 +1695,7 @@ function movieCard(m) {
 function openMovieModal(uuid) {
   const m = state.movies.find(x => x.uuid === uuid);
   if (!m) return;
+  if (!$('#modal-root').innerHTML) pushLayer('modal');
   const meta = state.tmdb[uuid] || {};
   $('#modal-root').innerHTML = `
   <div class="modal-bg" data-action="close-modal">
@@ -1642,10 +1710,12 @@ function openMovieModal(uuid) {
             ${m.is_watched
               ? `<span class="badge ok">✓ Vu${m.watched_at ? ' le ' + fmtDate(m.watched_at) : ''}</span>`
               : `<span class="badge acc">À voir</span>`}
+            ${m.rewatch_count ? `<span class="badge acc">🔁 vu ×${m.rewatch_count + 1}</span>` : ''}
             ${m.is_favorite ? `<span class="badge warn">★ Favori</span>` : ''}
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn small" data-action="movie-watch" data-uuid="${uuid}">${m.is_watched ? 'Marquer à voir' : 'Marquer vu'}</button>
+            ${m.is_watched ? `<button class="btn ghost small" data-action="movie-rewatch" data-uuid="${uuid}">🔁 Revu</button>` : ''}
             <button class="btn ghost small" data-action="movie-fav" data-uuid="${uuid}">${m.is_favorite ? '★ Favori' : '☆ Favori'}</button>
             <button class="btn danger small" data-action="movie-del" data-uuid="${uuid}">Supprimer</button>
           </div>
@@ -1679,14 +1749,46 @@ function viewMovies() {
     if (f === 'favoris') return m.is_favorite;
     return true;
   });
-  list.sort((a, b) => (b.watched_at || b.created_at || '').localeCompare(a.watched_at || a.created_at || ''));
+  // filtres genre / décennie (le genre vient des métadonnées TMDB)
+  if (state.movieGenre >= 0) {
+    const g = GENRES[state.movieGenre];
+    list = list.filter(m => {
+      const meta = state.tmdb[m.uuid];
+      return meta && meta.genres && meta.genres.includes(g.mv);
+    });
+  }
+  if (state.movieDecade !== 'all') {
+    list = list.filter(m => {
+      if (!m.year) return false;
+      if (state.movieDecade === '2020') return m.year >= 2020;
+      if (state.movieDecade === '2010') return m.year >= 2010 && m.year <= 2019;
+      if (state.movieDecade === '2000') return m.year >= 2000 && m.year <= 2009;
+      return m.year < 2000;
+    });
+  }
+  // tri
+  if (state.movieSort === 'az') list.sort((a, b) => a.title.localeCompare(b.title, 'fr'));
+  else if (state.movieSort === 'annee') list.sort((a, b) => (b.year || 0) - (a.year || 0));
+  else if (state.movieSort === 'annee-asc') list.sort((a, b) => (a.year || 9999) - (b.year || 9999));
+  else list.sort((a, b) => (b.watched_at || b.created_at || '').localeCompare(a.watched_at || a.created_at || ''));
+
+  state._movieTotal = list.length;
+  const shown = list.slice(0, state.movieLimit);
   const chips = [['vus', 'Vus'], ['avoir', 'À voir'], ['favoris', 'Favoris'], ['tous', 'Tous']];
+  const sel = (name, opts, val) => `<select class="fsel ${String(val) !== String(opts[0][0]) ? 'active' : ''}" data-f="${name}">
+    ${opts.map(([v, l]) => `<option value="${v}" ${String(v) === String(val) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
   return `
     <div class="searchbar">${ICONS.search}<input id="movie-search" placeholder="Rechercher dans mes films…" value="${esc(state.movieSearch)}"></div>
     <div class="chips">${chips.map(([k, l]) =>
       `<button class="chip ${f === k && !q ? 'on' : ''}" data-action="movie-filter" data-f="${k}">${l}</button>`).join('')}</div>
-    ${list.length
-      ? `<div class="mgrid">${list.map(movieCard).join('')}</div>`
+    <div class="fbar">
+      ${sel('msort', [['recent', 'Récents'], ['az', 'A → Z'], ['annee', 'Année ↓'], ['annee-asc', 'Année ↑']], state.movieSort)}
+      ${sel('mgenre', [[-1, 'Tous genres'], ...GENRES.map((g, i) => [i, g.label])], state.movieGenre)}
+      ${sel('mdecade', [['all', 'Toutes années'], ['2020', '2020+'], ['2010', '2010-2019'], ['2000', '2000-2009'], ['old', 'Avant 2000']], state.movieDecade)}
+    </div>
+    ${shown.length
+      ? `<div class="mgrid">${shown.map(movieCard).join('')}</div>
+         ${list.length > shown.length ? `<p style="text-align:center;color:var(--txt2);font-size:12.5px;padding:16px">${shown.length} / ${list.length} films — fais défiler pour la suite</p>` : ''}`
       : `<div class="empty">Aucun film ici.</div>`}`;
 }
 
@@ -1723,7 +1825,8 @@ function viewSettings() {
 
   <div class="panel">
     <h3>📂 Import / sauvegarde</h3>
-    <p>Importe ton export TV Time, ou télécharge une sauvegarde (recommandé régulièrement — tes données ne vivent que sur cet appareil).</p>
+    <p>Importe ton export TV Time, ou télécharge une sauvegarde (recommandé régulièrement — tes données ne vivent que sur cet appareil).<br>
+    <b style="color:${!state.lastExport || Date.now() - new Date(state.lastExport) > 30 * 86400 * 1000 ? 'var(--warn)' : 'var(--ok)'}">💾 Dernière sauvegarde : ${state.lastExport ? fmtDate(state.lastExport) : 'jamais'}</b></p>
     <div class="row">
       <label class="btn ghost small">Importer JSON
         <input type="file" accept=".json,application/json" multiple hidden data-action="import-files">
@@ -1786,6 +1889,7 @@ async function backfillGenres(cb) {
 }
 
 function openStats() {
+  if (!statsOpen) pushLayer('stats');
   statsOpen = true;
   renderStats();
   backfillGenres(() => { if (statsOpen) renderStats(); });
@@ -1922,7 +2026,40 @@ function renderStats() {
 /* ---------------- Vue détail série ---------------- */
 let detailUuid = null;
 
+/* Détails riches (note, casting, créateur) — mis en cache dans la méta */
+function serieExtraHtml(meta) {
+  const d = meta.detail;
+  if (!d) return `<div id="serie-extra"></div>`;
+  const genres = (meta.genres || []).filter(g => GENRE_NAMES[g]).map(g => `<span class="badge">${GENRE_NAMES[g]}</span>`).join(' ');
+  return `<div id="serie-extra" style="padding:0 16px">
+    <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px">
+      ${d.rating ? `<span class="badge warn">★ ${d.rating.toFixed(1)}/10</span> <span style="color:var(--txt2);font-size:12px">(${(d.votes || 0).toLocaleString('fr-FR')} votes)</span>` : ''}
+      ${genres}
+    </div>
+    ${d.cast && d.cast.length ? `<p style="margin-top:8px;font-size:12.5px;color:var(--txt2)"><b style="color:var(--txt)">Avec :</b> ${esc(d.cast.join(', '))}</p>` : ''}
+    ${d.creator ? `<p style="margin-top:4px;font-size:12.5px;color:var(--txt2)"><b style="color:var(--txt)">Créée par :</b> ${esc(d.creator)}</p>` : ''}
+  </div>`;
+}
+
+async function enrichSerieDetail(s) {
+  const meta = state.tmdb[s.uuid];
+  if (!meta || meta.detail || meta.provider !== 'tmdb' || !meta.id || !tmdbKey()) return;
+  try {
+    const d = await tget(`/tv/${meta.id}`, { append_to_response: 'credits' });
+    meta.detail = {
+      rating: d.vote_average ? Math.round(d.vote_average * 10) / 10 : null,
+      votes: d.vote_count || 0,
+      cast: ((d.credits && d.credits.cast) || []).slice(0, 5).map(c => c.name),
+      creator: (d.created_by || []).map(c => c.name).slice(0, 2).join(', ') || null,
+    };
+    meta.genres = (d.genres || []).map(g => g.id);
+    await saveMeta(meta);
+    if (detailUuid === s.uuid) renderDetail();
+  } catch (e) {}
+}
+
 function openSeries(uuid) {
+  if (!detailUuid) pushLayer('detail');
   detailUuid = uuid;
   renderDetail();
   const s = state.series.find(x => x.uuid === uuid);
@@ -1931,10 +2068,7 @@ function openSeries(uuid) {
   }
 }
 function closeDetail() {
-  detailUuid = null;
-  if (statsOpen) { renderStats(); return; } // retour aux statistiques
-  $('#overlay-root').innerHTML = '';
-  render();
+  if (detailUuid) history.back(); // le popstate fait la fermeture
 }
 
 function renderDetail() {
@@ -1969,8 +2103,10 @@ function renderDetail() {
       </div>
     </div>
     ${meta.overview ? `<p class="overview clamp" data-action="expand-overview">${esc(meta.overview)}</p>` : ''}
+    ${serieExtraHtml(meta)}
     <div class="detactions">
       ${nx && !isFuture(nx.ep) ? `<button class="btn small" data-action="mark-next" data-uuid="${s.uuid}" data-stay="1">${ICONS.check} Vu ${epCode(nx.season, nx.ep.number)}</button>` : ''}
+      ${p.watched < p.total ? `<button class="btn ghost small" data-action="mark-all-watched">✓✓ Tout vu</button>` : ''}
       <button class="btn ghost small" data-action="toggle-fav">${s.is_favorite ? '★ Favori' : '☆ Favori'}</button>
       <button class="btn ghost small" data-action="toggle-stop">${s.status === 'stopped' ? '▶ Reprendre' : '⏸ Arrêter'}</button>
       <button class="btn danger small" data-action="delete-series">Supprimer</button>
@@ -2000,12 +2136,34 @@ function renderDetail() {
           </div>`).join('')}
       </details>`;
     }).join('')}
+    ${(() => {
+      // épisodes spéciaux (saison 0, OAV, bonus…) — section repliée
+      const specials = [];
+      for (const sea of sortedSeasons(s)) {
+        const specSeason = sea.is_specials || sea.number === 0;
+        for (const ep of [...sea.episodes].sort((a, b) => a.number - b.number))
+          if (specSeason || ep.special) specials.push({ sea: sea.number, ep });
+      }
+      if (!specials.length) return '';
+      const w = specials.filter(x => x.ep.is_watched).length;
+      return `<details class="season">
+        <summary><span class="arrow">${ICONS.chevron}</span><span class="n">🎁 Spéciaux</span><span class="cnt">${w}/${specials.length}</span></summary>
+        ${specials.map(({ sea, ep }) => `
+          <div class="eprow ${ep.is_watched ? 'watched' : ''}" data-action="toggle-ep" data-season="${sea}" data-ep="${ep.number}" data-special="1">
+            <span class="num">${pad2(ep.number)}</span>
+            <span class="nm">${esc(ep.name || 'Spécial ' + ep.number)}</span>
+            <span class="epcheck">${ICONS.check}</span>
+          </div>`).join('')}
+      </details>`;
+    })()}
   </div>`;
   loadVisiblePosters();
+  enrichSerieDetail(s);
 }
 
 /* ---------------- Modale Découvrir ---------------- */
 function openDiscoverModal(n) {
+  if (!$('#modal-root').innerHTML) pushLayer('modal');
   const lib = inLibrary(n);
   $('#modal-root').innerHTML = `
   <div class="modal-bg" data-action="close-modal">
@@ -2023,7 +2181,8 @@ function openDiscoverModal(n) {
               ${n.type === 'movie'
                 ? `<button class="btn small" data-action="add-discover" data-key="${k}">${ICONS.plus} À voir</button>
                    <button class="btn ghost small" data-action="add-discover-watched" data-key="${k}">${ICONS.check} Vu</button>`
-                : `<button class="btn small" data-action="add-discover" data-key="${k}">${ICONS.plus} Ajouter</button>`}
+                : `<button class="btn small" data-action="add-discover" data-key="${k}">${ICONS.plus} Ajouter</button>
+                   <button class="btn ghost small" data-action="add-discover-watched" data-key="${k}">${ICONS.check} Déjà vue</button>`}
               <button class="btn ghost small" data-action="hide-item" data-key="${k}">✕ Pas intéressé</button>
             </div>`;
           })()}
@@ -2083,7 +2242,7 @@ $('#btn-add').addEventListener('click', () => {
   setTab('discover');
   setTimeout(() => { const i = $('#discover-search'); if (i) i.focus(); }, 60);
 });
-$('#btn-refresh').addEventListener('click', refreshAll);
+$('#btn-refresh').addEventListener('click', () => refreshAll(false));
 
 let discoverTimer = null;
 document.body.addEventListener('input', e => {
@@ -2117,7 +2276,10 @@ document.body.addEventListener('change', e => {
   if (e.target.classList.contains('fsel')) {
     const f = e.target.dataset.f;
     const v = e.target.value;
-    state.dFilters[f] = (f === 'genre' || f === 'note') ? +v : v;
+    if (f === 'msort') { state.movieSort = v; state.movieLimit = 60; }
+    else if (f === 'mgenre') { state.movieGenre = +v; state.movieLimit = 60; }
+    else if (f === 'mdecade') { state.movieDecade = v; state.movieLimit = 60; }
+    else state.dFilters[f] = (f === 'genre' || f === 'note') ? +v : v;
     render();
   }
 });
@@ -2129,22 +2291,22 @@ document.body.addEventListener('click', async e => {
   const s = detailUuid ? state.series.find(x => x.uuid === detailUuid) : null;
 
   if (act === 'series-filter') { state.seriesFilter = el.dataset.f; state.seriesSearch = ''; render(); }
-  else if (act === 'movie-filter') { state.movieFilter = el.dataset.f; state.movieSearch = ''; render(); }
+  else if (act === 'movie-filter') { state.movieFilter = el.dataset.f; state.movieSearch = ''; state.movieLimit = 60; render(); }
   else if (act === 'open-series') openSeries(el.dataset.uuid);
   else if (act === 'close-detail') closeDetail();
-  else if (act === 'close-modal') { if (e.target === el) $('#modal-root').innerHTML = ''; }
+  else if (act === 'close-modal') { if (e.target === el) closeModalViaHistory(); }
   else if (act === 'expand-overview') el.classList.toggle('clamp');
   else if (act === 'discover-tab') { state.discoverTab = el.dataset.k; render(); }
   else if (act === 'discover-genre') { state.genreSel = +el.dataset.g; render(); }
   else if (act === 'discover-detail') openDiscoverModal(JSON.parse(el.dataset.key));
-  else if (act === 'add-discover') { $('#modal-root').innerHTML = ''; addItem(JSON.parse(el.dataset.key)); }
-  else if (act === 'add-discover-watched') { $('#modal-root').innerHTML = ''; addItem(JSON.parse(el.dataset.key), true); }
+  else if (act === 'add-discover') { closeModalViaHistory(); addItem(JSON.parse(el.dataset.key)); }
+  else if (act === 'add-discover-watched') { closeModalViaHistory(); addItem(JSON.parse(el.dataset.key), true); }
   else if (act === 'quick-add') addItem(JSON.parse(el.dataset.key));
   else if (act === 'hide-item') {
     const n = JSON.parse(el.dataset.key);
     state.hidden.add(hkey(n));
     await DB.kvSet('hidden', [...state.hidden]);
-    $('#modal-root').innerHTML = '';
+    closeModalViaHistory();
     toast(`« ${n.title} » ne sera plus suggéré`);
     render();
   }
@@ -2157,7 +2319,7 @@ document.body.addEventListener('click', async e => {
   }
   else if (act === 'open-movie') openMovieModal(el.dataset.uuid);
   else if (act === 'open-stats') openStats();
-  else if (act === 'close-stats') { statsOpen = false; $('#overlay-root').innerHTML = ''; }
+  else if (act === 'close-stats') { if (statsOpen) history.back(); }
   else if (act === 'movie-watch') {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
     if (m) { await toggleMovieWatched(m); openMovieModal(m.uuid); render(); }
@@ -2166,6 +2328,18 @@ document.body.addEventListener('click', async e => {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
     if (m) { m.is_favorite = !m.is_favorite; await saveMovie(m); openMovieModal(m.uuid); render(); }
   }
+  else if (act === 'movie-rewatch') {
+    const m = state.movies.find(x => x.uuid === el.dataset.uuid);
+    if (m) {
+      m.rewatch_count = (m.rewatch_count || 0) + 1;
+      m.watched_at = nowISO();
+      await saveMovie(m);
+      if (navigator.vibrate) navigator.vibrate(12);
+      toast(`« ${m.title} » revu — ×${m.rewatch_count + 1} au compteur 🔁`);
+      openMovieModal(m.uuid);
+      render();
+    }
+  }
   else if (act === 'movie-del') {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
     if (m && confirm(`Supprimer « ${m.title} » de ta collection ?`)) {
@@ -2173,14 +2347,18 @@ document.body.addEventListener('click', async e => {
       delete state.tmdb[m.uuid];
       await DB.del('movies', m.uuid);
       await DB.del('tmdb', m.uuid);
-      $('#modal-root').innerHTML = '';
+      closeModalViaHistory();
       render();
     }
   }
   else if (act === 'mark-next') {
     e.stopPropagation();
     const target = state.series.find(x => x.uuid === el.dataset.uuid);
-    if (target) { await markNext(target); el.dataset.stay ? renderDetail() : render(); }
+    if (target) {
+      await markNext(target);
+      if (navigator.vibrate) navigator.vibrate(12);
+      el.dataset.stay ? renderDetail() : render();
+    }
   }
   else if (act === 'toggle-movie') {
     e.stopPropagation();
@@ -2191,9 +2369,29 @@ document.body.addEventListener('click', async e => {
       const card = el.closest('.mcard');
       if (card) card.classList.toggle('watched', m.is_watched);
       el.title = m.is_watched ? 'Vu' : 'Marquer vu';
+      if (m.is_watched) {
+        el.style.animation = 'pop .3s ease';
+        if (navigator.vibrate) navigator.vibrate(12);
+      }
     }
   }
-  else if (act === 'toggle-ep' && s) { await toggleEpisode(s, +el.dataset.season, +el.dataset.ep); renderDetail(); }
+  else if (act === 'toggle-ep' && s) {
+    await toggleEpisode(s, +el.dataset.season, +el.dataset.ep, el.dataset.special === '1');
+    renderDetail();
+    const row = document.querySelector(`.eprow[data-season="${el.dataset.season}"][data-ep="${el.dataset.ep}"]${el.dataset.special === '1' ? '[data-special="1"]' : ':not([data-special])'}`);
+    if (row && row.classList.contains('watched')) {
+      row.querySelector('.epcheck').style.animation = 'pop .3s ease';
+      if (navigator.vibrate) navigator.vibrate(12);
+    }
+  }
+  else if (act === 'mark-all-watched' && s) {
+    const p = progress(s);
+    if (confirm(`Marquer les ${p.total - p.watched} épisodes restants comme vus ?`)) {
+      await markAllWatched(s);
+      if (navigator.vibrate) navigator.vibrate(20);
+      renderDetail();
+    }
+  }
   else if (act === 'mark-season' && s) {
     e.preventDefault(); e.stopPropagation();
     await markSeason(s, +el.dataset.season, el.dataset.watched === '1');
@@ -2236,8 +2434,12 @@ document.body.addEventListener('click', async e => {
       $('#key-status').textContent = '❌ ' + err.message;
     }
   }
-  else if (act === 'export-series') download(`mes-series-backup-${new Date().toISOString().slice(0, 10)}.json`, state.series);
-  else if (act === 'export-movies') download(`mes-films-backup-${new Date().toISOString().slice(0, 10)}.json`, state.movies);
+  else if (act === 'export-series' || act === 'export-movies') {
+    if (act === 'export-series') download(`mes-series-backup-${new Date().toISOString().slice(0, 10)}.json`, state.series);
+    else download(`mes-films-backup-${new Date().toISOString().slice(0, 10)}.json`, state.movies);
+    state.lastExport = nowISO();
+    await DB.kvSet('lastExport', state.lastExport);
+  }
   else if (act === 'clear-all') {
     if (confirm('Effacer TOUTES les données de l’application ? Cette action est irréversible.')) {
       await DB.clear('series'); await DB.clear('movies'); await DB.clear('tmdb');
@@ -2265,18 +2467,30 @@ function afterRender() {
 /* ---------------- Démarrage ---------------- */
 (async function init() {
   await DB.open();
-  const [series, movies, tmdb, settings, lastRefresh, hidden] = await Promise.all([
+  const [series, movies, tmdb, settings, lastRefresh, hidden, lastExport] = await Promise.all([
     DB.getAll('series'), DB.getAll('movies'), DB.getAll('tmdb'),
-    DB.kvGet('settings'), DB.kvGet('lastRefresh'), DB.kvGet('hidden'),
+    DB.kvGet('settings'), DB.kvGet('lastRefresh'), DB.kvGet('hidden'), DB.kvGet('lastExport'),
   ]);
   state.series = series || [];
   state.movies = movies || [];
   state.settings = settings || {};
   state.lastRefresh = lastRefresh || null;
+  state.lastExport = lastExport || null;
   state.hidden = new Set(hidden || []);
   for (const t of tmdb || []) state.tmdb[t.uuid] = t;
   render();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+
+  // actualisation automatique silencieuse : au plus une fois par 20 h
+  if (state.series.length && navigator.onLine !== false &&
+      (!state.lastRefresh || Date.now() - new Date(state.lastRefresh) > 20 * 3600 * 1000)) {
+    setTimeout(() => refreshAll(true), 2500);
+  }
+  // rappel de sauvegarde : au-delà de 30 jours
+  const dataAge = state.lastExport ? Date.now() - new Date(state.lastExport) : Infinity;
+  if ((state.series.length || state.movies.length) && dataAge > 30 * 86400 * 1000) {
+    setTimeout(() => toast('💾 Pense à exporter une sauvegarde dans Réglages !', 5000), 8000);
+  }
 })();
 </script>
 </body>
