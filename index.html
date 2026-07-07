@@ -286,8 +286,17 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 .stat .l{font-size:12px;color:var(--txt2)}
 
 /* ---------- Découvrir : bannière, pastilles, squelettes ---------- */
+.heros{
+  display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;
+  margin:0 -14px 10px;padding:0 14px;scrollbar-width:none;
+}
+.heros::-webkit-scrollbar{display:none}
+.hdots{display:flex;justify-content:center;gap:6px;margin-bottom:14px}
+.hdot{width:6px;height:6px;border-radius:3px;background:var(--line);transition:all .25s}
+.hdot.on{background:var(--acc);width:18px}
 .hero{
-  position:relative;border-radius:18px;overflow:hidden;margin-bottom:16px;
+  position:relative;border-radius:18px;overflow:hidden;
+  flex:0 0 100%;scroll-snap-align:center;
   aspect-ratio:16/9;background:var(--bg2) center 25%/cover no-repeat;
   border:var(--card-border);box-shadow:var(--card-shadow);cursor:pointer;
 }
@@ -1531,22 +1540,32 @@ function viewDiscover() {
   if (dt === 'trending') {
     if (!state.trending) { loadTrending(); body = spin; }
     else {
-      // bannière « À la une » : un titre fort des tendances, qui tourne chaque jour
-      let hero = '', heroItem = null;
-      const cands = prep([...(state.trending.tv || []).slice(0, 6), ...(state.trending.mv || []).slice(0, 6)]).filter(n => n.backdrop);
-      if (cands.length) {
-        heroItem = cands[Math.floor(Date.now() / 86400000) % cands.length];
-        const hk = esc(JSON.stringify(heroItem)).replace(/"/g, '&quot;');
-        hero = `<div class="hero" style="background-image:url('${heroItem.backdrop}')" data-action="discover-detail" data-key="${hk}">
-          <span class="htag">🔥 À la une</span>
-          <div class="ov">
-            <h3>${esc(heroItem.title)}</h3>
-            <div class="hm">${heroItem.year || ''} · ${heroItem.type === 'tv' ? 'Série' : 'Film'}${heroItem.rating ? ` · ★ ${heroItem.rating.toFixed(1)}` : ''}</div>
-            <div class="hb"><button class="btn small" data-action="quick-add" data-key="${hk}">${ICONS.plus} Ajouter</button></div>
-          </div>
-        </div>`;
+      // carrousel « À la une » : les titres les plus chauds, séries et films
+      // alternés — on swipe pour passer de l'un à l'autre
+      const heroTv = prep(state.trending.tv).filter(n => n.backdrop).slice(0, 4);
+      const heroMv = prep(state.trending.mv).filter(n => n.backdrop).slice(0, 4);
+      const cands = [];
+      for (let i = 0; i < 4; i++) {
+        if (heroTv[i]) cands.push(heroTv[i]);
+        if (heroMv[i]) cands.push(heroMv[i]);
       }
-      const notHero = arr => (arr || []).filter(x => !heroItem || x.provId !== heroItem.provId || x.type !== heroItem.type);
+      let hero = '';
+      if (cands.length) {
+        hero = `<div class="heros" id="heros">${cands.map(h => {
+          const hk = esc(JSON.stringify(h)).replace(/"/g, '&quot;');
+          return `<div class="hero" style="background-image:url('${h.backdrop}')" data-action="discover-detail" data-key="${hk}">
+            <span class="htag">🔥 À la une</span>
+            <div class="ov">
+              <h3>${esc(h.title)}</h3>
+              <div class="hm">${h.year || ''} · ${h.type === 'tv' ? 'Série' : 'Film'}${h.rating ? ` · ★ ${h.rating.toFixed(1)}` : ''}</div>
+              <div class="hb"><button class="btn small" data-action="quick-add" data-key="${hk}">${ICONS.plus} Ajouter</button></div>
+            </div>
+          </div>`;
+        }).join('')}</div>
+        ${cands.length > 1 ? `<div class="hdots">${cands.map((_, i) => `<span class="hdot ${i === 0 ? 'on' : ''}"></span>`).join('')}</div>` : ''}`;
+      }
+      const heroIds = new Set(cands.map(h => h.type + ':' + h.provId));
+      const notHero = arr => (arr || []).filter(x => !heroIds.has(x.type + ':' + x.provId));
       body = hero + rowsTvMv({ tv: notHero(state.trending.tv), mv: notHero(state.trending.mv) }, `${fire} Séries tendance`, `${fire} Films tendance`);
     }
   } else if (dt === 'top') {
@@ -2229,7 +2248,19 @@ document.body.addEventListener('click', async e => {
   }
 });
 
-function afterRender() { loadVisiblePosters(); }
+function afterRender() {
+  loadVisiblePosters();
+  const heros = $('#heros');
+  if (heros) {
+    heros.addEventListener('scroll', () => {
+      clearTimeout(heros._t);
+      heros._t = setTimeout(() => {
+        const i = Math.round(heros.scrollLeft / (heros.clientWidth || 1));
+        document.querySelectorAll('.hdot').forEach((d, j) => d.classList.toggle('on', j === i));
+      }, 80);
+    }, { passive: true });
+  }
+}
 
 /* ---------------- Démarrage ---------------- */
 (async function init() {
