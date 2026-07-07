@@ -1154,7 +1154,16 @@ const TABS = { series: 'Séries', next: 'À suivre', discover: 'Découvrir', mov
 
 function setTab(tab) { state.tab = tab; render(); }
 
+let lastRenderedTab = null;
 function render() {
+  // conserve la position de défilement si on reste sur le même onglet
+  const keepScroll = lastRenderedTab === state.tab ? window.scrollY : 0;
+  lastRenderedTab = state.tab;
+  renderView();
+  window.scrollTo(0, keepScroll);
+}
+
+function renderView() {
   const title = $('#apptitle');
   title.textContent = state.tab === 'series' ? 'Mes Séries' : TABS[state.tab];
   title.classList.toggle('brand', state.tab === 'series');
@@ -1740,7 +1749,13 @@ document.body.addEventListener('click', async e => {
   else if (act === 'toggle-movie') {
     e.stopPropagation();
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
-    if (m) { await toggleMovieWatched(m); render(); }
+    if (m) {
+      await toggleMovieWatched(m);
+      // mise à jour sur place : pas de re-rendu, la liste ne bouge pas
+      const card = el.closest('.mcard');
+      if (card) card.classList.toggle('watched', m.is_watched);
+      el.title = m.is_watched ? 'Vu' : 'Marquer vu';
+    }
   }
   else if (act === 'toggle-ep' && s) { await toggleEpisode(s, +el.dataset.season, +el.dataset.ep); renderDetail(); }
   else if (act === 'mark-season' && s) {
