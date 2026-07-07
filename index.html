@@ -285,6 +285,44 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 }
 .stat .l{font-size:12px;color:var(--txt2)}
 
+/* ---------- Découvrir : bannière, pastilles, squelettes ---------- */
+.hero{
+  position:relative;border-radius:18px;overflow:hidden;margin-bottom:16px;
+  aspect-ratio:16/9;background:var(--bg2) center 25%/cover no-repeat;
+  border:var(--card-border);box-shadow:var(--card-shadow);cursor:pointer;
+}
+.hero .ov{
+  position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:14px;background:linear-gradient(transparent 25%,rgba(10,12,17,.94));
+}
+.hero h3{font-size:21px;font-weight:800;letter-spacing:-.02em;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+.hero .hm{font-size:12.5px;color:#cfd3de;margin:3px 0 10px}
+.hero .hb{display:flex;gap:8px}
+.htag{
+  position:absolute;top:10px;left:10px;font-size:11px;font-weight:700;
+  background:rgba(10,12,17,.72);backdrop-filter:blur(6px);color:var(--warn);
+  padding:4px 10px;border-radius:999px;border:1px solid rgba(251,191,36,.4);
+}
+.rchip{
+  position:absolute;bottom:6px;left:6px;font-size:10.5px;font-weight:700;
+  background:rgba(10,12,17,.78);backdrop-filter:blur(4px);color:var(--warn);
+  padding:2px 7px;border-radius:8px;z-index:1;
+}
+.rchip.soon{color:#7dd3fc}
+.hideb{
+  position:absolute;top:7px;left:7px;width:25px;height:25px;border-radius:9px;
+  background:rgba(10,12,17,.72);backdrop-filter:blur(6px);color:var(--txt2);
+  border:1px solid rgba(255,255,255,.14);font-size:12px;
+  display:flex;align-items:center;justify-content:center;z-index:1;
+}
+.hideb:active{background:rgba(248,113,113,.3);color:var(--danger)}
+.sk{
+  background:linear-gradient(100deg,var(--bg2) 40%,var(--bg3) 50%,var(--bg2) 60%);
+  background-size:200% 100%;animation:shimmer 1.3s infinite;
+  border-radius:12px;border:var(--card-border);
+}
+@keyframes shimmer{to{background-position:-200% 0}}
+
 /* ---------- Statistiques ---------- */
 .chart{display:flex;gap:4px;height:150px;margin-top:14px}
 .chart.small{height:110px}
@@ -413,6 +451,7 @@ const state = {
   discoverResults: null, discoverLoading: false, trending: null,
   discoverTab: 'trending', genreSel: 0, discoverData: {}, discoverBusy: {},
   dFilters: { type: 'all', genre: -1, note: 0, annee: 'all' },
+  hidden: new Set(),
   refreshing: false, lastRefresh: null,
 };
 
@@ -848,8 +887,12 @@ function normTmdb(x, type) {
     overview: x.overview || null,
     rating: x.vote_average ? Math.round(x.vote_average * 10) / 10 : null,
     genreIds: x.genre_ids || [],
+    backdrop: x.backdrop_path ? TMDB_IMG + 'w780' + x.backdrop_path : null,
+    date: x.release_date || x.first_air_date || null,
   };
 }
+const todayStr = () => new Date().toISOString().slice(0, 10);
+const fmtShort = d => d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '';
 
 /* Normalisation de titre : minuscules, sans accents ni ponctuation,
    sans suffixe d'année « (2024) » — pour comparer malgré les variantes */
@@ -862,6 +905,9 @@ function titleYear(t) {
   const m = String(t || '').match(/\((\d{4})\)/);
   return m ? +m[1] : null;
 }
+
+/* Liste noire persistante des suggestions « pas intéressé » */
+const hkey = n => `${n.provider}:${n.type}:${n.provId}`;
 
 function inLibrary(n) {
   if (Object.values(state.tmdb).some(m => m.provider === n.provider && m.id === n.provId && m.type === n.type)) return true;
@@ -960,35 +1006,58 @@ async function loadSection(key) {
       }
       const maxProfile = Math.max(1, ...Object.values(profile));
 
-      // agrégation des candidats
+      // profil négatif : les genres des séries que tu as abandonnées
+      const negProfile = {};
+      for (const s of state.series.filter(x => x.status === 'stopped')) {
+        const m = state.tmdb[s.uuid];
+        if (m && m.genres) for (const g of m.genres) negProfile[g] = (negProfile[g] || 0) + 1;
+      }
+      const maxNeg = Math.max(1, ...Object.values(negProfile));
+
+      // agrégation des candidats : recommandations (poids 1) + similaires (poids 0.5)
       const cand = new Map();
-      const collect = (r, type, srcTitle) => {
+      const collect = (r, type, srcTitle, w) => {
         for (const x of r.results || []) {
           const k = type + ':' + x.id;
           let c = cand.get(k);
           if (!c) {
-            c = { n: normTmdb(x, type), sources: [], pop: x.popularity || 0, votes: x.vote_count || 0 };
+            c = { n: normTmdb(x, type), sources: [], srcW: 0, pop: x.popularity || 0, votes: x.vote_count || 0 };
             cand.set(k, c);
           }
-          if (!c.sources.includes(srcTitle)) c.sources.push(srcTitle);
+          c.srcW += w;
+          if (w >= 1 && !c.sources.includes(srcTitle)) c.sources.push(srcTitle);
         }
       };
       await Promise.all([
-        ...srcS.map(s => pool(() => tget(`/tv/${state.tmdb[s.uuid].id}/recommendations`).then(r => collect(r, 'tv', s.title)).catch(() => {}))),
-        ...srcM.map(m => pool(() => tget(`/movie/${state.tmdb[m.uuid].id}/recommendations`).then(r => collect(r, 'movie', m.title)).catch(() => {}))),
+        ...srcS.map(s => pool(() => tget(`/tv/${state.tmdb[s.uuid].id}/recommendations`).then(r => collect(r, 'tv', s.title, 1)).catch(() => {}))),
+        ...srcS.slice(0, 4).map(s => pool(() => tget(`/tv/${state.tmdb[s.uuid].id}/similar`).then(r => collect(r, 'tv', s.title, 0.5)).catch(() => {}))),
+        ...srcM.map(m => pool(() => tget(`/movie/${state.tmdb[m.uuid].id}/recommendations`).then(r => collect(r, 'movie', m.title, 1)).catch(() => {}))),
+        ...srcM.slice(0, 3).map(m => pool(() => tget(`/movie/${state.tmdb[m.uuid].id}/similar`).then(r => collect(r, 'movie', m.title, 0.5)).catch(() => {}))),
       ]);
 
-      // score final
-      const scored = [...cand.values()].map(c => {
+      // score final : récurrence + affinité de genres − genres abandonnés + note + popularité
+      const scored = [...cand.values()].filter(c => !state.hidden.has(hkey(c.n))).map(c => {
         const gAffinity = (c.n.genreIds || []).reduce((a, g) => a + (profile[g] || 0), 0) / maxProfile;
+        const gNeg = (c.n.genreIds || []).reduce((a, g) => a + (negProfile[g] || 0), 0) / maxNeg;
         const rScore = (c.votes >= 100 && c.n.rating) ? Math.max(0, c.n.rating - 6) : 0;
-        c.score = c.sources.length * 2.2 + gAffinity * 1.6 + rScore * 0.9 + Math.log10(c.pop + 1) * 0.4;
-        c.n.why = c.sources.slice(0, 2).join(', ') + (c.sources.length > 2 ? ` +${c.sources.length - 2}` : '');
+        c.score = c.srcW * 2.2 + gAffinity * 1.6 - gNeg * 0.9 + rScore * 0.9 + Math.log10(c.pop + 1) * 0.4;
+        if (c.sources.length) c.n.why = c.sources.slice(0, 2).join(', ') + (c.sources.length > 2 ? ` +${c.sources.length - 2}` : '');
+        else c.n.why = 'titres similaires';
         return c;
       }).sort((a, b) => b.score - a.score);
+
+      // diversité : pas plus de 6 titres du même genre dominant en tête
+      const diversify = list => {
+        const per = {}, out = [], rest = [];
+        for (const c of list) {
+          const g = (c.n.genreIds || [])[0] || 0;
+          if ((per[g] || 0) < 6) { per[g] = (per[g] || 0) + 1; out.push(c); } else rest.push(c);
+        }
+        return [...out, ...rest];
+      };
       data = {
-        tv: scored.filter(c => c.n.type === 'tv').map(c => c.n).slice(0, 30),
-        mv: scored.filter(c => c.n.type === 'movie').map(c => c.n).slice(0, 30),
+        tv: diversify(scored.filter(c => c.n.type === 'tv')).map(c => c.n).slice(0, 30),
+        mv: diversify(scored.filter(c => c.n.type === 'movie')).map(c => c.n).slice(0, 30),
       };
     }
     state.discoverData[key] = data;
@@ -1360,18 +1429,26 @@ function viewNext() {
         </div>`).join('')}</div>` : ''}`;
 }
 
+/* pastille sur l'affiche : date à venir sinon note */
+function posterChip(n) {
+  if (n.date && n.date > todayStr()) return `<span class="rchip soon">📅 ${fmtShort(n.date)}</span>`;
+  if (n.rating) return `<span class="rchip">★ ${n.rating.toFixed(1)}</span>`;
+  return '';
+}
+
 function discoverCardH(n) {
   const lib = inLibrary(n);
   const key = esc(JSON.stringify(n)).replace(/"/g, '&quot;');
   return `<div class="pcard" data-action="discover-detail" data-key="${key}">
-    <div class="poster">${n.poster ? `<img loading="lazy" src="${n.poster}" alt="">` : esc(initials(n.title))}</div>
+    <div class="poster">${n.poster ? `<img loading="lazy" src="${n.poster}" alt="">` : esc(initials(n.title))}${posterChip(n)}</div>
     ${lib ? `<span class="inlib">${ICONS.check}</span>`
           : `<button class="qadd" data-action="quick-add" data-key="${key}" title="Ajouter">${ICONS.plus}</button>`}
     <div class="mtitle">${esc(n.title)}</div>
   </div>`;
 }
 
-const fresh = arr => (arr || []).filter(n => !inLibrary(n)); // masque ce qui est déjà dans la bibliothèque
+// masque ce qui est déjà dans la bibliothèque et les « pas intéressé »
+const fresh = arr => (arr || []).filter(n => !inLibrary(n) && !state.hidden.has(hkey(n)));
 
 /* Filtres utilisateur des sections Découvrir */
 function applyDFilters(arr) {
@@ -1433,7 +1510,8 @@ function viewDiscover() {
   }
 
   const fire = ICONS.fire.replace('<svg', '<svg style="width:17px;height:17px;color:var(--warn)"');
-  const spin = `<div class="loadrow"><span class="spin"></span> Chargement…</div>`;
+  const skelCard = '<div class="pcard"><div class="poster sk" style="width:108px;height:162px"></div><div class="sk" style="height:11px;margin-top:8px;border-radius:6px"></div></div>';
+  const spin = `<div class="hrow" style="margin-top:14px">${skelCard.repeat(4)}</div><div class="hrow" style="margin-top:10px">${skelCard.repeat(4)}</div>`;
 
   if (!tmdbKey()) {
     // sans clé : uniquement les séries en streaming + astuce
@@ -1452,7 +1530,25 @@ function viewDiscover() {
 
   if (dt === 'trending') {
     if (!state.trending) { loadTrending(); body = spin; }
-    else body = rowsTvMv({ tv: state.trending.tv, mv: state.trending.mv }, `${fire} Séries tendance`, `${fire} Films tendance`);
+    else {
+      // bannière « À la une » : un titre fort des tendances, qui tourne chaque jour
+      let hero = '', heroItem = null;
+      const cands = prep([...(state.trending.tv || []).slice(0, 6), ...(state.trending.mv || []).slice(0, 6)]).filter(n => n.backdrop);
+      if (cands.length) {
+        heroItem = cands[Math.floor(Date.now() / 86400000) % cands.length];
+        const hk = esc(JSON.stringify(heroItem)).replace(/"/g, '&quot;');
+        hero = `<div class="hero" style="background-image:url('${heroItem.backdrop}')" data-action="discover-detail" data-key="${hk}">
+          <span class="htag">🔥 À la une</span>
+          <div class="ov">
+            <h3>${esc(heroItem.title)}</h3>
+            <div class="hm">${heroItem.year || ''} · ${heroItem.type === 'tv' ? 'Série' : 'Film'}${heroItem.rating ? ` · ★ ${heroItem.rating.toFixed(1)}` : ''}</div>
+            <div class="hb"><button class="btn small" data-action="quick-add" data-key="${hk}">${ICONS.plus} Ajouter</button></div>
+          </div>
+        </div>`;
+      }
+      const notHero = arr => (arr || []).filter(x => !heroItem || x.provId !== heroItem.provId || x.type !== heroItem.type);
+      body = hero + rowsTvMv({ tv: notHero(state.trending.tv), mv: notHero(state.trending.mv) }, `${fire} Séries tendance`, `${fire} Films tendance`);
+    }
   } else if (dt === 'top') {
     const d = state.discoverData.top;
     if (!d) { loadSection('top'); body = spin; }
@@ -1475,8 +1571,9 @@ function viewDiscover() {
     else if (!(d.tv || []).length && !(d.mv || []).length) body = `<div class="empty">Pas encore assez de matière — regarde ou mets en favori quelques séries et films, puis reviens !</div>`;
     else {
       const tv = prep(d.tv).slice(0, 18), mv = prep(d.mv).slice(0, 18);
-      if (!tv.length && !mv.length) body = `<div class="empty">Rien à afficher avec ces filtres.</div>`;
-      else body = `
+      const regen = `<div style="display:flex;justify-content:flex-end"><button class="btn ghost small" data-action="regen-foryou">↻ Régénérer les suggestions</button></div>`;
+      if (!tv.length && !mv.length) body = regen + `<div class="empty">Rien à afficher avec ces filtres.</div>`;
+      else body = regen + `
         ${tv.length ? `<h2 class="section">✨ Séries pour toi</h2><div class="mgrid">${tv.map(discoverCardG).join('')}</div>` : ''}
         ${mv.length ? `<h2 class="section">✨ Films pour toi</h2><div class="mgrid">${mv.map(discoverCardG).join('')}</div>` : ''}`;
     }
@@ -1488,11 +1585,12 @@ function discoverCardG(n) {
   const lib = inLibrary(n);
   const key = esc(JSON.stringify(n)).replace(/"/g, '&quot;');
   return `<div class="mcard" data-action="discover-detail" data-key="${key}">
-    <div class="poster">${n.poster ? `<img loading="lazy" src="${n.poster}" alt="">` : esc(initials(n.title))}</div>
+    <div class="poster">${n.poster ? `<img loading="lazy" src="${n.poster}" alt="">` : esc(initials(n.title))}${posterChip(n)}</div>
     ${lib ? `<span class="mtoggle" style="background:linear-gradient(135deg,#34d399,#10b981);color:#07120c;border-color:transparent">${ICONS.check}</span>`
           : `<button class="qadd" data-action="quick-add" data-key="${key}" title="Ajouter">${ICONS.plus}</button>`}
+    ${n.why && !lib ? `<button class="hideb" data-action="hide-item" data-key="${key}" title="Pas intéressé">✕</button>` : ''}
     <div class="mtitle">${esc(n.title)}</div>
-    <div class="myear">${n.year || ''} · ${n.type === 'tv' ? 'Série' : 'Film'}${n.rating ? ` · ★ ${n.rating.toFixed(1)}` : ''}</div>
+    <div class="myear">${n.year || ''} · ${n.type === 'tv' ? 'Série' : 'Film'}</div>
     ${n.why ? `<div class="why">via ${esc(n.why)}</div>` : ''}
   </div>`;
 }
@@ -1619,6 +1717,7 @@ function viewSettings() {
   <div class="panel">
     <h3>🧨 Zone dangereuse</h3>
     <div class="row">
+      ${state.hidden.size ? `<button class="btn ghost small" data-action="clear-hidden">Réafficher ${state.hidden.size} suggestion(s) masquée(s)</button>` : ''}
       <button class="btn danger small" data-action="clear-all">Tout effacer</button>
     </div>
   </div>
@@ -1898,14 +1997,17 @@ function openDiscoverModal(n) {
         <div class="dmi">
           <h3>${esc(n.title)}</h3>
           <div class="y">${n.year || ''} · ${n.type === 'tv' ? 'Série' : 'Film'}${n.rating ? ` · <span style="color:var(--warn)">★ ${n.rating.toFixed(1)}</span>` : ''}</div>
-          ${lib
-            ? `<span class="badge ok">✓ Déjà dans ta bibliothèque</span>`
-            : n.type === 'movie'
-              ? `<div style="display:flex;gap:8px;flex-wrap:wrap">
-                   <button class="btn small" data-action="add-discover" data-key="${esc(JSON.stringify(n)).replace(/"/g, '&quot;')}">${ICONS.plus} À voir</button>
-                   <button class="btn ghost small" data-action="add-discover-watched" data-key="${esc(JSON.stringify(n)).replace(/"/g, '&quot;')}">${ICONS.check} Vu</button>
-                 </div>`
-              : `<button class="btn small" data-action="add-discover" data-key="${esc(JSON.stringify(n)).replace(/"/g, '&quot;')}">${ICONS.plus} Ajouter</button>`}
+          ${(() => {
+            if (lib) return `<span class="badge ok">✓ Déjà dans ta bibliothèque</span>`;
+            const k = esc(JSON.stringify(n)).replace(/"/g, '&quot;');
+            return `<div style="display:flex;gap:8px;flex-wrap:wrap">
+              ${n.type === 'movie'
+                ? `<button class="btn small" data-action="add-discover" data-key="${k}">${ICONS.plus} À voir</button>
+                   <button class="btn ghost small" data-action="add-discover-watched" data-key="${k}">${ICONS.check} Vu</button>`
+                : `<button class="btn small" data-action="add-discover" data-key="${k}">${ICONS.plus} Ajouter</button>`}
+              <button class="btn ghost small" data-action="hide-item" data-key="${k}">✕ Pas intéressé</button>
+            </div>`;
+          })()}
         </div>
       </div>
       <div id="modal-extra"><div class="loadrow" style="text-align:left;padding:10px 0"><span class="spin"></span></div></div>
@@ -2019,6 +2121,21 @@ document.body.addEventListener('click', async e => {
   else if (act === 'add-discover') { $('#modal-root').innerHTML = ''; addItem(JSON.parse(el.dataset.key)); }
   else if (act === 'add-discover-watched') { $('#modal-root').innerHTML = ''; addItem(JSON.parse(el.dataset.key), true); }
   else if (act === 'quick-add') addItem(JSON.parse(el.dataset.key));
+  else if (act === 'hide-item') {
+    const n = JSON.parse(el.dataset.key);
+    state.hidden.add(hkey(n));
+    await DB.kvSet('hidden', [...state.hidden]);
+    $('#modal-root').innerHTML = '';
+    toast(`« ${n.title} » ne sera plus suggéré`);
+    render();
+  }
+  else if (act === 'regen-foryou') { delete state.discoverData.foryou; render(); }
+  else if (act === 'clear-hidden') {
+    state.hidden.clear();
+    await DB.kvSet('hidden', []);
+    toast('Suggestions masquées réaffichées');
+    render();
+  }
   else if (act === 'open-movie') openMovieModal(el.dataset.uuid);
   else if (act === 'open-stats') openStats();
   else if (act === 'close-stats') { statsOpen = false; $('#overlay-root').innerHTML = ''; }
@@ -2117,14 +2234,15 @@ function afterRender() { loadVisiblePosters(); }
 /* ---------------- Démarrage ---------------- */
 (async function init() {
   await DB.open();
-  const [series, movies, tmdb, settings, lastRefresh] = await Promise.all([
+  const [series, movies, tmdb, settings, lastRefresh, hidden] = await Promise.all([
     DB.getAll('series'), DB.getAll('movies'), DB.getAll('tmdb'),
-    DB.kvGet('settings'), DB.kvGet('lastRefresh'),
+    DB.kvGet('settings'), DB.kvGet('lastRefresh'), DB.kvGet('hidden'),
   ]);
   state.series = series || [];
   state.movies = movies || [];
   state.settings = settings || {};
   state.lastRefresh = lastRefresh || null;
+  state.hidden = new Set(hidden || []);
   for (const t of tmdb || []) state.tmdb[t.uuid] = t;
   render();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
