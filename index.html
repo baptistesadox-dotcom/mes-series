@@ -2624,13 +2624,23 @@ document.body.addEventListener('click', async e => {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
     if (m) {
       await toggleMovieWatched(m);
-      // mise à jour sur place : pas de re-rendu, la liste ne bouge pas
       const card = el.closest('.mcard');
-      if (card) card.classList.toggle('watched', m.is_watched);
-      el.title = m.is_watched ? 'Vu' : 'Marquer vu';
-      if (m.is_watched) {
-        el.style.animation = 'pop .3s ease';
-        if (navigator.vibrate) navigator.vibrate(12);
+      if (m.is_watched && navigator.vibrate) navigator.vibrate(12);
+      // si le film ne correspond plus au filtre affiché, il quitte la
+      // liste en fondu (le défilement est conservé par render())
+      const f = state.movieFilter;
+      const quitteLaListe = state.tab === 'movies' && !state.movieSearch &&
+        ((f === 'avoir' && m.is_watched) || (f === 'vus' && !m.is_watched));
+      if (quitteLaListe && card) {
+        card.style.transition = 'opacity .25s ease, transform .25s ease';
+        card.style.opacity = '0';
+        card.style.transform = 'scale(.85)';
+        setTimeout(render, 260);
+      } else if (card) {
+        // sinon mise à jour sur place, sans toucher à l'ordre de la liste
+        card.classList.toggle('watched', m.is_watched);
+        el.title = m.is_watched ? 'Vu' : 'Marquer vu';
+        if (m.is_watched) el.style.animation = 'pop .3s ease';
       }
     }
   }
