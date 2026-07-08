@@ -477,6 +477,8 @@ const state = {
   seriesSearch: '', movieSearch: '', discoverSearch: '',
   discoverResults: null, discoverLoading: false, trending: null,
   discoverTab: 'trending', genreSel: 0, discoverData: {}, discoverBusy: {},
+  exploreType: 'tv', exploreSource: 'pop',
+  exploreFeed: { key: null, items: [], page: 0, totalPages: 1, loading: false, seen: null },
   dFilters: { type: 'all', genre: -1, note: 0, annee: 'all' },
   movieSort: 'recent', movieGenre: -1, movieDecade: 'all', movieLimit: 60,
   hidden: new Set(),
@@ -763,6 +765,11 @@ const onScrollLoad = () => {
         document.documentElement.scrollHeight - scrollY - innerHeight < 1200) {
       state.movieLimit += 60;
       render();
+    }
+    // flux infini Explorer : page TMDB suivante près du bas
+    if (state.tab === 'discover' && !state.discoverSearch && state.exploreSource !== 'foryou' &&
+        document.documentElement.scrollHeight - scrollY - innerHeight < 1400) {
+      loadExplorePage();
     }
   }, 200);
 };
@@ -1735,7 +1742,6 @@ function filterBar(showGenre) {
   const sel = (name, opts, val) => `<select class="fsel ${String(val) !== String(opts[0][0]) ? 'active' : ''}" data-f="${name}">
     ${opts.map(([v, l]) => `<option value="${v}" ${String(v) === String(val) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
   return `<div class="fbar">
-    ${sel('type', [['all', 'Séries + Films'], ['tv', 'Séries'], ['movie', 'Films']], f.type)}
     ${showGenre ? sel('genre', [[-1, 'Tous genres'], ...GENRES.map((g, i) => [i, g.label])], f.genre) : ''}
     ${sel('note', [[0, 'Toutes notes'], [7, '★ 7+'], [7.5, '★ 7,5+'], [8, '★ 8+']], f.note)}
     ${sel('annee', [['all', 'Toutes années'], ['2020', '2020+'], ['2010', '2010-2019'], ['2000', '2000-2009'], ['old', 'Avant 2000']], f.annee)}
@@ -1780,72 +1786,117 @@ function viewDiscover() {
     return `<div class="searchbar">${ICONS.search}<input id="discover-search" placeholder="Chercher une série ou un film à ajouter…" value="${esc(q)}"></div>${body}`;
   }
 
-  const dt = state.discoverTab;
-  const DTABS = [['trending', 'Tendances'], ['top', 'Top'], ['genres', 'Genres'], ['upcoming', 'À venir'], ['foryou', 'Pour toi']];
-  const chips = `<div class="chips">${DTABS.map(([k, l]) =>
-    `<button class="chip ${dt === k ? 'on' : ''}" data-action="discover-tab" data-k="${k}">${l}</button>`).join('')}</div>`;
-
-  if (dt === 'trending') {
-    if (!state.trending) { loadTrending(); body = spin; }
-    else {
-      // carrousel « À la une » : les titres les plus chauds, séries et films
-      // alternés — on swipe pour passer de l'un à l'autre
-      const heroTv = prep(state.trending.tv).filter(n => n.backdrop).slice(0, 4);
-      const heroMv = prep(state.trending.mv).filter(n => n.backdrop).slice(0, 4);
-      const cands = [];
-      for (let i = 0; i < 4; i++) {
-        if (heroTv[i]) cands.push(heroTv[i]);
-        if (heroMv[i]) cands.push(heroMv[i]);
-      }
-      let hero = '';
-      if (cands.length) {
-        hero = `<div class="heros" id="heros">${cands.map(h => {
-          const hk = esc(JSON.stringify(h)).replace(/"/g, '&quot;');
-          return `<div class="hero" style="background-image:url('${h.backdrop}')" data-action="discover-detail" data-key="${hk}">
-            <span class="htag">🔥 À la une</span>
-            <div class="ov">
-              <h3>${esc(h.title)}</h3>
-              <div class="hm">${h.year || ''} · ${h.type === 'tv' ? 'Série' : 'Film'}${h.rating ? ` · ★ ${h.rating.toFixed(1)}` : ''}</div>
-              <div class="hb"><button class="btn small" data-action="quick-add" data-key="${hk}">${ICONS.plus} Ajouter</button></div>
-            </div>
-          </div>`;
-        }).join('')}</div>
-        ${cands.length > 1 ? `<div class="hdots">${cands.map((_, i) => `<span class="hdot ${i === 0 ? 'on' : ''}"></span>`).join('')}</div>` : ''}`;
-      }
-      const heroIds = new Set(cands.map(h => h.type + ':' + h.provId));
-      const notHero = arr => (arr || []).filter(x => !heroIds.has(x.type + ':' + x.provId));
-      body = hero + rowsTvMv({ tv: notHero(state.trending.tv), mv: notHero(state.trending.mv) }, `${fire} Séries tendance`, `${fire} Films tendance`);
+  // ----- bandeau tendances (carrousel swipable) -----
+  let hero = '', heroIds = new Set();
+  if (!state.trending) { loadTrending(); }
+  else {
+    const heroTv = prep(state.trending.tv).filter(n => n.backdrop).slice(0, 4);
+    const heroMv = prep(state.trending.mv).filter(n => n.backdrop).slice(0, 4);
+    const cands = [];
+    for (let i = 0; i < 4; i++) {
+      if (heroTv[i]) cands.push(heroTv[i]);
+      if (heroMv[i]) cands.push(heroMv[i]);
     }
-  } else if (dt === 'top') {
-    const d = state.discoverData.top;
-    if (!d) { loadSection('top'); body = spin; }
-    else body = rowsTvMv(d, '🏆 Top séries de tous les temps', '🏆 Top films de tous les temps');
-  } else if (dt === 'genres') {
-    const gchips = `<div class="chips">${GENRES.map((g, i) =>
-      `<button class="chip ${state.genreSel === i ? 'on' : ''}" data-action="discover-genre" data-g="${i}">${g.label}</button>`).join('')}</div>`;
-    const key = 'genre:' + state.genreSel;
-    const d = state.discoverData[key];
-    const g = GENRES[state.genreSel];
-    if (!d) { loadSection(key); body = gchips + spin; }
-    else body = gchips + rowsTvMv(d, `Séries ${g.label}`, `Films ${g.label}`);
-  } else if (dt === 'upcoming') {
-    const d = state.discoverData.upcoming;
-    if (!d) { loadSection('upcoming'); body = spin; }
-    else body = rowsTvMv(d, '📅 Séries qui arrivent', '🎬 Bientôt au cinéma');
-  } else if (dt === 'foryou') {
-    const d = state.discoverData.foryou;
-    if (!d) { loadSection('foryou'); body = `<div class="loadrow"><span class="spin"></span> Analyse de tes goûts…</div>`; }
-    else if (!(d.tv || []).length && !(d.mv || []).length) body = `<div class="empty">Pas encore assez de matière — regarde ou mets en favori quelques séries et films, puis reviens !</div>`;
-    else {
-      const tv = prep(d.tv).slice(0, 18), mv = prep(d.mv).slice(0, 18);
-      const regen = `<div style="display:flex;justify-content:flex-end"><button class="btn ghost small" data-action="regen-foryou">↻ Régénérer les suggestions</button></div>`;
-      if (!tv.length && !mv.length) body = regen + `<div class="empty">Rien à afficher avec ces filtres.</div>`;
-      else body = regen + `
-        ${tv.length ? `<h2 class="section">✨ Séries pour toi</h2><div class="mgrid">${tv.map(discoverCardG).join('')}</div>` : ''}
-        ${mv.length ? `<h2 class="section">✨ Films pour toi</h2><div class="mgrid">${mv.map(discoverCardG).join('')}</div>` : ''}`;
+    if (cands.length) {
+      hero = `<div class="heros" id="heros">${cands.map(h => {
+        const hk = esc(JSON.stringify(h)).replace(/"/g, '&quot;');
+        return `<div class="hero" style="background-image:url('${h.backdrop}')" data-action="discover-detail" data-key="${hk}">
+          <span class="htag">🔥 À la une</span>
+          <div class="ov">
+            <h3>${esc(h.title)}</h3>
+            <div class="hm">${h.year || ''} · ${h.type === 'tv' ? 'Série' : 'Film'}${h.rating ? ` · ★ ${h.rating.toFixed(1)}` : ''}</div>
+            <div class="hb"><button class="btn small" data-action="quick-add" data-key="${hk}">${ICONS.plus} Ajouter</button></div>
+          </div>
+        </div>`;
+      }).join('')}</div>
+      ${cands.length > 1 ? `<div class="hdots">${cands.map((_, i) => `<span class="hdot ${i === 0 ? 'on' : ''}"></span>`).join('')}</div>` : ''}`;
+      heroIds = new Set(cands.map(h => h.type + ':' + h.provId));
     }
   }
-  return `<div class="searchbar">${ICONS.search}<input id="discover-search" placeholder="Chercher une série ou un film à ajouter…" value="${esc(q)}"></div>${chips}${filterBar(dt !== 'genres')}${body}`;
+
+  // ----- boutons Séries / Films + sources -----
+  const seg = `<div class="segbar">
+    <button class="${state.exploreType === 'tv' ? 'on' : ''}" data-action="explore-type" data-v="tv">📺 Séries</button>
+    <button class="${state.exploreType === 'movie' ? 'on' : ''}" data-action="explore-type" data-v="movie">🎬 Films</button>
+  </div>`;
+  const SOURCES = [['pop', 'Populaires'], ['top', 'Top'], ['soon', 'À venir'], ['foryou', 'Pour toi']];
+  const srcChips = `<div class="chips">${SOURCES.map(([k, l]) =>
+    `<button class="chip ${state.exploreSource === k ? 'on' : ''}" data-action="explore-source" data-k="${k}">${l}</button>`).join('')}</div>`;
+
+  // ----- grille infinie (3 par ligne, chargement au défilement) -----
+  let grid = '';
+  const skelGrid = `<div class="mgrid" style="margin-top:12px">${'<div class="mcard"><div class="poster sk" style="width:100%;aspect-ratio:2/3"></div></div>'.repeat(6)}</div>`;
+  if (state.exploreSource === 'foryou') {
+    const d = state.discoverData.foryou;
+    if (!d) { loadSection('foryou'); grid = `<div class="loadrow"><span class="spin"></span> Analyse de tes goûts…</div>`; }
+    else {
+      const items = prep(state.exploreType === 'tv' ? d.tv : d.mv);
+      grid = `<div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn ghost small" data-action="regen-foryou">↻ Régénérer</button></div>`
+        + (items.length ? `<div class="mgrid">${items.map(discoverCardG).join('')}</div>` : `<div class="empty">Rien avec ces filtres.</div>`);
+    }
+  } else {
+    const feed = state.exploreFeed;
+    if (feed.key !== exploreKey()) loadExplorePage();
+    const items = prep(feed.items).filter(n => !heroIds.has(n.type + ':' + n.provId));
+    if (items.length) grid = `<div class="mgrid">${items.map(discoverCardG).join('')}</div>`;
+    if (feed.loading || feed.key !== exploreKey()) grid += skelGrid;
+    else if (!items.length) grid = `<div class="empty">Rien avec ces filtres.</div>`;
+    else if (feed.page >= feed.totalPages) grid += `<p style="text-align:center;color:var(--txt2);font-size:12px;padding:14px">— fin de la liste —</p>`;
+    // si le filtrage a trop réduit la page, on recharge la suivante
+    if (!feed.loading && feed.key === exploreKey() && items.length < 12 && feed.page < feed.totalPages) setTimeout(loadExplorePage, 60);
+  }
+
+  return `<div class="searchbar">${ICONS.search}<input id="discover-search" placeholder="Chercher une série ou un film à ajouter…" value="${esc(q)}"></div>${filterBar(true)}${hero}${seg}${srcChips}${grid}`;
+}
+
+/* ----- flux infini Explorer : /discover TMDB paginé, filtres serveur ----- */
+function exploreKey() {
+  const f = state.dFilters;
+  return `${state.exploreSource}|${state.exploreType}|${f.genre}|${f.note}|${f.annee}`;
+}
+function exploreParams(page) {
+  const f = state.dFilters;
+  const tv = state.exploreType === 'tv';
+  const p = { page, sort_by: 'popularity.desc', 'vote_count.gte': 20 };
+  if (state.exploreSource === 'top') { p.sort_by = 'vote_average.desc'; p['vote_count.gte'] = tv ? 500 : 1500; }
+  if (state.exploreSource === 'soon') { p[tv ? 'first_air_date.gte' : 'primary_release_date.gte'] = todayStr(); delete p['vote_count.gte']; }
+  if (f.genre >= 0) {
+    const g = GENRES[f.genre];
+    const id = tv ? g.tv : g.mv;
+    if (id) p.with_genres = id;
+  }
+  if (f.note) { p['vote_average.gte'] = f.note; if (state.exploreSource === 'pop') p['vote_count.gte'] = 100; }
+  if (f.annee !== 'all') {
+    const k = tv ? 'first_air_date' : 'primary_release_date';
+    if (f.annee === '2020') p[k + '.gte'] = '2020-01-01';
+    else if (f.annee === '2010') { p[k + '.gte'] = '2010-01-01'; p[k + '.lte'] = '2019-12-31'; }
+    else if (f.annee === '2000') { p[k + '.gte'] = '2000-01-01'; p[k + '.lte'] = '2009-12-31'; }
+    else if (f.annee === 'old') p[k + '.lte'] = '1999-12-31';
+  }
+  return p;
+}
+async function loadExplorePage() {
+  if (!tmdbKey() || state.exploreSource === 'foryou') return;
+  const feed = state.exploreFeed;
+  const key = exploreKey();
+  if (feed.key !== key) {
+    feed.key = key; feed.items = []; feed.page = 0; feed.totalPages = 1; feed.seen = new Set();
+  }
+  if (feed.loading || (feed.page > 0 && feed.page >= feed.totalPages)) return;
+  feed.loading = true;
+  try {
+    const d = await tget(`/discover/${state.exploreType}`, exploreParams(feed.page + 1));
+    if (feed.key !== key) { feed.loading = false; return; } // filtres changés entre-temps
+    feed.page = d.page;
+    feed.totalPages = Math.min(d.total_pages || 1, 500);
+    for (const x of d.results || []) {
+      const n = normTmdb(x, state.exploreType);
+      const k = n.type + n.provId;
+      if (!feed.seen.has(k)) { feed.seen.add(k); feed.items.push(n); }
+    }
+  } catch (e) {}
+  feed.loading = false;
+  if (state.tab === 'discover' && !state.discoverSearch) render();
 }
 
 function discoverCardG(n) {
@@ -2606,8 +2657,8 @@ document.body.addEventListener('click', async e => {
   else if (act === 'close-detail') closeDetail();
   else if (act === 'close-modal') { if (e.target === el) closeModalViaHistory(); }
   else if (act === 'expand-overview') el.classList.toggle('clamp');
-  else if (act === 'discover-tab') { state.discoverTab = el.dataset.k; render(); }
-  else if (act === 'discover-genre') { state.genreSel = +el.dataset.g; render(); }
+  else if (act === 'explore-type') { state.exploreType = el.dataset.v; render(); }
+  else if (act === 'explore-source') { state.exploreSource = el.dataset.k; render(); }
   else if (act === 'discover-detail') openDiscoverModal(JSON.parse(el.dataset.key));
   else if (act === 'open-person') openPersonModal(el.dataset.pid);
   else if (act === 'add-discover') { closeModalViaHistory(); addItem(JSON.parse(el.dataset.key)); }
