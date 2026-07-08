@@ -395,6 +395,10 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 .dmodal .dmi{flex:1;min-width:0}
 .dmodal h3{margin-bottom:4px}
 .dmodal .y{font-size:13px;color:var(--txt2);margin-bottom:8px}
+.castlink{
+  color:#c4b5fd;padding:0;font-size:inherit;font-family:inherit;
+  text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;
+}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid var(--txt2);border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .hidden{display:none!important}
@@ -1927,6 +1931,14 @@ function renderStats() {
   }
   const maxM = Math.max(1, ...months.map(m => m.ep + m.mv));
   const maxD = Math.max(1, ...days);
+  // par année (l'historique complet, cochage en masse inclus)
+  const byYear = {};
+  for (const e of events) {
+    const y = e.d.slice(0, 4);
+    (byYear[y] = byYear[y] || { ep: 0, mv: 0 })[e.t]++;
+  }
+  const years = Object.keys(byYear).sort();
+  const maxY = Math.max(1, ...years.map(y => byYear[y].ep + byYear[y].mv));
   let recDay = null, recN = 0;
   for (const [d, n] of Object.entries(perDay)) if (!bulk.has(d) && n > recN) { recN = n; recDay = d; }
 
@@ -1994,6 +2006,17 @@ function renderStats() {
       </div>
 
       <div class="panel">
+        <h3>📆 Année par année</h3>
+        ${barChart(years.map(y => ({ lab: y, ...byYear[y], title: `${y} : ${byYear[y].ep} ép. + ${byYear[y].mv} films` })), maxY, true)}
+        ${years.map(y => `<div class="grow">
+          <span class="gl">${y}</span>
+          <span class="gb"><i style="width:${(byYear[y].ep + byYear[y].mv) / maxY * 100}%"></i></span>
+          <span class="gv" style="width:auto">${byYear[y].ep.toLocaleString('fr-FR')} ép. · ${byYear[y].mv} films</span>
+        </div>`).join('')}
+        <p style="margin:10px 0 0;font-size:11px;color:var(--txt2)">L'année de création de ton compte TV Time inclut tout l'historique coché ce jour-là.</p>
+      </div>
+
+      <div class="panel">
         <h3>🗓️ Par jour de la semaine</h3>
         ${barChart(['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((lab, i) =>
           ({ lab, ep: days[i], mv: 0, title: `${lab} : ${days[i]}` })), maxD, true)}
@@ -2036,21 +2059,25 @@ function serieExtraHtml(meta) {
       ${d.rating ? `<span class="badge warn">★ ${d.rating.toFixed(1)}/10</span> <span style="color:var(--txt2);font-size:12px">(${(d.votes || 0).toLocaleString('fr-FR')} votes)</span>` : ''}
       ${genres}
     </div>
-    ${d.cast && d.cast.length ? `<p style="margin-top:8px;font-size:12.5px;color:var(--txt2)"><b style="color:var(--txt)">Avec :</b> ${esc(d.cast.join(', '))}</p>` : ''}
+    ${d.cast && d.cast.length ? `<p style="margin-top:8px;font-size:12.5px;color:var(--txt2)"><b style="color:var(--txt)">Avec :</b> ${castLinks(d.cast)}</p>` : ''}
     ${d.creator ? `<p style="margin-top:4px;font-size:12.5px;color:var(--txt2)"><b style="color:var(--txt)">Créée par :</b> ${esc(d.creator)}</p>` : ''}
+    ${trailerBtn(d.trailer)}
   </div>`;
 }
 
 async function enrichSerieDetail(s) {
   const meta = state.tmdb[s.uuid];
-  if (!meta || meta.detail || meta.provider !== 'tmdb' || !meta.id || !tmdbKey()) return;
+  if (!meta || meta.provider !== 'tmdb' || !meta.id || !tmdbKey()) return;
+  if (meta.detail && meta.detail.v === 2) return; // cache à jour
   try {
-    const d = await tget(`/tv/${meta.id}`, { append_to_response: 'credits' });
+    const d = await tget(`/tv/${meta.id}`, { append_to_response: 'credits,videos', include_video_language: 'fr,en' });
     meta.detail = {
+      v: 2,
       rating: d.vote_average ? Math.round(d.vote_average * 10) / 10 : null,
       votes: d.vote_count || 0,
-      cast: ((d.credits && d.credits.cast) || []).slice(0, 5).map(c => c.name),
+      cast: ((d.credits && d.credits.cast) || []).slice(0, 5).map(c => ({ id: c.id, name: c.name })),
       creator: (d.created_by || []).map(c => c.name).slice(0, 2).join(', ') || null,
+      trailer: pickTrailer(d.videos),
     };
     meta.genres = (d.genres || []).map(g => g.id);
     await saveMeta(meta);
@@ -2161,6 +2188,36 @@ function renderDetail() {
   enrichSerieDetail(s);
 }
 
+/* ---------------- Filmographie d'un acteur ---------------- */
+async function openPersonModal(pid) {
+  if (!$('#modal-root').innerHTML) pushLayer('modal');
+  $('#modal-root').innerHTML = `<div class="modal-bg" data-action="close-modal"><div class="modal"><div class="grab"></div><div class="loadrow"><span class="spin"></span> Chargement de la filmographie…</div></div></div>`;
+  try {
+    const d = await tget(`/person/${pid}`, { append_to_response: 'combined_credits' });
+    const seen = new Set();
+    const items = ((d.combined_credits && d.combined_credits.cast) || [])
+      .filter(x => (x.media_type === 'tv' || x.media_type === 'movie') && x.poster_path)
+      .filter(x => { const k = x.media_type + x.id; if (seen.has(k)) return false; seen.add(k); return true; })
+      .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))
+      .slice(0, 21)
+      .map(x => normTmdb(x, x.media_type));
+    const box = $('#modal-root .modal');
+    if (!box) return; // modale fermée entre-temps
+    box.innerHTML = `<div class="grab"></div>
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px">
+        <div class="poster" style="width:56px;height:56px;border-radius:50%">${d.profile_path ? `<img src="${TMDB_IMG}w185${d.profile_path}" alt="">` : esc(initials(d.name))}</div>
+        <div>
+          <h3 style="margin:0">${esc(d.name)}</h3>
+          <div style="font-size:12px;color:var(--txt2)">Ses titres les plus connus</div>
+        </div>
+      </div>
+      ${items.length ? `<div class="mgrid">${items.map(discoverCardG).join('')}</div>` : `<p style="color:var(--txt2)">Rien trouvé.</p>`}`;
+  } catch (e) {
+    toast('Erreur : ' + e.message);
+    closeModalViaHistory();
+  }
+}
+
 /* ---------------- Modale Découvrir ---------------- */
 function openDiscoverModal(n) {
   if (!$('#modal-root').innerHTML) pushLayer('modal');
@@ -2195,24 +2252,40 @@ function openDiscoverModal(n) {
   enrichModal(n);
 }
 
+/* Casting cliquable (filmographie) + bande-annonce YouTube */
+function castLinks(cast) {
+  return cast.map(c => c.id
+    ? `<button class="castlink" data-action="open-person" data-pid="${c.id}">${esc(c.name)}</button>`
+    : esc(c.name)).join(', ');
+}
+function pickTrailer(videos) {
+  const list = (videos && videos.results || []).filter(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
+  const fr = list.find(v => v.iso_639_1 === 'fr' && v.type === 'Trailer');
+  return (fr || list.find(v => v.type === 'Trailer') || list[0] || {}).key || null;
+}
+const trailerBtn = key => key
+  ? `<a class="btn ghost small" style="margin-top:10px" href="https://www.youtube.com/watch?v=${key}" target="_blank" rel="noopener">▶ Bande-annonce</a>`
+  : '';
+
 /* Détails supplémentaires de la fiche : note, genres, durée, casting */
 async function enrichModal(n) {
   const box = () => $('#modal-extra');
   try {
     let html = '';
     if (n.provider === 'tmdb' && tmdbKey()) {
-      const d = await tget(`/${n.type === 'tv' ? 'tv' : 'movie'}/${n.provId}`, { append_to_response: 'credits' });
+      const d = await tget(`/${n.type === 'tv' ? 'tv' : 'movie'}/${n.provId}`, { append_to_response: 'credits,videos', include_video_language: 'fr,en' });
       const parts = [];
       if (d.vote_average) parts.push(`<span class="badge warn">★ ${d.vote_average.toFixed(1)}/10</span> <span style="color:var(--txt2);font-size:12px">(${d.vote_count.toLocaleString('fr-FR')} votes)</span>`);
       const genres = (d.genres || []).map(g => `<span class="badge">${esc(g.name)}</span>`).join(' ');
       if (genres) parts.push(genres);
       if (n.type === 'movie' && d.runtime) parts.push(`<span class="badge acc">${Math.floor(d.runtime / 60)}h${pad2(d.runtime % 60)}</span>`);
       if (n.type === 'tv' && d.number_of_seasons) parts.push(`<span class="badge acc">${d.number_of_seasons} saison(s) · ${d.number_of_episodes} épisodes</span>`);
-      const cast = ((d.credits && d.credits.cast) || []).slice(0, 5).map(c => c.name);
+      const cast = ((d.credits && d.credits.cast) || []).slice(0, 5).map(c => ({ id: c.id, name: c.name }));
       const director = ((d.credits && d.credits.crew) || []).find(c => c.job === 'Director');
       html = `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px">${parts.join(' ')}</div>
-        ${cast.length ? `<p style="margin-top:10px;font-size:12.5px;color:var(--txt2)"><b style="color:var(--txt)">Avec :</b> ${esc(cast.join(', '))}</p>` : ''}
-        ${director ? `<p style="margin-top:4px;font-size:12.5px;color:var(--txt2)"><b style="color:var(--txt)">Réalisé par :</b> ${esc(director.name)}</p>` : ''}`;
+        ${cast.length ? `<p style="margin-top:10px;font-size:12.5px;color:var(--txt2)"><b style="color:var(--txt)">Avec :</b> ${castLinks(cast)}</p>` : ''}
+        ${director ? `<p style="margin-top:4px;font-size:12.5px;color:var(--txt2)"><b style="color:var(--txt)">Réalisé par :</b> ${esc(director.name)}</p>` : ''}
+        ${trailerBtn(pickTrailer(d.videos))}`;
     } else if (n.provider === 'tvmaze') {
       const [show, cast] = await Promise.all([
         jget(`${TVMAZE}/shows/${n.provId}`),
@@ -2299,6 +2372,7 @@ document.body.addEventListener('click', async e => {
   else if (act === 'discover-tab') { state.discoverTab = el.dataset.k; render(); }
   else if (act === 'discover-genre') { state.genreSel = +el.dataset.g; render(); }
   else if (act === 'discover-detail') openDiscoverModal(JSON.parse(el.dataset.key));
+  else if (act === 'open-person') openPersonModal(el.dataset.pid);
   else if (act === 'add-discover') { closeModalViaHistory(); addItem(JSON.parse(el.dataset.key)); }
   else if (act === 'add-discover-watched') { closeModalViaHistory(); addItem(JSON.parse(el.dataset.key), true); }
   else if (act === 'quick-add') addItem(JSON.parse(el.dataset.key));
