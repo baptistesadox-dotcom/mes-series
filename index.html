@@ -472,7 +472,8 @@ const ICONS = {
 
 const state = {
   series: [], movies: [], tmdb: {}, settings: {},
-  tab: 'series', seriesView: 'suivre', seriesFilter: 'encours', movieFilter: 'vus',
+  tab: 'series', seriesView: 'suivre', seriesFilter: 'encours',
+  movieView: 'avoir', movieFilter: 'vus',
   seriesSearch: '', movieSearch: '', discoverSearch: '',
   discoverResults: null, discoverLoading: false, trending: null,
   discoverTab: 'trending', genreSel: 0, discoverData: {}, discoverBusy: {},
@@ -1920,6 +1921,24 @@ function openMovieModal(uuid) {
 }
 
 function viewMovies() {
+  const seg = `<div class="segbar">
+    <button class="${state.movieView === 'avoir' ? 'on' : ''}" data-action="movie-view" data-v="avoir">🎬 À voir</button>
+    <button class="${state.movieView === 'grid' ? 'on' : ''}" data-action="movie-view" data-v="grid">Mes films</button>
+  </div>`;
+  return seg + (state.movieView === 'avoir' ? viewMoviesWatchlist() : viewMoviesGrid());
+}
+
+function viewMoviesWatchlist() {
+  const list = state.movies.filter(m => !m.is_watched)
+    .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+  return `
+    <h2 class="section" style="margin-top:2px">À voir <span class="cnt">${list.length}</span></h2>
+    ${list.length
+      ? `<div class="mgrid">${list.map(movieCard).join('')}</div>`
+      : `<div class="empty">Ta liste est vide — ajoute des films depuis l'onglet Explorer ! 🍿</div>`}`;
+}
+
+function viewMoviesGrid() {
   const f = state.movieFilter;
   const q = state.movieSearch.toLowerCase();
   let list = state.movies.filter(m => {
@@ -1954,7 +1973,7 @@ function viewMovies() {
 
   state._movieTotal = list.length;
   const shown = list.slice(0, state.movieLimit);
-  const chips = [['vus', 'Vus'], ['avoir', 'À voir'], ['favoris', 'Favoris'], ['tous', 'Tous']];
+  const chips = [['vus', 'Vus'], ['favoris', 'Favoris'], ['tous', 'Tous']];
   const sel = (name, opts, val) => `<select class="fsel ${String(val) !== String(opts[0][0]) ? 'active' : ''}" data-f="${name}">
     ${opts.map(([v, l]) => `<option value="${v}" ${String(v) === String(val) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
   return `
@@ -2580,6 +2599,7 @@ document.body.addEventListener('click', async e => {
   const s = detailUuid ? state.series.find(x => x.uuid === detailUuid) : null;
 
   if (act === 'series-view') { state.seriesView = el.dataset.v; render(); }
+  else if (act === 'movie-view') { state.movieView = el.dataset.v; state.movieSearch = ''; state.movieLimit = 60; render(); }
   else if (act === 'series-filter') { state.seriesFilter = el.dataset.f; state.seriesSearch = ''; render(); }
   else if (act === 'movie-filter') { state.movieFilter = el.dataset.f; state.movieSearch = ''; state.movieLimit = 60; render(); }
   else if (act === 'open-series') openSeries(el.dataset.uuid);
@@ -2658,11 +2678,12 @@ document.body.addEventListener('click', async e => {
       await toggleMovieWatched(m);
       const card = el.closest('.mcard');
       if (m.is_watched && navigator.vibrate) navigator.vibrate(12);
-      // si le film ne correspond plus au filtre affiché, il quitte la
-      // liste en fondu (le défilement est conservé par render())
+      // si le film ne correspond plus à la liste affichée, il la quitte
+      // en fondu (le défilement est conservé par render())
       const f = state.movieFilter;
-      const quitteLaListe = state.tab === 'movies' && !state.movieSearch &&
-        ((f === 'avoir' && m.is_watched) || (f === 'vus' && !m.is_watched));
+      const quitteLaListe = state.tab === 'movies' && !state.movieSearch && (
+        (state.movieView === 'avoir' && m.is_watched) ||
+        (state.movieView === 'grid' && ((f === 'vus' && !m.is_watched) || (f === 'avoir' && m.is_watched))));
       if (quitteLaListe && card) {
         card.style.transition = 'opacity .25s ease, transform .25s ease';
         card.style.opacity = '0';
