@@ -259,6 +259,7 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 .eprow .nm{flex:1;min-width:0;font-size:14px}
 .eprow .nm .d{font-size:11.5px;color:var(--txt2)}
 .eprow.future .nm{color:var(--txt2)}
+.eprow.future .epcheck{opacity:.25}
 .epcheck{
   width:27px;height:27px;border-radius:10px;border:1.5px solid var(--line);flex:none;
   display:flex;align-items:center;justify-content:center;color:transparent;
@@ -501,9 +502,17 @@ const DB = {
   clear: s => DB.op(s, 'readwrite', o => o.clear()),
   kvGet: k => DB.op('kv', 'readonly', o => o.get(k)),
   kvSet: (k, v) => DB.op('kv', 'readwrite', o => o.put(v, k)),
+  putAll: (s, arr) => DB.op(s, 'readwrite', o => { for (const v of arr) o.put(v); }),
 };
-const saveSeries = s => DB.put('series', s);
-const saveMovie  = m => DB.put('movies', m);
+/* suivi des modifications locales (pour la synchronisation cloud) */
+let changedTimer = null;
+function markChanged() {
+  state.changedAt = nowISO();
+  clearTimeout(changedTimer);
+  changedTimer = setTimeout(() => DB.kvSet('changedAt', state.changedAt), 800);
+}
+const saveSeries = s => { markChanged(); return DB.put('series', s); };
+const saveMovie  = m => { markChanged(); return DB.put('movies', m); };
 const saveMeta   = t => { state.tmdb[t.uuid] = t; return DB.put('tmdb', t); };
 const saveSettings = () => DB.kvSet('settings', state.settings);
 
@@ -769,6 +778,7 @@ async function refreshTmdb(s, full) {
   meta.overview = d.overview || meta.overview;
   meta.tvStatus = d.status;
   meta.genres = (d.genres || []).map(g => g.id);
+  meta.runtime = (d.episode_run_time && d.episode_run_time[0]) || (d.last_episode_to_air && d.last_episode_to_air.runtime) || meta.runtime || null;
   meta.nextEp = d.next_episode_to_air ? {
     season: d.next_episode_to_air.season_number, episode: d.next_episode_to_air.episode_number,
     name: d.next_episode_to_air.name, date: d.next_episode_to_air.air_date,
@@ -1245,13 +1255,51 @@ async function importData(arr) {
 }
 window.__import = importData; // hook de test/débogage
 
+/* Sauvegarde complète : tout dans un seul fichier */
+function fullBackupPayload() {
+  return {
+    app: 'mes-series', version: 2, exported_at: nowISO(),
+    series: state.series, movies: state.movies,
+    tmdb: Object.values(state.tmdb),
+    settings: { tmdbKey: state.settings.tmdbKey || '' },
+    hidden: [...state.hidden],
+  };
+}
+
+/* Restauration complète (remplace tout) */
+async function importFull(p) {
+  await DB.clear('series'); await DB.clear('movies'); await DB.clear('tmdb');
+  state.series = p.series || [];
+  state.movies = p.movies || [];
+  state.tmdb = {};
+  for (const t of p.tmdb || []) state.tmdb[t.uuid] = t;
+  await DB.putAll('series', state.series);
+  await DB.putAll('movies', state.movies);
+  await DB.putAll('tmdb', p.tmdb || []);
+  state.hidden = new Set(p.hidden || []);
+  await DB.kvSet('hidden', [...state.hidden]);
+  if (p.settings && p.settings.tmdbKey && !tmdbKey()) {
+    state.settings.tmdbKey = p.settings.tmdbKey;
+    await saveSettings();
+  }
+}
+
 async function handleFiles(files) {
   let tot = { series: 0, movies: 0 };
   for (const f of files) {
     try {
-      const arr = JSON.parse(await f.text());
-      if (!Array.isArray(arr)) throw new Error('format');
-      const r = await importData(arr);
+      const data = JSON.parse(await f.text());
+      if (data && data.app === 'mes-series') {
+        // sauvegarde complète → restauration intégrale
+        if (!confirm(`Restaurer la sauvegarde complète du ${fmtDate(data.exported_at)} ?\n(${(data.series || []).length} séries, ${(data.movies || []).length} films — remplace les données actuelles)`)) continue;
+        await importFull(data);
+        markChanged();
+        toast(`Sauvegarde restaurée : ${state.series.length} séries, ${state.movies.length} films ✓`);
+        render();
+        return;
+      }
+      if (!Array.isArray(data)) throw new Error('format');
+      const r = await importData(data);
       tot.series += r.series; tot.movies += r.movies;
     } catch (e) {
       toast(`Fichier « ${f.name} » illisible ou au mauvais format`);
@@ -1271,11 +1319,115 @@ function download(name, data) {
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
 
+/* ================= SYNCHRONISATION CLOUD =================
+   Sauvegarde dans un gist GitHub privé. Chaque personne utilise
+   SON propre compte GitHub : les données ne se mélangent jamais. */
+const GH = 'https://api.github.com';
+const SYNC_FILE = 'mes-series-sync.json';
+
+async function ghFetch(path, opts = {}) {
+  const r = await fetch(GH + path, {
+    ...opts,
+    headers: {
+      Authorization: 'Bearer ' + (state.settings.ghToken || ''),
+      Accept: 'application/vnd.github+json',
+      ...(opts.headers || {}),
+    },
+  });
+  if (r.status === 401) throw new Error('Jeton GitHub invalide ou expiré');
+  if (!r.ok) throw new Error('GitHub ' + r.status);
+  return r.json();
+}
+
+async function syncConnect(token) {
+  state.settings.ghToken = token.trim();
+  const user = await ghFetch('/user');
+  const gists = await ghFetch('/gists?per_page=100');
+  let g = gists.find(x => x.description === 'mes-series-sync');
+  if (!g) {
+    g = await ghFetch('/gists', {
+      method: 'POST',
+      body: JSON.stringify({
+        description: 'mes-series-sync', public: false,
+        files: { [SYNC_FILE]: { content: JSON.stringify(fullBackupPayload()) } },
+      }),
+    });
+    state.lastSync = nowISO();
+    await DB.kvSet('lastSync', state.lastSync);
+  }
+  state.settings.gistId = g.id;
+  state.settings.ghLogin = user.login;
+  await saveSettings();
+  return user.login;
+}
+
+async function syncPush() {
+  if (!state.settings.ghToken || !state.settings.gistId) throw new Error('Sync non configurée');
+  await ghFetch('/gists/' + state.settings.gistId, {
+    method: 'PATCH',
+    body: JSON.stringify({ files: { [SYNC_FILE]: { content: JSON.stringify(fullBackupPayload()) } } }),
+  });
+  state.lastSync = nowISO();
+  await DB.kvSet('lastSync', state.lastSync);
+}
+
+async function syncFetchRemote() {
+  const g = await ghFetch('/gists/' + state.settings.gistId);
+  const f = g.files[SYNC_FILE];
+  if (!f) return null;
+  const content = f.truncated ? await (await fetch(f.raw_url)).text() : f.content;
+  return JSON.parse(content);
+}
+
+async function syncPull() {
+  const remote = await syncFetchRemote();
+  if (!remote || remote.app !== 'mes-series') throw new Error('Aucune sauvegarde valide dans le cloud');
+  await importFull(remote);
+  state.lastSync = nowISO();
+  state.changedAt = state.lastSync;
+  await DB.kvSet('lastSync', state.lastSync);
+  await DB.kvSet('changedAt', state.changedAt);
+  return remote;
+}
+
+/* Au lancement : réconciliation simple « dernière écriture gagne » */
+async function syncAuto() {
+  if (!state.settings.ghToken || !state.settings.gistId || navigator.onLine === false) return;
+  try {
+    const remote = await syncFetchRemote();
+    const remoteAt = (remote && remote.exported_at) || '';
+    const localAt = state.changedAt || '';
+    const lastSync = state.lastSync || '';
+    if (remoteAt > lastSync && localAt > lastSync) {
+      // les deux côtés ont changé : on demande
+      if (confirm(`☁️ Le cloud a des données plus récentes (${fmtDate(remoteAt)}) ET ce téléphone a des changements locaux.\n\nOK = prendre le cloud\nAnnuler = garder ce téléphone (le cloud sera écrasé)`)) {
+        await importFull(remote);
+        state.lastSync = nowISO(); state.changedAt = state.lastSync;
+        await DB.kvSet('lastSync', state.lastSync); await DB.kvSet('changedAt', state.changedAt);
+        toast('☁️ Données du cloud restaurées'); render();
+      } else {
+        await syncPush();
+      }
+    } else if (remoteAt > lastSync) {
+      await importFull(remote);
+      state.lastSync = nowISO(); state.changedAt = state.lastSync;
+      await DB.kvSet('lastSync', state.lastSync); await DB.kvSet('changedAt', state.changedAt);
+      toast('☁️ Synchronisé depuis le cloud'); render();
+    } else if (localAt > lastSync) {
+      await syncPush(); // pousse silencieusement les changements locaux
+    }
+  } catch (e) {}
+}
+
 /* ---------------- Actions ---------------- */
 async function toggleEpisode(s, seasonNum, epNum, special = false) {
   const sea = s.seasons.find(x => x.number === seasonNum);
   const ep = sea && sea.episodes.find(e => e.number === epNum && (special || !e.special));
   if (!ep) return;
+  if (!ep.is_watched && isFuture(ep)) {
+    toast(`Pas encore diffusé — sortie le ${fmtDate(ep.air_date)} 📅`);
+    return;
+  }
   ep.is_watched = !ep.is_watched;
   ep.watched_at = ep.is_watched ? nowISO() : null;
   ep.watched_count = ep.is_watched ? Math.max(1, ep.watched_count || 0) : 0;
@@ -1450,15 +1602,20 @@ function viewNext() {
   for (const s of state.series) {
     if (s.status === 'stopped') continue;
     const nx = nextUnwatched(s);
-    if (nx && !isFuture(nx.ep)) {
-      if (s.status !== 'not_started_yet') watchable.push({ s, nx });
-    } else {
-      const meta = state.tmdb[s.uuid];
-      const coming = nx || (meta && meta.nextEp
+    if (nx && !isFuture(nx.ep) && s.status !== 'not_started_yet') watchable.push({ s, nx });
+    // calendrier : la prochaine SORTIE de chaque série suivie, même si
+    // des épisodes déjà diffusés restent à regarder
+    let fut = null;
+    for (const x of realEpisodes(s)) if (isFuture(x.ep)) { fut = x; break; }
+    const meta = state.tmdb[s.uuid];
+    const coming = fut
+      || (meta && meta.nextEp && meta.nextEp.date && meta.nextEp.date > todayStr()
+        ? { season: meta.nextEp.season, ep: { number: meta.nextEp.episode, name: meta.nextEp.name, air_date: meta.nextEp.date } }
+        : null)
+      || (!nx && meta && meta.nextEp
         ? { season: meta.nextEp.season, ep: { number: meta.nextEp.episode, name: meta.nextEp.name, air_date: meta.nextEp.date } }
         : null);
-      if (coming) waiting.push({ s, nx: coming });
-    }
+    if (coming) waiting.push({ s, nx: coming });
   }
   watchable.sort((a, b) => lastActivity(b.s).localeCompare(lastActivity(a.s)));
   waiting.sort((a, b) => (a.nx.ep.air_date || '9999').localeCompare(b.nx.ep.air_date || '9999'));
@@ -1832,12 +1989,33 @@ function viewSettings() {
     <p>Importe ton export TV Time, ou télécharge une sauvegarde (recommandé régulièrement — tes données ne vivent que sur cet appareil).<br>
     <b style="color:${!state.lastExport || Date.now() - new Date(state.lastExport) > 30 * 86400 * 1000 ? 'var(--warn)' : 'var(--ok)'}">💾 Dernière sauvegarde : ${state.lastExport ? fmtDate(state.lastExport) : 'jamais'}</b></p>
     <div class="row">
-      <label class="btn ghost small">Importer JSON
+      <button class="btn small" data-action="export-full">💾 Sauvegarde complète</button>
+      <label class="btn ghost small">Importer / restaurer
         <input type="file" accept=".json,application/json" multiple hidden data-action="import-files">
       </label>
-      <button class="btn ghost small" data-action="export-series">Exporter séries</button>
-      <button class="btn ghost small" data-action="export-movies">Exporter films</button>
     </div>
+    <p style="margin-top:8px;font-size:12px">Un seul fichier avec tout : séries, films, clé TMDB, préférences. L'import accepte aussi les exports TV Time.</p>
+  </div>
+
+  <div class="panel">
+    <h3>☁️ Synchronisation cloud</h3>
+    ${state.settings.gistId ? `
+      <p>✅ Connectée au compte <b style="color:var(--ok)">@${esc(state.settings.ghLogin || '')}</b><br>
+      Dernière synchro : ${state.lastSync ? fmtDate(state.lastSync) : 'jamais'} — sauvegarde automatique à chaque fermeture de l'app et réconciliation à l'ouverture.</p>
+      <div class="row">
+        <button class="btn ghost small" data-action="sync-push">Pousser maintenant</button>
+        <button class="btn ghost small" data-action="sync-pull">Récupérer du cloud</button>
+        <button class="btn danger small" data-action="sync-off">Déconnecter</button>
+      </div>`
+    : `
+      <p>Sauvegarde automatique de tes données dans un espace privé de <b>ton</b> compte GitHub — et restauration sur un nouveau téléphone en collant le même jeton. <b>Chaque personne utilise son propre compte</b> : si quelqu'un d'autre installe l'app, ses données restent les siennes.</p>
+      <p>1. Crée un compte sur <a href="https://github.com/signup" target="_blank" rel="noopener">github.com</a> (gratuit) si besoin.<br>
+      2. Va sur <a href="https://github.com/settings/tokens/new?scopes=gist&description=mes-series-sync" target="_blank" rel="noopener">ce lien direct</a> → « Generate token » (la case <b>gist</b> est déjà cochée) et colle le jeton ici :</p>
+      <div class="row">
+        <input class="field" id="gh-token" type="password" placeholder="Jeton GitHub (ghp_…)">
+        <button class="btn small" data-action="sync-connect">Connecter</button>
+      </div>
+      <p id="sync-status" style="margin:8px 0 0"></p>`}
   </div>
 
   <div class="panel">
@@ -1942,8 +2120,14 @@ function renderStats() {
   let recDay = null, recN = 0;
   for (const [d, n] of Object.entries(perDay)) if (!bulk.has(d) && n > recN) { recN = n; recDay = d; }
 
-  // temps estimé
-  const minutes = epCount * 40 + mvWatched.length * 110;
+  // temps estimé : durée réelle des épisodes quand elle est connue
+  let minutes = mvWatched.length * 110;
+  for (const s of state.series) {
+    const w = progress(s).watched;
+    if (!w) continue;
+    const meta = state.tmdb[s.uuid];
+    minutes += w * ((meta && meta.runtime) || 40);
+  }
   const heures = Math.round(minutes / 60);
 
   // genres (épisodes vus pondèrent les séries, un film compte 2)
@@ -1993,7 +2177,7 @@ function renderStats() {
           <div class="stat"><div class="v">≈ ${heures.toLocaleString('fr-FR')} h</div><div class="l">devant l'écran*</div></div>
           <div class="stat"><div class="v">${recN}</div><div class="l">record en 1 jour${recDay ? '<br>' + fmtDate(recDay) : ''}</div></div>
         </div>
-        <p style="margin:10px 0 0;font-size:11px;color:var(--txt2)">* estimation : 40 min/épisode, 1h50/film</p>
+        <p style="margin:10px 0 0;font-size:11px;color:var(--txt2)">* durées réelles des séries quand connues (sinon 40 min/épisode), 1h50/film</p>
       </div>
 
       <div class="panel">
@@ -2080,6 +2264,7 @@ async function enrichSerieDetail(s) {
       trailer: pickTrailer(d.videos),
     };
     meta.genres = (d.genres || []).map(g => g.id);
+    meta.runtime = (d.episode_run_time && d.episode_run_time[0]) || (d.last_episode_to_air && d.last_episode_to_air.runtime) || meta.runtime || null;
     await saveMeta(meta);
     if (detailUuid === s.uuid) renderDetail();
   } catch (e) {}
@@ -2508,16 +2693,55 @@ document.body.addEventListener('click', async e => {
       $('#key-status').textContent = '❌ ' + err.message;
     }
   }
-  else if (act === 'export-series' || act === 'export-movies') {
-    if (act === 'export-series') download(`mes-series-backup-${new Date().toISOString().slice(0, 10)}.json`, state.series);
-    else download(`mes-films-backup-${new Date().toISOString().slice(0, 10)}.json`, state.movies);
+  else if (act === 'export-full') {
+    download(`mes-series-sauvegarde-${new Date().toISOString().slice(0, 10)}.json`, fullBackupPayload());
     state.lastExport = nowISO();
     await DB.kvSet('lastExport', state.lastExport);
+    toast('Sauvegarde complète téléchargée ✓');
+    render();
+  }
+  else if (act === 'sync-connect') {
+    const token = $('#gh-token').value.trim();
+    if (!token) { toast('Colle d’abord ton jeton GitHub'); return; }
+    $('#sync-status').innerHTML = '<span class="spin"></span> Connexion…';
+    try {
+      const login = await syncConnect(token);
+      toast(`☁️ Sync activée pour @${login} ✓`);
+      render();
+    } catch (err) {
+      $('#sync-status').textContent = '❌ ' + err.message;
+      state.settings.ghToken = '';
+    }
+  }
+  else if (act === 'sync-push') {
+    el.textContent = '…';
+    try { await syncPush(); toast('☁️ Données poussées vers le cloud ✓'); }
+    catch (err) { toast('Erreur : ' + err.message); }
+    render();
+  }
+  else if (act === 'sync-pull') {
+    if (confirm('Remplacer les données de cet appareil par celles du cloud ?')) {
+      el.textContent = '…';
+      try {
+        const r = await syncPull();
+        toast(`☁️ Restauré : ${(r.series || []).length} séries, ${(r.movies || []).length} films ✓`);
+      } catch (err) { toast('Erreur : ' + err.message); }
+      render();
+    }
+  }
+  else if (act === 'sync-off') {
+    if (confirm('Déconnecter la synchronisation ? (les données locales et le cloud sont conservés, mais ne se parleront plus)')) {
+      delete state.settings.ghToken; delete state.settings.gistId; delete state.settings.ghLogin;
+      await saveSettings();
+      toast('Synchronisation déconnectée');
+      render();
+    }
   }
   else if (act === 'clear-all') {
     if (confirm('Effacer TOUTES les données de l’application ? Cette action est irréversible.')) {
       await DB.clear('series'); await DB.clear('movies'); await DB.clear('tmdb');
       state.series = []; state.movies = []; state.tmdb = {};
+      markChanged();
       toast('Données effacées');
       render();
     }
@@ -2541,19 +2765,33 @@ function afterRender() {
 /* ---------------- Démarrage ---------------- */
 (async function init() {
   await DB.open();
-  const [series, movies, tmdb, settings, lastRefresh, hidden, lastExport] = await Promise.all([
+  const [series, movies, tmdb, settings, lastRefresh, hidden, lastExport, changedAt, lastSync] = await Promise.all([
     DB.getAll('series'), DB.getAll('movies'), DB.getAll('tmdb'),
-    DB.kvGet('settings'), DB.kvGet('lastRefresh'), DB.kvGet('hidden'), DB.kvGet('lastExport'),
+    DB.kvGet('settings'), DB.kvGet('lastRefresh'), DB.kvGet('hidden'),
+    DB.kvGet('lastExport'), DB.kvGet('changedAt'), DB.kvGet('lastSync'),
   ]);
   state.series = series || [];
   state.movies = movies || [];
   state.settings = settings || {};
   state.lastRefresh = lastRefresh || null;
   state.lastExport = lastExport || null;
+  state.changedAt = changedAt || null;
+  state.lastSync = lastSync || null;
   state.hidden = new Set(hidden || []);
   for (const t of tmdb || []) state.tmdb[t.uuid] = t;
   render();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+  // stockage persistant : empêche Android de purger les données
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  // synchronisation cloud
+  setTimeout(syncAuto, 1500);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' &&
+        state.settings.ghToken && state.settings.gistId &&
+        (state.changedAt || '') > (state.lastSync || '')) {
+      syncPush().catch(() => {});
+    }
+  });
 
   // actualisation automatique silencieuse : au plus une fois par 20 h
   if (state.series.length && navigator.onLine !== false &&
