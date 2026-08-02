@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mes Séries — Démo visuelle</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  background:#08090c;color:#e8eaf0;
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  min-height:100vh;padding-bottom:40px;
+}
+.top{
+  position:sticky;top:0;z-index:10;background:rgba(8,9,12,.94);backdrop-filter:blur(10px);
+  padding:14px 16px 10px;border-bottom:1px solid #22262f;text-align:center;
+}
+.top h1{font-size:17px;font-weight:800}
+.top p{font-size:12px;color:#8f96a8;margin-top:2px}
+.picker{display:flex;gap:8px;overflow-x:auto;padding:12px 4px 4px;scrollbar-width:none;justify-content:safe center}
+.picker::-webkit-scrollbar{display:none}
+.picker button{
+  flex:none;padding:8px 14px;border-radius:999px;background:#171a21;color:#9aa1b0;
+  border:1px solid #2a2f3a;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;
+}
+.picker button.on{background:#fff;color:#0a0c11;border-color:#fff}
+.stage{display:flex;justify-content:center;padding:22px 12px}
+
+/* ============ CADRE TÉLÉPHONE ============ */
+.phone{
+  width:min(375px,94vw);border-radius:34px;padding:10px;
+  background:#000;border:1px solid #2a2f3a;box-shadow:0 24px 70px rgba(0,0,0,.6);
+}
+.screen{
+  border-radius:26px;overflow:hidden;position:relative;
+  background:var(--bg);color:var(--txt);
+  font-family:var(--font);
+  transition:background .3s;
+}
+
+/* ============ VARIABLES PAR THÈME ============ */
+.screen{
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --titlefont:var(--font);
+  --radius:16px;--chiprad:999px;
+  --shadow:0 6px 20px rgba(0,0,0,.35);
+  --border:1px solid rgba(255,255,255,.055);
+  --navblur:blur(14px);
+}
+.screen[data-t="violet"]{
+  --bg:#0a0c11;--bg2:#12151d;--bg3:#1b1f2b;--line:#262b3a;
+  --txt:#eef0f6;--txt2:#8f96a8;
+  --acc:#8b5cf6;--grad:linear-gradient(135deg,#8b5cf6,#c026d3);
+  --ok:#34d399;--warn:#fbbf24;--onacc:#fff;
+}
+.screen[data-t="oled"]{
+  --bg:#000;--bg2:#0d0d0f;--bg3:#17171a;--line:#26262b;
+  --txt:#f2f2f4;--txt2:#7d7f88;
+  --acc:#e8e8ec;--grad:linear-gradient(135deg,#f2f2f4,#c9c9d2);
+  --ok:#4ade80;--warn:#fbbf24;--onacc:#000;
+  --radius:10px;--chiprad:8px;
+  --shadow:none;--border:1px solid #222;
+}
+.screen[data-t="or"]{
+  --bg:#141009;--bg2:#1d1710;--bg3:#282017;--line:#3a2f20;
+  --txt:#f2e9da;--txt2:#a4926f;
+  --acc:#d4a24e;--grad:linear-gradient(135deg,#e0b060,#b07d2a);
+  --ok:#86c67c;--warn:#e0b060;--onacc:#241a08;
+  --radius:6px;--chiprad:4px;
+  --titlefont:Georgia,'Times New Roman',serif;
+  --shadow:0 8px 24px rgba(0,0,0,.5);--border:1px solid #3a2f20;
+}
+.screen[data-t="clair"]{
+  --bg:#f4f5fa;--bg2:#ffffff;--bg3:#eceef6;--line:#dde0ec;
+  --txt:#1c2030;--txt2:#6a7188;
+  --acc:#5b5bd6;--grad:linear-gradient(135deg,#5b5bd6,#8b5cf6);
+  --ok:#16a34a;--warn:#d97706;--onacc:#fff;
+  --radius:18px;
+  --shadow:0 6px 24px rgba(90,100,140,.14);--border:1px solid #e6e8f2;
+  --navblur:blur(14px);
+}
+.screen[data-t="neon"]{
+  --bg:#0b0518;--bg2:#140b26;--bg3:#1e1136;--line:#33205c;
+  --txt:#f4ecff;--txt2:#9d8fc2;
+  --acc:#ff2ec4;--grad:linear-gradient(135deg,#ff2ec4,#00e5ff);
+  --ok:#00e5a0;--warn:#ffd166;--onacc:#14041f;
+  --radius:14px;
+  --shadow:0 0 24px rgba(255,46,196,.18);--border:1px solid #33205c;
+}
+
+/* ============ MAQUETTE COMMUNE ============ */
+.appbar{display:flex;align-items:center;padding:16px 16px 10px}
+.appbar .brand{
+  font-family:var(--titlefont);font-size:20px;font-weight:800;letter-spacing:-.02em;flex:1;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.screen[data-t="oled"] .appbar .brand{background:none;color:var(--txt)}
+.iconb{
+  width:36px;height:36px;border-radius:12px;background:var(--bg3);border:var(--border);
+  display:flex;align-items:center;justify-content:center;color:var(--txt2);font-size:15px;
+}
+.pad{padding:0 14px}
+.segbar{display:flex;background:var(--bg2);border:var(--border);border-radius:calc(var(--radius) - 2px);padding:4px;gap:4px;margin:6px 0 14px}
+.segbar span{flex:1;text-align:center;padding:8px 0;border-radius:calc(var(--radius) - 6px);color:var(--txt2);font-weight:650;font-size:13px}
+.segbar span.on{background:var(--grad);color:var(--onacc);box-shadow:var(--shadow)}
+.sect{font-size:13.5px;font-weight:750;margin:4px 0 10px;font-family:var(--titlefont)}
+.sect small{color:var(--txt2);font-weight:400}
+.card{
+  display:flex;gap:12px;background:var(--bg2);border-radius:var(--radius);
+  padding:10px;align-items:center;border:var(--border);box-shadow:var(--shadow);margin-bottom:10px;
+}
+.pos{
+  width:52px;height:78px;border-radius:calc(var(--radius) - 6px);flex:none;overflow:hidden;
+  background:var(--bg3);display:flex;align-items:center;justify-content:center;
+  color:var(--txt2);font-weight:800;font-size:15px;
+}
+.pos img{width:100%;height:100%;object-fit:cover;display:block}
+.mid{flex:1;min-width:0}
+.t1{font-weight:650;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t2{font-size:11.5px;color:var(--txt2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t2 b{color:var(--acc);font-weight:700}
+.pbar{height:4px;background:var(--bg3);border-radius:3px;margin-top:8px;overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--grad);border-radius:3px}
+.chk{
+  width:40px;height:40px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);color:var(--acc);border:var(--border);font-size:16px;
+}
+.screen[data-t="oled"] .chk{border-radius:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;margin-bottom:16px}
+.gc .pos2{
+  width:100%;aspect-ratio:2/3;border-radius:calc(var(--radius) - 4px);overflow:hidden;
+  background:var(--bg3);position:relative;display:flex;align-items:center;justify-content:center;
+  color:var(--txt2);font-weight:800;border:var(--border);
+}
+.gc .pos2 img{width:100%;height:100%;object-fit:cover;display:block}
+.gc .rt{
+  position:absolute;bottom:5px;left:5px;font-size:9.5px;font-weight:700;
+  background:rgba(0,0,0,.72);color:var(--warn);padding:2px 6px;border-radius:6px;
+}
+.screen[data-t="clair"] .gc .rt{background:rgba(255,255,255,.85);color:#b45309}
+.gc .nm{font-size:11px;font-weight:550;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gc .yr{font-size:9.5px;color:var(--txt2)}
+.nav{
+  display:flex;border-top:var(--border);background:var(--bg2);
+  padding:8px 4px 12px;
+}
+.nav div{flex:1;text-align:center;font-size:9.5px;color:var(--txt2);font-weight:500}
+.nav div.on{color:var(--acc)}
+.nav .ic{font-size:18px;display:block;margin-bottom:2px}
+.screen[data-t="neon"] .nav div.on{text-shadow:0 0 12px var(--acc)}
+.hero{
+  border-radius:var(--radius);overflow:hidden;position:relative;aspect-ratio:16/8;
+  margin-bottom:14px;border:var(--border);box-shadow:var(--shadow);
+  background:var(--bg3) center/cover;
+}
+.hero .hv{
+  position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:12px;
+  background:linear-gradient(transparent 20%,rgba(0,0,0,.82));color:#fff;
+}
+.screen[data-t="clair"] .hero .hv{background:linear-gradient(transparent 20%,rgba(20,24,40,.8))}
+.hero .hv b{font-family:var(--titlefont);font-size:16px}
+.hero .hv small{font-size:10.5px;opacity:.8}
+.tag{
+  display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:var(--chiprad);
+  background:var(--bg3);color:var(--txt2);margin-right:4px;
+}
+.tag.a{background:var(--grad);color:var(--onacc)}
+.desc{
+  max-width:min(375px,94vw);margin:0 auto;padding:14px 8px 0;text-align:center;
+  font-size:13px;color:#9aa1b0;line-height:1.5;
+}
+.desc b{color:#e8eaf0}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>🎨 Démo visuelle — Mes Séries</h1>
+  <p>Choisis un style, compare, et dis-moi lequel tu préfères. L'app actuelle n'est pas modifiée.</p>
+  <div class="picker" id="picker"></div>
+</div>
+
+<div class="stage">
+  <div class="phone">
+    <div class="screen" id="screen" data-t="violet">
+      <div class="appbar">
+        <span class="brand">Mes Séries</span>
+        <span class="iconb">＋</span>
+      </div>
+      <div class="pad">
+        <div class="segbar"><span class="on">▶ À suivre</span><span>Mes séries</span></div>
+
+        <div class="hero" id="hero">
+          <div class="hv">
+            <span style="margin-bottom:auto"><span class="tag a">🔥 À la une</span></span>
+            <b>One Piece</b>
+            <small>2023 · Série · ★ 8.4</small>
+          </div>
+        </div>
+
+        <div class="sect">À regarder <small>· 24</small></div>
+        <div class="card">
+          <span class="pos" data-show="Silo">S</span>
+          <span class="mid">
+            <span class="t1">Silo</span>
+            <span class="t2" style="display:block"><b>S03E02</b> · La porte</span>
+            <span class="pbar"><i style="width:58%"></i></span>
+          </span>
+          <span class="chk">✓</span>
+        </div>
+        <div class="card">
+          <span class="pos" data-show="House of the Dragon">H</span>
+          <span class="mid">
+            <span class="t1">House of the Dragon</span>
+            <span class="t2" style="display:block"><b>S03E03</b> · Feu et sang</span>
+            <span class="pbar"><i style="width:78%"></i></span>
+          </span>
+          <span class="chk">✓</span>
+        </div>
+
+        <div class="sect">Explorer <small>· Populaires</small></div>
+        <div class="grid">
+          <div class="gc">
+            <div class="pos2" data-show="Severance">S<span class="rt">★ 8.5</span></div>
+            <div class="nm">Severance</div><div class="yr">2022 · Série</div>
+          </div>
+          <div class="gc">
+            <div class="pos2" data-show="Fallout">F<span class="rt">★ 8.1</span></div>
+            <div class="nm">Fallout</div><div class="yr">2024 · Série</div>
+          </div>
+          <div class="gc">
+            <div class="pos2" data-show="Andor">A<span class="rt">★ 8.4</span></div>
+            <div class="nm">Andor</div><div class="yr">2022 · Série</div>
+          </div>
+        </div>
+      </div>
+      <div class="nav">
+        <div class="on"><span class="ic">📺</span>Séries</div>
+        <div><span class="ic">🎬</span>Films</div>
+        <div><span class="ic">🧭</span>Explorer</div>
+        <div><span class="ic">👤</span>Profil</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="desc" id="desc"></div>
+
+<script>
+'use strict';
+const THEMES = [
+  ['violet', 'Violet Nuit (actuel)', "Le style actuel de l'app : fond bleu nuit, dégradés violet → magenta, cartes arrondies et ombres douces."],
+  ['oled', 'OLED Minimal', "Noir absolu (économise la batterie sur OLED), lignes fines, angles nets, presque monochrome — sobre et ultra lisible."],
+  ['or', 'Cinéma Or', "Ambiance salle obscure : tons chauds, doré élégant, titres en serif comme une affiche de festival. Chic et feutré."],
+  ['clair', 'Clair Pastel', "Thème lumineux : cartes blanches, ombres légères, accent indigo. Agréable en plein jour, reposant."],
+  ['neon', 'Néon Synthwave', "Violet profond, rose fluo et cyan électrique avec effets lumineux — rétro-futuriste et fun."],
+];
+
+const picker = document.getElementById('picker');
+const screen = document.getElementById('screen');
+const desc = document.getElementById('desc');
+
+THEMES.forEach(([id, name, d], i) => {
+  const b = document.createElement('button');
+  b.textContent = name;
+  if (i === 0) b.classList.add('on');
+  b.onclick = () => {
+    screen.dataset.t = id;
+    desc.innerHTML = `<b>${name}</b> — ${d}`;
+    [...picker.children].forEach(x => x.classList.toggle('on', x === b));
+  };
+  picker.appendChild(b);
+});
+desc.innerHTML = `<b>${THEMES[0][1]}</b> — ${THEMES[0][2]}`;
+
+/* Affiches réelles via TVMaze (sans clé) — repli sur les initiales */
+const SHOWS = ['Silo', 'House of the Dragon', 'Severance', 'Fallout', 'Andor', 'One Piece'];
+SHOWS.forEach(async name => {
+  try {
+    const r = await fetch('https://api.tvmaze.com/singlesearch/shows?q=' + encodeURIComponent(name));
+    if (!r.ok) return;
+    const show = await r.json();
+    if (!show.image) return;
+    document.querySelectorAll(`[data-show="${name}"]`).forEach(el => {
+      const img = document.createElement('img');
+      img.src = show.image.medium;
+      img.alt = '';
+      el.prepend(img);
+    });
+    if (name === 'One Piece' && show.image.original) {
+      document.getElementById('hero').style.backgroundImage = `url('${show.image.original}')`;
+      document.getElementById('hero').style.backgroundPosition = 'center 20%';
+    }
+  } catch (e) {}
+});
+</script>
+</body>
+</html>
