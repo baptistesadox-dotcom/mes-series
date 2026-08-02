@@ -1,23 +1,25 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0a0c11">
+<meta name="theme-color" content="#000000">
 <title>Mes Séries</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
 :root{
-  --bg:#0a0c11; --bg2:#12151d; --bg3:#1b1f2b; --line:#262b3a;
-  --txt:#eef0f6; --txt2:#8f96a8;
-  --acc:#8b5cf6; --acc2:#d946ef;
-  --grad:linear-gradient(135deg,#8b5cf6 0%,#c026d3 100%);
-  --ok:#34d399; --warn:#fbbf24; --danger:#f87171;
-  --radius:16px;
-  --card-border:1px solid rgba(255,255,255,.055);
-  --card-shadow:0 6px 20px rgba(0,0,0,.35);
+  /* OLED Minimal cadré : noir pur, quasi monochrome, contours marqués */
+  --bg:#000; --bg2:#0d0d0f; --bg3:#17171a; --line:#313138;
+  --txt:#f2f2f4; --txt2:#7d7f88;
+  --acc:#e8e8ec; --acc2:#c9c9d2; --onacc:#000;
+  --grad:linear-gradient(135deg,#f2f2f4,#c9c9d2);
+  --ok:#4ade80; --warn:#fbbf24; --danger:#f87171;
+  --radius:10px;
+  --card-border:1px solid #313138;
+  --card-shadow:none;
+  --frame:1px solid #3d3d45;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
@@ -26,12 +28,12 @@ body{
   font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   font-size:15px;line-height:1.45;
   padding-bottom:calc(68px + env(safe-area-inset-bottom));
-  background-image:radial-gradient(1200px 500px at 50% -200px, rgba(139,92,246,.09), transparent);
+  background-image:none;
 }
 button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 input,select{font:inherit}
 img{display:block}
-a{color:var(--acc)}
+a{color:var(--txt);text-decoration:underline;text-underline-offset:2px}
 svg{display:block}
 
 /* ---------- Header ---------- */
@@ -39,7 +41,7 @@ header.app{
   position:sticky;top:0;z-index:20;
   display:flex;align-items:center;gap:10px;
   padding:calc(12px + env(safe-area-inset-top)) 16px 12px;
-  background:rgba(10,12,17,.85);backdrop-filter:blur(14px);
+  background:rgba(0,0,0,.88);backdrop-filter:blur(14px);
 }
 header.app h1{
   font-size:21px;font-weight:800;flex:1;letter-spacing:-.02em;
@@ -48,8 +50,8 @@ header.app h1.brand{
   background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;
 }
 .iconbtn{
-  width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;
-  background:var(--bg3);border:var(--card-border);flex:none;color:var(--txt2);
+  width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+  background:var(--bg3);border:var(--frame);flex:none;color:var(--txt2);
 }
 .iconbtn svg{width:19px;height:19px}
 .iconbtn:active{background:var(--line);color:var(--txt)}
@@ -57,17 +59,17 @@ header.app h1.brand{
 /* ---------- Nav ---------- */
 nav.tabs{
   position:fixed;left:0;right:0;bottom:0;z-index:30;
-  display:flex;background:rgba(14,16,23,.92);backdrop-filter:blur(16px);
-  border-top:1px solid rgba(255,255,255,.06);
-  padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+  display:flex;background:rgba(4,4,5,.94);backdrop-filter:blur(16px);
+  border-top:var(--frame);
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));gap:4px;
 }
 nav.tabs button{
   flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
   padding:6px 0 4px;color:var(--txt2);font-size:10.5px;font-weight:500;
-  border-radius:12px;transition:color .15s;
+  border-radius:12px;border:1px solid transparent;transition:color .15s;
 }
 nav.tabs button svg{width:22px;height:22px}
-nav.tabs button.on{color:#c4b5fd}
+nav.tabs button.on{color:var(--txt);border-color:#4a4a52;background:#111114}
 nav.tabs button.on .dot{width:4px;height:4px;border-radius:2px;background:var(--grad)}
 nav.tabs .dot{width:4px;height:4px;border-radius:2px;background:transparent}
 
@@ -87,14 +89,14 @@ main{padding:12px 14px 24px;max-width:760px;margin:0 auto}
   flex:none;padding:7px 14px;border-radius:999px;background:var(--bg2);
   color:var(--txt2);font-size:13px;font-weight:500;border:var(--card-border);
 }
-.chip.on{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 3px 12px rgba(139,92,246,.35)}
+.chip.on{background:var(--grad);color:var(--onacc);border-color:#55555e;box-shadow:none}
 .empty{text-align:center;color:var(--txt2);padding:52px 20px}
 .empty .big{font-size:46px;margin-bottom:14px}
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  background:var(--grad);color:#fff;font-weight:650;
-  padding:12px 20px;border-radius:14px;
-  box-shadow:0 4px 16px rgba(139,92,246,.35);
+  background:var(--grad);color:var(--onacc);font-weight:650;
+  padding:12px 20px;border-radius:12px;
+  box-shadow:none;
 }
 .btn svg{width:16px;height:16px}
 .btn:active{transform:scale(.98);opacity:.9}
@@ -133,15 +135,15 @@ main{padding:12px 14px 24px;max-width:760px;margin:0 auto}
 .checkbtn{
   width:46px;height:46px;border-radius:15px;flex:none;
   display:flex;align-items:center;justify-content:center;
-  background:rgba(139,92,246,.13);color:#c4b5fd;border:1px solid rgba(139,92,246,.25);
+  background:var(--bg3);color:var(--txt);border:var(--frame);
 }
 .checkbtn svg{width:20px;height:20px}
-.checkbtn:active{background:var(--grad);color:#fff}
+.checkbtn:active{background:var(--grad);color:var(--onacc)}
 .badge{
   display:inline-block;font-size:11px;font-weight:700;padding:2.5px 8px;border-radius:7px;
   background:var(--bg3);color:var(--txt2);
 }
-.badge.acc{background:rgba(139,92,246,.16);color:#c4b5fd}
+.badge.acc{background:var(--bg3);color:var(--txt);border:1px solid #45454d}
 .badge.ok{background:rgba(52,211,153,.13);color:var(--ok)}
 .badge.warn{background:rgba(251,191,36,.13);color:var(--warn)}
 h2.section{
@@ -159,7 +161,7 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 .mcard .myear{font-size:11px;color:var(--txt2);margin-top:1px}
 .mcard .mtoggle{
   position:absolute;top:7px;right:7px;width:31px;height:31px;border-radius:11px;
-  background:rgba(10,12,17,.72);display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;
   color:rgba(255,255,255,.55);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);
 }
 .mcard .mtoggle svg{width:15px;height:15px}
@@ -183,8 +185,8 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 .mcard .schip{
   position:absolute;top:7px;right:7px;min-width:26px;height:26px;border-radius:10px;
   padding:0 7px;display:flex;align-items:center;justify-content:center;
-  background:rgba(10,12,17,.72);backdrop-filter:blur(6px);
-  border:1px solid rgba(139,92,246,.45);color:#c4b5fd;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(6px);
+  border:1px solid #45454d;color:var(--txt);
   font-size:12px;font-weight:700;
 }
 .mcard .schip.done{background:linear-gradient(135deg,#34d399,#10b981);color:#07120c;border-color:transparent}
@@ -205,13 +207,13 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 /* bouton d'ajout rapide sur les vignettes Découvrir */
 .qadd{
   position:absolute;top:6px;right:6px;width:27px;height:27px;border-radius:10px;
-  background:rgba(20,16,40,.72);color:#c4b5fd;backdrop-filter:blur(6px);
-  border:1px solid rgba(139,92,246,.55);
+  background:rgba(0,0,0,.72);color:var(--txt);backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.38);
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 2px 8px rgba(0,0,0,.4);
 }
 .qadd svg{width:15px;height:15px}
-.qadd:active{background:var(--grad);color:#fff}
+.qadd:active{background:var(--grad);color:var(--onacc)}
 
 /* ---------- Detail ---------- */
 .overlay{
@@ -223,9 +225,9 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 .detbar{
   position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;
   padding:calc(8px + env(safe-area-inset-top)) 12px 8px;
-  background:linear-gradient(rgba(10,12,17,.88),rgba(10,12,17,.6) 70%,transparent);
+  background:linear-gradient(rgba(0,0,0,.88),rgba(0,0,0,.6) 70%,transparent);
 }
-.detbar .iconbtn{background:rgba(18,21,29,.75);backdrop-filter:blur(10px)}
+.detbar .iconbtn{background:rgba(8,8,10,.8);backdrop-filter:blur(10px);border:var(--frame)}
 .backdrop{
   height:230px;margin-top:calc(-56px - env(safe-area-inset-top));
   background:linear-gradient(150deg,#1d1633,#12151d);
@@ -233,7 +235,7 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 }
 .backdrop::after{
   content:'';position:absolute;inset:0;
-  background:linear-gradient(rgba(10,12,17,.1) 30%,rgba(10,12,17,.85) 80%,var(--bg));
+  background:linear-gradient(rgba(0,0,0,.1) 30%,rgba(0,0,0,.85) 80%,var(--bg));
 }
 .dethead{display:flex;gap:15px;padding:0 16px;align-items:flex-end;margin-top:-74px;position:relative;z-index:2}
 .dethead .poster{width:104px;height:156px;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.55)}
@@ -303,25 +305,25 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 }
 .hero .ov{
   position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;
-  padding:14px;background:linear-gradient(transparent 25%,rgba(10,12,17,.94));
+  padding:14px;background:linear-gradient(transparent 25%,rgba(0,0,0,.94));
 }
 .hero h3{font-size:21px;font-weight:800;letter-spacing:-.02em;text-shadow:0 2px 8px rgba(0,0,0,.6)}
 .hero .hm{font-size:12.5px;color:#cfd3de;margin:3px 0 10px}
 .hero .hb{display:flex;gap:8px}
 .htag{
   position:absolute;top:10px;left:10px;font-size:11px;font-weight:700;
-  background:rgba(10,12,17,.72);backdrop-filter:blur(6px);color:var(--warn);
+  background:rgba(0,0,0,.72);backdrop-filter:blur(6px);color:var(--warn);
   padding:4px 10px;border-radius:999px;border:1px solid rgba(251,191,36,.4);
 }
 .rchip{
   position:absolute;bottom:6px;left:6px;font-size:10.5px;font-weight:700;
-  background:rgba(10,12,17,.78);backdrop-filter:blur(4px);color:var(--warn);
+  background:rgba(0,0,0,.78);backdrop-filter:blur(4px);color:var(--warn);
   padding:2px 7px;border-radius:8px;z-index:1;
 }
 .rchip.soon{color:#7dd3fc}
 .hideb{
   position:absolute;top:7px;left:7px;width:25px;height:25px;border-radius:9px;
-  background:rgba(10,12,17,.72);backdrop-filter:blur(6px);color:var(--txt2);
+  background:rgba(0,0,0,.72);backdrop-filter:blur(6px);color:var(--txt2);
   border:1px solid rgba(255,255,255,.14);font-size:12px;
   display:flex;align-items:center;justify-content:center;z-index:1;
 }
@@ -353,14 +355,15 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 
 /* ---------- Segments (À suivre / Mes séries) ---------- */
 .segbar{
-  display:flex;background:var(--bg2);border:var(--card-border);
-  border-radius:14px;padding:4px;margin-bottom:14px;gap:4px;
+  display:flex;background:#0a0a0c;border:var(--frame);
+  border-radius:12px;padding:4px;margin-bottom:14px;gap:4px;
 }
 .segbar button{
-  flex:1;padding:9px 0;border-radius:11px;color:var(--txt2);
+  flex:1;padding:9px 0;border-radius:9px;color:var(--txt2);
   font-weight:650;font-size:13.5px;transition:color .15s;
+  border:1px solid transparent;
 }
-.segbar button.on{background:var(--grad);color:#fff;box-shadow:0 2px 10px rgba(139,92,246,.35)}
+.segbar button.on{background:var(--grad);color:var(--onacc);border-color:#55555e;box-shadow:none}
 
 /* ---------- Filtres Découvrir ---------- */
 .fbar{display:flex;gap:7px;overflow-x:auto;padding:0 2px 12px;scrollbar-width:none}
@@ -370,20 +373,20 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
   border-radius:10px;padding:7px 9px;font-size:12.5px;outline:none;flex:none;
   -webkit-appearance:none;appearance:none;
 }
-.fsel.active{border-color:var(--acc);color:#c4b5fd}
+.fsel.active{border-color:#55555e;color:var(--txt)}
 .mcard .why{
-  font-size:10.5px;color:var(--acc);margin-top:2px;
+  font-size:10.5px;color:var(--txt2);margin-top:2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85;
 }
 
 /* ---------- Hint banner ---------- */
 .hint{
-  display:flex;gap:11px;align-items:flex-start;background:rgba(139,92,246,.09);
-  border:1px solid rgba(139,92,246,.25);border-radius:var(--radius);
+  display:flex;gap:11px;align-items:flex-start;background:#0d0d0f;
+  border:var(--frame);border-radius:var(--radius);
   padding:13px 14px;margin-bottom:14px;font-size:13px;
 }
 .hint .em{font-size:19px;line-height:1.2}
-.hint b{color:#c4b5fd}
+.hint b{color:var(--txt)}
 .hint p{color:var(--txt2)}
 
 /* ---------- Toast / modal ---------- */
@@ -408,7 +411,7 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 .dmodal h3{margin-bottom:4px}
 .dmodal .y{font-size:13px;color:var(--txt2);margin-bottom:8px}
 .castlink{
-  color:#c4b5fd;padding:0;font-size:inherit;font-family:inherit;
+  color:var(--txt);padding:0;font-size:inherit;font-family:inherit;
   text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;
 }
 .spin{display:inline-block;width:16px;height:16px;border:2px solid var(--txt2);border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px}
@@ -2053,7 +2056,7 @@ function viewSettings() {
   }
   return `
   <div class="panel" style="display:flex;align-items:center;gap:15px">
-    <div style="width:62px;height:62px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 4px 16px rgba(139,92,246,.4)">${ICONS.user.replace('<svg', '<svg style="width:28px;height:28px;color:#fff"')}</div>
+    <div style="width:62px;height:62px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;flex:none;border:1px solid #55555e">${ICONS.user.replace('<svg', '<svg style="width:28px;height:28px;color:#000"')}</div>
     <div>
       <div style="font-size:17px;font-weight:800;letter-spacing:-.01em">Mon profil</div>
       <div style="font-size:12.5px;color:var(--txt2);margin-top:2px">${state.series.length} séries · ${state.movies.filter(m => m.is_watched).length} films vus · ≈ ${Math.round(minutes / 60).toLocaleString('fr-FR')} h d'écran</div>

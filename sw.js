@@ -1,7 +1,7 @@
 /* Service worker — Mes Séries
    Shell : network-first (toujours à jour quand en ligne, cache en secours).
    Affiches TMDB : cache-first (économise les requêtes, dispo hors ligne). */
-const VERSION = 'v2';
+const VERSION = 'v3';
 const SHELL_CACHE = 'shell-' + VERSION;
 const IMG_CACHE = 'tmdb-img-' + VERSION;
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
