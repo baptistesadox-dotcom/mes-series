@@ -59,8 +59,17 @@ body{
   --acc:#e8e8ec;--grad:linear-gradient(135deg,#f2f2f4,#c9c9d2);
   --ok:#4ade80;--warn:#fbbf24;--onacc:#000;
   --radius:10px;--chiprad:8px;
-  --shadow:none;--border:1px solid #222;
+  --shadow:none;--border:1px solid #313138;
 }
+/* OLED : cadres plus marqués sur les menus */
+.screen[data-t="oled"] .segbar{border:1px solid #3d3d45;background:#0a0a0c}
+.screen[data-t="oled"] .segbar span{border:1px solid transparent}
+.screen[data-t="oled"] .segbar span.on{border:1px solid #55555e}
+.screen[data-t="oled"] .nav{border-top:1px solid #3d3d45;gap:4px;padding:8px 8px 12px}
+.screen[data-t="oled"] .nav div{border:1px solid transparent;border-radius:10px;padding:5px 0}
+.screen[data-t="oled"] .nav div.on{border-color:#4a4a52;background:#111114}
+.screen[data-t="oled"] .iconb{border:1px solid #3d3d45}
+.screen[data-t="oled"] .chk{border:1px solid #3d3d45}
 .screen[data-t="or"]{
   --bg:#141009;--bg2:#1d1710;--bg3:#282017;--line:#3a2f20;
   --txt:#f2e9da;--txt2:#a4926f;
