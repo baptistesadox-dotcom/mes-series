@@ -807,24 +807,50 @@ async function refreshTmdb(s, full) {
   } : null;
   meta.fetchedAt = nowISO();
 
-  let added = 0;
+  let added = 0, removed = 0;
+  const remoteSeasons = new Set((d.seasons || []).map(ds => ds.season_number));
   const toFetch = [];
   for (const ds of d.seasons || []) {
     if (ds.season_number === 0) continue;
     const local = (s.seasons || []).find(x => x.number === ds.season_number);
     const localCount = local ? local.episodes.filter(e => !e.special).length : 0;
-    if (ds.episode_count > localCount || (full && ds.episode_count > 0)) toFetch.push(ds.season_number);
+    // saison à récupérer aussi quand elle contient des épisodes « fantômes »
+    // (non vus, sans date — stubs TVDB de saisons annoncées, importés de TV Time)
+    const ghosts = local && local.episodes.some(e => !e.special && !e.is_watched && !e.air_date);
+    if (ds.episode_count > localCount || ghosts || (full && ds.episode_count > 0)) toFetch.push(ds.season_number);
+  }
+  // saisons locales que TMDB ne connaît pas du tout : purge si 100% fantômes
+  for (const local of [...(s.seasons || [])]) {
+    if (local.number === 0 || local.is_specials || remoteSeasons.has(local.number)) continue;
+    const eps = local.episodes.filter(e => !e.special);
+    if (eps.length && eps.every(e => !e.is_watched && !e.air_date)) {
+      removed += eps.length;
+      s.seasons = s.seasons.filter(x => x !== local);
+    }
   }
   for (const sn of toFetch) {
     const sd = await tget(`/tv/${meta.id}/season/${sn}`);
     added += mergeEpisodes(s, sn, (sd.episodes || []).map(de => ({
       number: de.episode_number, name: de.name, air_date: de.air_date,
     })), full);
+    removed += cleanSeasonGhosts(s, sn);
   }
-  if (added) autoStatus(s);
+  if (added || removed) autoStatus(s);
   await saveSeries(s);
   await saveMeta(meta);
-  return { added, found: true };
+  return { added, removed, found: true };
+}
+
+/* Après rapprochement avec la source : les épisodes non vus toujours sans
+   date de diffusion sont des annonces spéculatives — on les retire (ils
+   reviendront automatiquement le jour où ils auront une date). */
+function cleanSeasonGhosts(s, seasonNum) {
+  const local = (s.seasons || []).find(x => x.number === seasonNum);
+  if (!local) return 0;
+  const before = local.episodes.length;
+  local.episodes = local.episodes.filter(e => e.special || e.is_watched || e.air_date);
+  if (!local.episodes.length) s.seasons = s.seasons.filter(x => x !== local);
+  return before - local.episodes.length;
 }
 
 async function refreshTvmaze(s, full) {
@@ -841,16 +867,29 @@ async function refreshTvmaze(s, full) {
   const eps = await jget(`${TVMAZE}/shows/${meta.id}/episodes`);
   const bySeason = {};
   for (const e of eps) (bySeason[e.season] = bySeason[e.season] || []).push({ number: e.number, name: e.name, air_date: e.airdate });
-  let added = 0;
+  let added = 0, removed = 0;
   for (const sn of Object.keys(bySeason)) {
     const local = (s.seasons || []).find(x => x.number === +sn);
     const localCount = local ? local.episodes.filter(e => !e.special).length : 0;
-    if (bySeason[sn].length > localCount || full) added += mergeEpisodes(s, +sn, bySeason[sn], full);
+    const ghosts = local && local.episodes.some(e => !e.special && !e.is_watched && !e.air_date);
+    if (bySeason[sn].length > localCount || ghosts || full) {
+      added += mergeEpisodes(s, +sn, bySeason[sn], full);
+      removed += cleanSeasonGhosts(s, +sn);
+    }
   }
-  if (added) autoStatus(s);
+  // saisons locales inconnues de TVMaze et 100% fantômes → purge
+  for (const local of [...(s.seasons || [])]) {
+    if (local.number === 0 || local.is_specials || bySeason[local.number]) continue;
+    const reals = local.episodes.filter(e => !e.special);
+    if (reals.length && reals.every(e => !e.is_watched && !e.air_date)) {
+      removed += reals.length;
+      s.seasons = s.seasons.filter(x => x !== local);
+    }
+  }
+  if (added || removed) autoStatus(s);
   await saveSeries(s);
   await saveMeta(meta);
-  return { added, found: true };
+  return { added, removed, found: true };
 }
 
 function mergeEpisodes(s, seasonNum, episodes, full) {
@@ -860,6 +899,7 @@ function mergeEpisodes(s, seasonNum, episodes, full) {
   for (const de of episodes) {
     let ep = local.episodes.find(e => e.number === de.number && !e.special);
     if (!ep) {
+      if (!de.air_date) continue; // pas de date = annonce spéculative, on n'ajoute pas
       local.episodes.push({
         id: { tvdb: null, imdb: null }, number: de.number, name: de.name,
         special: false, is_watched: false, watched_at: null,
@@ -879,9 +919,9 @@ async function refreshAll(quiet = false) {
   state.refreshing = true;
   const targets = state.series.filter(s => s.status === 'continuing' || s.status === 'up_to_date');
   if (!quiet) toast(`Recherche de nouveaux épisodes (${targets.length} séries)…`, 120000);
-  let totalAdded = 0, done = 0, errors = 0;
+  let totalAdded = 0, totalRemoved = 0, done = 0, errors = 0;
   await Promise.all(targets.map(s => pool(async () => {
-    try { totalAdded += (await refreshSeries(s)).added; }
+    try { const r = await refreshSeries(s); totalAdded += r.added; totalRemoved += r.removed || 0; }
     catch (e) { errors++; }
     done++;
     if (!quiet && done % 10 === 0 && done < targets.length) toast(`Actualisation… ${done}/${targets.length}`, 120000);
@@ -889,12 +929,13 @@ async function refreshAll(quiet = false) {
   state.refreshing = false;
   state.lastRefresh = nowISO();
   await DB.kvSet('lastRefresh', state.lastRefresh);
+  const nettoyage = totalRemoved ? ` · ${totalRemoved} fantôme(s) retiré(s)` : '';
   if (!quiet) {
     toast(totalAdded
-      ? `${totalAdded} nouvel(s) épisode(s) trouvé(s) 🎉`
-      : `Tout est à jour ✓${errors ? ` (${errors} séries en erreur)` : ''}`);
-  } else if (totalAdded) {
-    toast(`${totalAdded} nouvel(s) épisode(s) disponible(s) 🎉`, 4000);
+      ? `${totalAdded} nouvel(s) épisode(s) trouvé(s) 🎉${nettoyage}`
+      : `Tout est à jour ✓${nettoyage}${errors ? ` (${errors} séries en erreur)` : ''}`);
+  } else if (totalAdded || totalRemoved) {
+    toast(`${totalAdded ? totalAdded + ' nouvel(s) épisode(s) 🎉' : 'Nettoyage'}${nettoyage}`, 4000);
   }
   render();
 }
@@ -2792,7 +2833,10 @@ document.body.addEventListener('click', async e => {
     el.innerHTML = '<span class="spin"></span>';
     try {
       const r = await refreshSeries(s, true);
-      toast(r.found ? (r.added ? `${r.added} nouvel(s) épisode(s) ajouté(s)` : 'Série à jour ✓') : 'Série introuvable chez le fournisseur');
+      const bouts = [];
+      if (r.added) bouts.push(`${r.added} épisode(s) ajouté(s)`);
+      if (r.removed) bouts.push(`${r.removed} fantôme(s) retiré(s)`);
+      toast(r.found ? (bouts.length ? bouts.join(' · ') : 'Série à jour ✓') : 'Série introuvable chez le fournisseur');
     } catch (err) { toast('Erreur : ' + err.message); }
     renderDetail();
   }
