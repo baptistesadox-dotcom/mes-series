@@ -517,6 +517,7 @@ const state = {
   discoverTab: 'trending', genreSel: 0, discoverData: {}, discoverBusy: {},
   exploreType: 'tv', exploreSource: 'pop',
   journalLimit: 120, wrappedYear: null,
+  menageMois: 6, menageIgnore: new Set(),
   roulette: { type: 'all', genre: -1, duree: 'all' }, roulettePick: null,
   exploreFeed: { key: null, items: [], page: 0, totalPages: 1, loading: false, seen: null },
   dFilters: { type: 'all', genre: -1, note: 0, annee: 'all' },
@@ -1030,6 +1031,25 @@ function normTmdb(x, type) {
   };
 }
 const todayStr = () => new Date().toISOString().slice(0, 10);
+/* Nombre de jours d'ici à une date (négatif = passé) */
+function joursAvant(d) {
+  if (!d) return null;
+  const cible = new Date(d + 'T00:00:00');
+  const auj = new Date(); auj.setHours(0, 0, 0, 0);
+  return Math.round((cible - auj) / 86400000);
+}
+/* « demain », « dans 3 jours », « dans 5 semaines »… */
+function compteARebours(d) {
+  const n = joursAvant(d);
+  if (n === null) return '';
+  if (n < 0) return fmtDate(d);
+  if (n === 0) return "aujourd'hui";
+  if (n === 1) return 'demain';
+  if (n <= 13) return `dans ${n} jours`;
+  if (n <= 70) return `dans ${Math.round(n / 7)} semaines`;
+  const mois = Math.round(n / 30);
+  return `dans ${mois} mois`;
+}
 const fmtShort = d => d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : '';
 
 /* Normalisation de titre : minuscules, sans accents ni ponctuation,
@@ -1653,7 +1673,7 @@ function seriesCard(s) {
       : (meta && meta.nextEp ? { s: meta.nextEp.season, e: meta.nextEp.episode, d: meta.nextEp.date } : null);
     if (coming) {
       chip = `<span class="schip wait">📅</span>`;
-      sub = `${epCode(coming.s, coming.e)} le ${fmtDate(coming.d)}`;
+      sub = `${epCode(coming.s, coming.e)} · ${compteARebours(coming.d)}`;
     } else {
       chip = `<span class="schip done">${ICONS.check}</span>`;
       sub = `À jour · ${p.watched}/${p.total}`;
@@ -1766,8 +1786,9 @@ function viewNext() {
           <div class="mid">
             <div class="title">${esc(s.title)}</div>
             <div class="sub" style="margin-top:5px">${nx.ep.air_date
-              ? `<span class="badge warn">${epCode(nx.season, nx.ep.number)}</span> ${new Date(nx.ep.air_date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })}`
+              ? `<span class="badge warn">${epCode(nx.season, nx.ep.number)}</span> <b style="color:var(--txt)">${compteARebours(nx.ep.air_date)}</b>`
               : `<span class="badge">${epCode(nx.season, nx.ep.number)}</span> date inconnue`}</div>
+            ${nx.ep.air_date ? `<div class="sub" style="margin-top:4px">${new Date(nx.ep.air_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>` : ''}
           </div>
         </div>`;
       let rest = [...waiting], html = `<h2 class="section" style="margin-top:26px">🗓️ Calendrier des sorties <span class="cnt">${waiting.length}</span></h2>`;
@@ -2165,6 +2186,7 @@ function viewSettings() {
       <button class="btn small" data-action="open-stats">📊 Statistiques</button>
       <button class="btn ghost small" data-action="open-journal">📖 Journal</button>
       <button class="btn ghost small" data-action="open-wrapped">🏆 Rétrospective</button>
+      <button class="btn ghost small" data-action="open-menage">🧹 Ménage${(() => { const n = seriesDormantes().length; return n ? ` (${n})` : ''; })()}</button>
     </div>
     <div class="statgrid">
       <div class="stat"><div class="v" data-count="${state.series.length}">0</div><div class="l">séries</div></div>
@@ -2244,6 +2266,7 @@ function renderOverlay() {
   if (overlayMode === 'stats') renderStats();
   else if (overlayMode === 'journal') renderJournal();
   else if (overlayMode === 'wrapped') renderWrapped();
+  else if (overlayMode === 'menage') renderMenage();
 }
 /* animations communes aux écrans plein page du Profil */
 function animateOverlay() {
@@ -2513,7 +2536,8 @@ function renderJournal() {
 }
 
 /* ---------------- Rétrospective annuelle ---------------- */
-function renderWrapped() {
+/* Calculs de la rétrospective (partagés avec l'export image) */
+function computeWrapped() {
   const ev = collectEvents();
   const years = [...new Set(ev.map(e => e.at.slice(0, 4)))].sort().reverse();
   const y = String(state.wrappedYear || years[0] || new Date().getFullYear());
@@ -2543,19 +2567,24 @@ function renderWrapped() {
   for (const e of mvs) { const m = state.tmdb[e.uuid]; if (m && m.genres) for (const id of m.genres) gc[id] = (gc[id] || 0) + 2; }
   const topGenres = Object.entries(gc).filter(([id]) => GENRE_NAMES[id]).sort((a, b) => b[1] - a[1]).slice(0, 3);
 
-  // séries bouclées dans l'année (100 % vues, dernier épisode vu cette année-là)
-  let terminees = 0;
+  let terminees = 0; // séries bouclées dans l'année
   for (const s of state.series) {
     const p = progress(s);
     if (!p.total || p.watched !== p.total) continue;
     if (String(lastActivity(s)).slice(0, 4) === y) terminees++;
   }
+  return { ev, years, y, yEv, eps, mvs, heures, topSeries, maxTop, bestMois, joursActifs, topGenres, terminees };
+}
+
+function renderWrapped() {
+  const { years, y, yEv, eps, mvs, heures, topSeries, maxTop, bestMois, joursActifs, topGenres, terminees } = computeWrapped();
 
   $('#overlay-root').innerHTML = `
   <div class="overlay">
     <div class="detbar">
       <button class="iconbtn" data-action="close-stats">${ICONS.back}</button>
       <span class="t" style="flex:1;font-weight:700">🏆 Ma rétrospective</span>
+      <button class="iconbtn" data-action="share-wrapped" title="Partager en image">🖼️</button>
     </div>
     <main style="padding-top:4px">
       <div class="chips">${years.map(yy =>
@@ -2592,6 +2621,149 @@ function renderWrapped() {
           ⏱️ Soit environ <b style="color:var(--txt)">${(Math.round(heures / 24 * 10) / 10).toLocaleString('fr-FR')} jours</b> non-stop devant l'écran.
         </p>
       </div>`}
+    </main>
+  </div>`;
+  loadVisiblePosters();
+  animateOverlay();
+}
+
+/* ---------------- Rétrospective en image (partage) ---------------- */
+async function partagerRetro() {
+  const d = computeWrapped();
+  const W = 1080, H = 1350, c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  const F = (poids, taille) => `${poids} ${taille}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+
+  x.fillStyle = '#000'; x.fillRect(0, 0, W, H);
+  x.strokeStyle = '#3d3d45'; x.lineWidth = 2;
+  x.strokeRect(40, 40, W - 80, H - 80);
+
+  x.textAlign = 'center';
+  x.fillStyle = '#7d7f88'; x.font = F(600, 30);
+  x.fillText('M A   R É T R O S P E C T I V E', W / 2, 165);
+  x.fillStyle = '#f2f2f4'; x.font = F(800, 190);
+  x.fillText(d.y, W / 2, 320);
+
+  // quatre chiffres clés
+  const cases = [
+    [d.eps.length.toLocaleString('fr-FR'), 'épisodes'],
+    [String(d.mvs.length), 'films'],
+    [d.heures.toLocaleString('fr-FR') + ' h', 'de visionnage'],
+    [String(d.joursActifs), 'jours actifs'],
+  ];
+  cases.forEach(([v, l], i) => {
+    const cx = i % 2 ? W * 0.72 : W * 0.28, cy = 470 + Math.floor(i / 2) * 175;
+    x.fillStyle = '#f2f2f4'; x.font = F(800, 76);
+    x.fillText(v, cx, cy);
+    x.fillStyle = '#7d7f88'; x.font = F(500, 30);
+    x.fillText(l, cx, cy + 46);
+  });
+
+  x.strokeStyle = '#26262b'; x.lineWidth = 1;
+  x.beginPath(); x.moveTo(120, 790); x.lineTo(W - 120, 790); x.stroke();
+
+  // podium des séries
+  x.textAlign = 'left';
+  x.fillStyle = '#7d7f88'; x.font = F(600, 28);
+  x.fillText('MES SÉRIES DE L\'ANNÉE', 120, 850);
+  d.topSeries.slice(0, 5).forEach((t, i) => {
+    const yy = 915 + i * 62;
+    x.fillStyle = '#4a4a52'; x.font = F(800, 38);
+    x.fillText(String(i + 1), 120, yy);
+    x.fillStyle = '#f2f2f4'; x.font = F(600, 34);
+    let titre = t.title;
+    while (x.measureText(titre).width > 640 && titre.length > 4) titre = titre.slice(0, -2);
+    if (titre !== t.title) titre += '…';
+    x.fillText(titre, 175, yy);
+    x.fillStyle = '#7d7f88'; x.font = F(500, 30);
+    x.textAlign = 'right';
+    x.fillText(`${t.n} ép.`, W - 120, yy);
+    x.textAlign = 'left';
+  });
+
+  // pied de page
+  x.textAlign = 'center';
+  if (d.topGenres.length) {
+    x.fillStyle = '#7d7f88'; x.font = F(500, 28);
+    x.fillText(d.topGenres.map(([id]) => GENRE_NAMES[id]).join('  ·  '), W / 2, 1245);
+  }
+  x.fillStyle = '#4a4a52'; x.font = F(600, 26);
+  x.fillText('Mes Séries', W / 2, 1295);
+
+  const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+  const nom = `retrospective-${d.y}.png`;
+  const fichier = new File([blob], nom, { type: 'image/png' });
+  if (navigator.canShare && navigator.canShare({ files: [fichier] })) {
+    try {
+      await navigator.share({ files: [fichier], title: `Ma rétrospective ${d.y}` });
+      return;
+    } catch (e) { if (e.name === 'AbortError') return; }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = nom;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  toast('Image enregistrée 🖼️');
+}
+
+/* ---------------- Ménage : séries dormantes ---------------- */
+/* Séries commencées, avec des épisodes déjà diffusés en attente,
+   mais sans aucune activité depuis plusieurs mois. */
+function seriesDormantes(mois) {
+  const seuil = mois || state.menageMois || 6;
+  const limite = new Date(Date.now() - seuil * 30.4 * 86400000).toISOString();
+  return state.series.filter(s => {
+    if (s.status === 'stopped' || s.status === 'not_started_yet') return false;
+    if (state.menageIgnore.has(s.uuid)) return false;
+    if (!realEpisodes(s).some(x => !x.ep.is_watched && !isFuture(x.ep))) return false;
+    const la = lastActivity(s);
+    return la && la < limite;
+  }).sort((a, b) => lastActivity(a).localeCompare(lastActivity(b)));
+}
+
+function moisDepuis(iso) {
+  const n = Math.round((Date.now() - new Date(iso)) / (30.4 * 86400000));
+  if (n >= 12) { const a = Math.floor(n / 12); return `${a} an${a > 1 ? 's' : ''}`; }
+  return `${n} mois`;
+}
+
+function renderMenage() {
+  const liste = seriesDormantes();
+  const seuils = [3, 6, 12, 24];
+  $('#overlay-root').innerHTML = `
+  <div class="overlay">
+    <div class="detbar">
+      <button class="iconbtn" data-action="close-stats">${ICONS.back}</button>
+      <span class="t" style="flex:1;font-weight:700">🧹 Ménage</span>
+    </div>
+    <main style="padding-top:4px">
+      <div class="hint"><span class="em">🧹</span><p>Ces séries ont des épisodes en attente mais tu n'y as plus touché depuis un moment. Arrête celles qui ne t'intéressent plus : elles quitteront « À suivre » sans perdre ta progression.</p></div>
+      <div class="chips">${seuils.map(m =>
+        `<button class="chip ${state.menageMois === m ? 'on' : ''}" data-action="menage-seuil" data-m="${m}">+ de ${m} mois</button>`).join('')}</div>
+      ${liste.length ? `<div class="card-list">${liste.map(s => {
+        const p = progress(s);
+        const pct = p.total ? Math.round(p.watched / p.total * 100) : 0;
+        const reste = realEpisodes(s).filter(x => !x.ep.is_watched && !isFuture(x.ep)).length;
+        return `<div class="scard">
+          <div data-action="open-series" data-uuid="${s.uuid}" style="display:flex;gap:12px;align-items:center;flex:1;min-width:0">
+            ${posterHtml(s, 'tv')}
+            <div class="mid">
+              <div class="title">${esc(s.title)}</div>
+              <div class="sub"><span class="badge warn">${moisDepuis(lastActivity(s))}</span> sans activité</div>
+              <div class="progress"><i style="width:0" data-w="${pct}%"></i></div>
+              <div class="sub" style="margin-top:5px">${p.watched}/${p.total} · ${reste} épisode(s) en attente</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;flex:none">
+            <button class="btn ghost small" data-action="menage-stop" data-uuid="${s.uuid}">⏸ Arrêter</button>
+            <button class="btn ghost small" data-action="menage-ignore" data-uuid="${s.uuid}">Garder</button>
+          </div>
+        </div>`;
+      }).join('')}</div>`
+      : `<div class="empty"><div class="big">✨</div>Rien à ranger — ta liste est impeccable !</div>`}
+      ${state.menageIgnore.size ? `<div style="text-align:center;padding:18px"><button class="btn ghost small" data-action="menage-reset">Réafficher les ${state.menageIgnore.size} série(s) gardée(s)</button></div>` : ''}
     </main>
   </div>`;
   loadVisiblePosters();
@@ -2762,7 +2934,7 @@ function renderDetail() {
           ${s.is_favorite ? '<span class="badge warn">★ Favori</span>' : ''}
         </div>
         <div class="meta">${p.watched} / ${p.total} épisodes vus (${pct}%)</div>
-        ${meta.nextEp ? `<div class="meta">📅 ${epCode(meta.nextEp.season, meta.nextEp.episode)} le ${fmtDate(meta.nextEp.date)}</div>` : ''}
+        ${meta.nextEp ? `<div class="meta">📅 ${epCode(meta.nextEp.season, meta.nextEp.episode)} ${compteARebours(meta.nextEp.date)} <span style="opacity:.7">(${fmtDate(meta.nextEp.date)})</span></div>` : ''}
         <div class="progress ${pct === 100 ? 'full' : ''}" style="margin-top:10px;max-width:160px"><i style="width:0" data-w="${pct}%"></i></div>
       </div>
     </div>
@@ -2793,7 +2965,7 @@ function renderDetail() {
                data-action="toggle-ep" data-season="${sea.number}" data-ep="${ep.number}">
             <span class="num">${pad2(ep.number)}</span>
             <span class="nm">${esc(ep.name || 'Épisode ' + ep.number)}
-              ${isFuture(ep) ? `<span class="d">· le ${fmtDate(ep.air_date)}</span>`
+              ${isFuture(ep) ? `<span class="d">· ${compteARebours(ep.air_date)}</span>`
                 : ep.watched_at ? `<span class="d">· vu le ${fmtDate(ep.watched_at)}</span>` : ''}
             </span>
             <span class="epcheck">${ICONS.check}</span>
@@ -3052,6 +3224,23 @@ document.body.addEventListener('click', async e => {
   else if (act === 'open-wrapped') { state.wrappedYear = null; openOverlay('wrapped'); }
   else if (act === 'wrapped-year') { state.wrappedYear = +el.dataset.y; renderWrapped(); }
   else if (act === 'journal-more') { state.journalLimit += 120; renderJournal(); }
+  else if (act === 'open-menage') openOverlay('menage');
+  else if (act === 'share-wrapped') { el.textContent = '…'; await partagerRetro().catch(err => toast('Erreur : ' + err.message)); renderWrapped(); }
+  else if (act === 'menage-seuil') { state.menageMois = +el.dataset.m; renderMenage(); }
+  else if (act === 'menage-stop') {
+    const s = state.series.find(x => x.uuid === el.dataset.uuid);
+    if (s) { s.status = 'stopped'; await saveSeries(s); toast(`« ${s.title} » arrêtée`); renderMenage(); }
+  }
+  else if (act === 'menage-ignore') {
+    state.menageIgnore.add(el.dataset.uuid);
+    await DB.kvSet('menageIgnore', [...state.menageIgnore]);
+    renderMenage();
+  }
+  else if (act === 'menage-reset') {
+    state.menageIgnore.clear();
+    await DB.kvSet('menageIgnore', []);
+    renderMenage();
+  }
   else if (act === 'roulette-go') rouletteGo();
   else if (act === 'roulette-open') {
     const { kind, uuid } = el.dataset;
@@ -3355,6 +3544,7 @@ function afterRender() {
     DB.kvGet('settings'), DB.kvGet('lastRefresh'), DB.kvGet('hidden'),
     DB.kvGet('lastExport'), DB.kvGet('changedAt'), DB.kvGet('lastSync'),
   ]);
+  state.menageIgnore = new Set((await DB.kvGet('menageIgnore')) || []);
   state.series = series || [];
   state.movies = movies || [];
   state.settings = settings || {};
