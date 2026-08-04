@@ -425,6 +425,7 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 
 <header class="app">
   <h1 id="apptitle" class="brand">Mes Séries</h1>
+  <button class="iconbtn hidden" id="btn-dice" title="Que regarder ce soir ?"></button>
   <button class="iconbtn hidden" id="btn-add" title="Ajouter"></button>
   <button class="iconbtn hidden" id="btn-refresh" title="Actualiser"></button>
 </header>
@@ -471,6 +472,7 @@ const ICONS = {
   chevron: I('<polyline points="9 18 15 12 9 6"/>'),
   star: I('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>', true),
   user: I('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
+  dice: I('<rect x="3" y="3" width="18" height="18" rx="4.5"/><circle cx="8.6" cy="8.6" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.4" cy="8.6" r="1.35" fill="currentColor" stroke="none"/><circle cx="8.6" cy="15.4" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.4" cy="15.4" r="1.35" fill="currentColor" stroke="none"/>'),
   fire: I('<path d="M12 2c1 4-4 6-4 10a4 4 0 0 0 8 0c0-1.5-.5-2.5-1-3.5 2 .5 4 2.5 4 5.5a7 7 0 1 1-14 0c0-5 5-7 7-12z"/>'),
 };
 
@@ -482,6 +484,8 @@ const state = {
   discoverResults: null, discoverLoading: false, trending: null,
   discoverTab: 'trending', genreSel: 0, discoverData: {}, discoverBusy: {},
   exploreType: 'tv', exploreSource: 'pop',
+  journalLimit: 120, wrappedYear: null,
+  roulette: { type: 'all', genre: -1, duree: 'all' }, roulettePick: null,
   exploreFeed: { key: null, items: [], page: 0, totalPages: 1, loading: false, seen: null },
   dFilters: { type: 'all', genre: -1, note: 0, annee: 'all' },
   movieSort: 'recent', movieGenre: -1, movieDecade: 'all', movieLimit: 60,
@@ -1545,11 +1549,11 @@ window.addEventListener('popstate', () => {
   if ($('#modal-root').innerHTML) { $('#modal-root').innerHTML = ''; return; }
   if (detailUuid) {
     detailUuid = null;
-    if (statsOpen) renderStats();
+    if (overlayMode) renderOverlay();
     else { $('#overlay-root').innerHTML = ''; render(); }
     return;
   }
-  if (statsOpen) { statsOpen = false; $('#overlay-root').innerHTML = ''; return; }
+  if (overlayMode) { overlayMode = null; $('#overlay-root').innerHTML = ''; return; }
   if (state.tab !== 'series') { state.tab = 'series'; render(); }
 });
 
@@ -1574,6 +1578,7 @@ function renderView() {
   title.classList.toggle('brand', state.tab === 'series');
   document.querySelectorAll('nav.tabs button').forEach(b =>
     b.classList.toggle('on', b.dataset.tab === state.tab));
+  $('#btn-dice').classList.toggle('hidden', !(state.tab === 'series' || state.tab === 'movies'));
   $('#btn-add').classList.toggle('hidden', !(state.tab === 'series' || state.tab === 'movies'));
   $('#btn-refresh').classList.toggle('hidden', !(state.tab === 'series' && state.seriesView === 'suivre'));
   const v = $('#view');
@@ -2120,7 +2125,9 @@ function viewSettings() {
   <div class="panel">
     <h3>📊 Ma collection</h3>
     <div class="row" style="margin-bottom:12px">
-      <button class="btn small" data-action="open-stats">📊 Statistiques détaillées</button>
+      <button class="btn small" data-action="open-stats">📊 Statistiques</button>
+      <button class="btn ghost small" data-action="open-journal">📖 Journal</button>
+      <button class="btn ghost small" data-action="open-wrapped">🏆 Rétrospective</button>
     </div>
     <div class="statgrid">
       <div class="stat"><div class="v">${state.series.length}</div><div class="l">séries</div></div>
@@ -2189,7 +2196,18 @@ const GENRE_NAMES = {
 };
 const MOIS = ['janv', 'févr', 'mars', 'avr', 'mai', 'juin', 'juil', 'août', 'sept', 'oct', 'nov', 'déc'];
 
-let statsOpen = false;
+/* Écrans plein page du Profil : statistiques, journal, rétrospective */
+let overlayMode = null;
+function openOverlay(mode) {
+  if (!overlayMode) pushLayer('overlay');
+  overlayMode = mode;
+  renderOverlay();
+}
+function renderOverlay() {
+  if (overlayMode === 'stats') renderStats();
+  else if (overlayMode === 'journal') renderJournal();
+  else if (overlayMode === 'wrapped') renderWrapped();
+}
 
 /* Complète les genres manquants (une fois, résultats mémorisés) */
 async function backfillGenres(cb) {
@@ -2200,7 +2218,6 @@ async function backfillGenres(cb) {
     if (m && m.provider === 'tmdb' && m.id && !m.genres) targets.push({ meta: m, type: 'tv' });
   }
   for (const mv of state.movies) {
-    if (!mv.is_watched) continue;
     const m = state.tmdb[mv.uuid];
     if (m && m.provider === 'tmdb' && m.id && !m.genres) targets.push({ meta: m, type: 'movie' });
   }
@@ -2217,10 +2234,8 @@ async function backfillGenres(cb) {
 }
 
 function openStats() {
-  if (!statsOpen) pushLayer('stats');
-  statsOpen = true;
-  renderStats();
-  backfillGenres(() => { if (statsOpen) renderStats(); });
+  openOverlay('stats');
+  backfillGenres(() => { if (overlayMode === 'stats') renderStats(); });
 }
 
 function renderStats() {
@@ -2374,6 +2389,248 @@ function renderStats() {
       </div>
     </main>
   </div>`;
+}
+
+/* ---------------- Journal de visionnage ---------------- */
+const miniPoster = (uuid, title) => {
+  const m = state.tmdb[uuid];
+  return m && m.poster
+    ? `<div class="poster" style="width:34px;height:51px"><img loading="lazy" src="${m.poster}" alt=""></div>`
+    : `<div class="poster" style="width:34px;height:51px;font-size:12px">${esc(initials(title))}</div>`;
+};
+
+/* Tous les visionnages datés, du plus récent au plus ancien */
+function collectEvents() {
+  const ev = [];
+  for (const s of state.series)
+    for (const sea of s.seasons || [])
+      for (const ep of sea.episodes)
+        if (ep.is_watched && ep.watched_at)
+          ev.push({ t: 'ep', at: ep.watched_at, uuid: s.uuid, title: s.title, code: epCode(sea.number, ep.number), name: ep.name });
+  for (const m of state.movies)
+    if (m.is_watched && m.watched_at)
+      ev.push({ t: 'mv', at: m.watched_at, uuid: m.uuid, title: m.title, year: m.year });
+  ev.sort((a, b) => b.at.localeCompare(a.at));
+  return ev;
+}
+
+function renderJournal() {
+  const ev = collectEvents();
+  const shown = ev.slice(0, state.journalLimit);
+  const jours = [];
+  for (const e of shown) {
+    const d = e.at.slice(0, 10);
+    const last = jours[jours.length - 1];
+    if (!last || last.d !== d) jours.push({ d, items: [e] });
+    else last.items.push(e);
+  }
+  const today = todayStr();
+  const hier = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const label = d => d === today ? "Aujourd'hui" : d === hier ? 'Hier'
+    : new Date(d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  const ligne = e => e.t === 'ep'
+    ? `<div class="scard" style="padding:8px" data-action="open-series" data-uuid="${e.uuid}">
+         ${miniPoster(e.uuid, e.title)}
+         <div class="mid">
+           <div class="title" style="font-size:13.5px">${esc(e.title)}</div>
+           <div class="sub"><span class="badge acc">${e.code}</span> ${esc(e.name || '')}</div>
+         </div>
+       </div>`
+    : `<div class="scard" style="padding:8px" data-action="open-movie" data-uuid="${e.uuid}">
+         ${miniPoster(e.uuid, e.title)}
+         <div class="mid">
+           <div class="title" style="font-size:13.5px">🎬 ${esc(e.title)}</div>
+           <div class="sub">${e.year || ''} · film</div>
+         </div>
+       </div>`;
+
+  $('#overlay-root').innerHTML = `
+  <div class="overlay">
+    <div class="detbar">
+      <button class="iconbtn" data-action="close-stats">${ICONS.back}</button>
+      <span class="t" style="flex:1;font-weight:700">📖 Journal de visionnage</span>
+    </div>
+    <main style="padding-top:4px">
+      ${!ev.length ? `<div class="empty">Rien d'enregistré pour l'instant.</div>` : jours.map(j => {
+        const cap = j.items.slice(0, 25);
+        return `<h2 class="section">${label(j.d)} <span class="cnt">${j.items.length}</span></h2>
+        <div class="card-list">${cap.map(ligne).join('')}</div>
+        ${j.items.length > cap.length ? `<p style="color:var(--txt2);font-size:12px;padding:6px 2px">+ ${j.items.length - cap.length} autre(s) ce jour-là</p>` : ''}`;
+      }).join('')}
+      ${ev.length > shown.length
+        ? `<div style="text-align:center;padding:18px"><button class="btn ghost small" data-action="journal-more">Afficher plus (${shown.length}/${ev.length})</button></div>`
+        : ev.length ? `<p style="text-align:center;color:var(--txt2);font-size:12px;padding:18px">— début de ton historique —</p>` : ''}
+    </main>
+  </div>`;
+  loadVisiblePosters();
+}
+
+/* ---------------- Rétrospective annuelle ---------------- */
+function renderWrapped() {
+  const ev = collectEvents();
+  const years = [...new Set(ev.map(e => e.at.slice(0, 4)))].sort().reverse();
+  const y = String(state.wrappedYear || years[0] || new Date().getFullYear());
+  const yEv = ev.filter(e => e.at.startsWith(y));
+  const eps = yEv.filter(e => e.t === 'ep');
+  const mvs = yEv.filter(e => e.t === 'mv');
+
+  let minutes = mvs.length * 110;
+  const perSerie = {};
+  for (const e of eps) {
+    perSerie[e.uuid] = (perSerie[e.uuid] || 0) + 1;
+    const meta = state.tmdb[e.uuid];
+    minutes += (meta && meta.runtime) || 40;
+  }
+  const heures = Math.round(minutes / 60);
+  const topSeries = Object.entries(perSerie).sort((a, b) => b[1] - a[1]).slice(0, 5)
+    .map(([uuid, n]) => ({ uuid, n, title: (state.series.find(s => s.uuid === uuid) || {}).title || '?' }));
+  const maxTop = Math.max(1, ...topSeries.map(x => x.n));
+
+  const perMois = {};
+  for (const e of yEv) perMois[+e.at.slice(5, 7)] = (perMois[+e.at.slice(5, 7)] || 0) + 1;
+  const bestMois = Object.entries(perMois).sort((a, b) => b[1] - a[1])[0];
+  const joursActifs = new Set(yEv.map(e => e.at.slice(0, 10))).size;
+
+  const gc = {};
+  for (const e of eps) { const m = state.tmdb[e.uuid]; if (m && m.genres) for (const id of m.genres) gc[id] = (gc[id] || 0) + 1; }
+  for (const e of mvs) { const m = state.tmdb[e.uuid]; if (m && m.genres) for (const id of m.genres) gc[id] = (gc[id] || 0) + 2; }
+  const topGenres = Object.entries(gc).filter(([id]) => GENRE_NAMES[id]).sort((a, b) => b[1] - a[1]).slice(0, 3);
+
+  // séries bouclées dans l'année (100 % vues, dernier épisode vu cette année-là)
+  let terminees = 0;
+  for (const s of state.series) {
+    const p = progress(s);
+    if (!p.total || p.watched !== p.total) continue;
+    if (String(lastActivity(s)).slice(0, 4) === y) terminees++;
+  }
+
+  $('#overlay-root').innerHTML = `
+  <div class="overlay">
+    <div class="detbar">
+      <button class="iconbtn" data-action="close-stats">${ICONS.back}</button>
+      <span class="t" style="flex:1;font-weight:700">🏆 Ma rétrospective</span>
+    </div>
+    <main style="padding-top:4px">
+      <div class="chips">${years.map(yy =>
+        `<button class="chip ${yy === y ? 'on' : ''}" data-action="wrapped-year" data-y="${yy}">${yy}</button>`).join('')}</div>
+
+      <div class="panel" style="text-align:center;padding:22px 16px">
+        <div style="font-size:13px;color:var(--txt2);letter-spacing:.08em;text-transform:uppercase">Ton année</div>
+        <div style="font-size:44px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:2px 0 14px">${y}</div>
+        <div class="statgrid">
+          <div class="stat"><div class="v">${eps.length.toLocaleString('fr-FR')}</div><div class="l">épisodes</div></div>
+          <div class="stat"><div class="v">${mvs.length}</div><div class="l">films</div></div>
+          <div class="stat"><div class="v">${heures.toLocaleString('fr-FR')} h</div><div class="l">de visionnage</div></div>
+          <div class="stat"><div class="v">${joursActifs}</div><div class="l">jours actifs</div></div>
+        </div>
+      </div>
+
+      ${!yEv.length ? `<div class="empty">Rien enregistré en ${y}.</div>` : `
+      <div class="panel">
+        <h3>🏅 Tes séries de l'année</h3>
+        ${topSeries.map(t => `
+          <div class="grow" data-action="open-series" data-uuid="${t.uuid}">
+            <span class="gl">${esc(t.title)}</span>
+            <span class="gb"><i style="width:${t.n / maxTop * 100}%"></i></span>
+            <span class="gv">${t.n} ép.</span>
+          </div>`).join('') || `<p style="color:var(--txt2);font-size:13px">Aucune série cette année.</p>`}
+      </div>
+
+      <div class="panel">
+        <h3>✨ Les temps forts</h3>
+        <p style="margin:0">
+          ${bestMois ? `📆 Mois le plus intense : <b style="color:var(--txt)">${MOIS[bestMois[0] - 1]} ${y}</b> (${bestMois[1]} visionnages)<br>` : ''}
+          ${terminees ? `🎬 Séries bouclées : <b style="color:var(--txt)">${terminees}</b><br>` : ''}
+          ${topGenres.length ? `🎭 Genres dominants : <b style="color:var(--txt)">${topGenres.map(([id]) => GENRE_NAMES[id]).join(', ')}</b><br>` : ''}
+          ⏱️ Soit environ <b style="color:var(--txt)">${(Math.round(heures / 24 * 10) / 10).toLocaleString('fr-FR')} jours</b> non-stop devant l'écran.
+        </p>
+      </div>`}
+    </main>
+  </div>`;
+  loadVisiblePosters();
+}
+
+/* ---------------- Roulette : que regarder ce soir ? ---------------- */
+function rouletteCandidats() {
+  const f = state.roulette;
+  const g = f.genre >= 0 ? GENRES[f.genre] : null;
+  const out = [];
+  if (f.type !== 'movie') {
+    for (const s of state.series) {
+      if (s.status === 'stopped') continue;
+      const nx = nextUnwatched(s);
+      if (!nx || isFuture(nx.ep)) continue;
+      const meta = state.tmdb[s.uuid] || {};
+      const genres = meta.genres || [];
+      if (g && !(genres.includes(g.tv) || genres.includes(g.mv))) continue;
+      const rt = meta.runtime || null;
+      if (f.duree === 'court' && !(rt && rt <= 35)) continue;
+      if (f.duree === 'long' && !(rt && rt > 35)) continue;
+      out.push({ kind: 'tv', uuid: s.uuid, title: s.title, sub: `${epCode(nx.season, nx.ep.number)} · ${nx.ep.name || ''}`, extra: rt ? `${rt} min` : '' });
+    }
+  }
+  if (f.type !== 'tv' && f.duree === 'all') { // les durées d'épisode ne concernent pas les films
+    for (const m of state.movies) {
+      if (m.is_watched) continue;
+      const genres = (state.tmdb[m.uuid] || {}).genres || [];
+      if (g && !genres.includes(g.mv)) continue;
+      out.push({ kind: 'movie', uuid: m.uuid, title: m.title, sub: `${m.year || ''} · film`, extra: '' });
+    }
+  }
+  return out;
+}
+
+function rouletteResultHtml() {
+  const p = state.roulettePick;
+  if (!p) {
+    const n = rouletteCandidats().length;
+    return `<div class="hint" style="margin:4px 0 0"><span class="em">🍿</span><p><b>${n}</b> titre(s) correspondent à ton envie. Lance le dé et laisse le hasard décider !</p></div>`;
+  }
+  return `<div class="scard" style="margin:4px 0 0" data-action="roulette-open" data-kind="${p.kind}" data-uuid="${p.uuid}">
+    ${miniPoster(p.uuid, p.title)}
+    <div class="mid">
+      <div class="title">${esc(p.title)}</div>
+      <div class="sub">${esc(p.sub)}${p.extra ? ` · ${p.extra}` : ''}</div>
+      <div class="sub" style="margin-top:4px;color:var(--txt)">Appuie pour ouvrir la fiche →</div>
+    </div>
+  </div>`;
+}
+
+function openRoulette() {
+  if (!$('#modal-root').innerHTML) pushLayer('modal');
+  backfillGenres(() => { if ($('#modal-root').innerHTML) openRoulette(); });
+  const f = state.roulette;
+  const sel = (name, opts, val) => `<select class="fsel" data-r="${name}" style="flex:1;min-width:0">
+    ${opts.map(([v, l]) => `<option value="${v}" ${String(v) === String(val) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+  $('#modal-root').innerHTML = `
+  <div class="modal-bg" data-action="close-modal">
+    <div class="modal">
+      <div class="grab"></div>
+      <h3>🎲 Que regarder ce soir ?</h3>
+      <div class="fbar" style="padding-bottom:8px">
+        ${sel('type', [['all', 'Séries + Films'], ['tv', 'Séries'], ['movie', 'Films']], f.type)}
+        ${sel('genre', [[-1, 'Tous genres'], ...GENRES.map((g, i) => [i, g.label])], f.genre)}
+        ${f.type !== 'movie' ? sel('duree', [['all', 'Toute durée'], ['court', 'Épisode ≤ 35 min'], ['long', 'Épisode > 35 min']], f.duree) : ''}
+      </div>
+      <div id="roulette-res">${rouletteResultHtml()}</div>
+      <button class="btn" style="width:100%;margin-top:14px" data-action="roulette-go">🎲 ${state.roulettePick ? 'Relancer le dé' : 'Piocher un titre'}</button>
+    </div>
+  </div>`;
+}
+
+async function rouletteGo() {
+  const cands = rouletteCandidats();
+  if (!cands.length) { toast('Aucun titre ne correspond — élargis les filtres'); return; }
+  const box = $('#roulette-res');
+  for (let i = 0; i < 9; i++) { // petit suspense
+    state.roulettePick = cands[Math.floor(Math.random() * cands.length)];
+    if (box) box.innerHTML = rouletteResultHtml();
+    await sleep(60 + i * 26);
+  }
+  state.roulettePick = cands[Math.floor(Math.random() * cands.length)];
+  if (navigator.vibrate) navigator.vibrate(18);
+  openRoulette();
 }
 
 /* ---------------- Vue détail série ---------------- */
@@ -2642,6 +2899,8 @@ document.querySelectorAll('nav.tabs button').forEach((b, i) => {
 });
 $('#btn-add').innerHTML = ICONS.plus;
 $('#btn-refresh').innerHTML = ICONS.refresh;
+$('#btn-dice').innerHTML = ICONS.dice;
+$('#btn-dice').addEventListener('click', () => { state.roulettePick = null; openRoulette(); });
 $('#btn-add').addEventListener('click', () => {
   setTab('discover');
   setTimeout(() => { const i = $('#discover-search'); if (i) i.focus(); }, 60);
@@ -2677,6 +2936,13 @@ function renderKeepFocus(id) {
 
 document.body.addEventListener('change', e => {
   if (e.target.dataset.action === 'import-files' && e.target.files.length) handleFiles([...e.target.files]);
+  if (e.target.dataset.r) { // filtres de la roulette
+    state.roulette[e.target.dataset.r] = e.target.dataset.r === 'genre' ? +e.target.value : e.target.value;
+    if (e.target.dataset.r === 'type' && e.target.value === 'movie') state.roulette.duree = 'all';
+    state.roulettePick = null;
+    openRoulette();
+    return;
+  }
   if (e.target.classList.contains('fsel')) {
     const f = e.target.dataset.f;
     const v = e.target.value;
@@ -2726,7 +2992,17 @@ document.body.addEventListener('click', async e => {
   }
   else if (act === 'open-movie') openMovieModal(el.dataset.uuid);
   else if (act === 'open-stats') openStats();
-  else if (act === 'close-stats') { if (statsOpen) history.back(); }
+  else if (act === 'close-stats') { if (overlayMode) history.back(); }
+  else if (act === 'open-journal') openOverlay('journal');
+  else if (act === 'open-wrapped') { state.wrappedYear = null; openOverlay('wrapped'); }
+  else if (act === 'wrapped-year') { state.wrappedYear = +el.dataset.y; renderWrapped(); }
+  else if (act === 'journal-more') { state.journalLimit += 120; renderJournal(); }
+  else if (act === 'roulette-go') rouletteGo();
+  else if (act === 'roulette-open') {
+    const { kind, uuid } = el.dataset;
+    history.back(); // ferme la modale, puis ouvre la fiche
+    setTimeout(() => { kind === 'tv' ? openSeries(uuid) : openMovieModal(uuid); }, 80);
+  }
   else if (act === 'movie-watch') {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
     if (m) { await toggleMovieWatched(m); openMovieModal(m.uuid); render(); }
