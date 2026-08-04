@@ -419,6 +419,38 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 @keyframes sp{to{transform:rotate(360deg)}}
 .hidden{display:none!important}
 .loadrow{padding:16px;text-align:center;color:var(--txt2);font-size:13px}
+
+/* ---------- Animations ---------- */
+@keyframes riseIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes viewIn{from{opacity:0}to{opacity:1}}
+@keyframes bgIn{from{opacity:0}to{opacity:1}}
+@keyframes sheetUp{from{transform:translateY(34px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes navPop{0%{transform:scale(.82)}58%{transform:scale(1.16)}100%{transform:scale(1)}}
+@keyframes rowFlash{0%{background:rgba(74,222,128,.18)}100%{background:transparent}}
+@keyframes confettiFall{
+  0%{opacity:1;transform:translate3d(0,0,0) rotate(0)}
+  100%{opacity:0;transform:translate3d(var(--dx),var(--dy),0) rotate(var(--rot))}
+}
+#view{animation:viewIn .22s ease}
+.modal-bg{animation:bgIn .2s ease}
+.modal{animation:sheetUp .3s cubic-bezier(.22,.9,.28,1)}
+nav.tabs button .nico{display:block}
+nav.tabs button.on .nico{animation:navPop .42s cubic-bezier(.2,1.3,.35,1)}
+.eprow.flash{animation:rowFlash .7s ease-out}
+/* barres qui se remplissent */
+.progress i{transition:width .6s cubic-bezier(.22,.9,.28,1)}
+.sprog i{transition:width .6s cubic-bezier(.22,.9,.28,1)}
+.grow .gb i{transition:width .8s cubic-bezier(.22,.9,.28,1)}
+.seg{transition:height .7s cubic-bezier(.22,.9,.28,1)}
+/* confettis */
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:200;overflow:hidden}
+#confetti i{
+  position:absolute;width:8px;height:12px;border-radius:2px;
+  animation:confettiFall 1.5s cubic-bezier(.2,.6,.4,1) forwards;
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}
+}
 </style>
 </head>
 <body>
@@ -1632,7 +1664,7 @@ function seriesCard(s) {
       ${s.is_favorite ? `<span class="mfav">${ICONS.star}</span>` : ''}
       ${posterHtml(s, 'tv')}
       ${chip}
-      <span class="sprog ${pct === 100 ? 'full' : ''}"><i style="width:${pct}%"></i></span>
+      <span class="sprog ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%"></i></span>
     </div>
     <div class="mtitle">${esc(s.title)}</div>
     <div class="myear">${sub}</div>
@@ -2130,10 +2162,10 @@ function viewSettings() {
       <button class="btn ghost small" data-action="open-wrapped">🏆 Rétrospective</button>
     </div>
     <div class="statgrid">
-      <div class="stat"><div class="v">${state.series.length}</div><div class="l">séries</div></div>
-      <div class="stat"><div class="v">${p.w.toLocaleString('fr-FR')}</div><div class="l">épisodes vus</div></div>
-      <div class="stat"><div class="v">${state.movies.filter(m => m.is_watched).length}</div><div class="l">films vus</div></div>
-      <div class="stat"><div class="v">${state.movies.filter(m => !m.is_watched).length}</div><div class="l">films à voir</div></div>
+      <div class="stat"><div class="v" data-count="${state.series.length}">0</div><div class="l">séries</div></div>
+      <div class="stat"><div class="v" data-count="${p.w}">0</div><div class="l">épisodes vus</div></div>
+      <div class="stat"><div class="v" data-count="${state.movies.filter(m => m.is_watched).length}">0</div><div class="l">films vus</div></div>
+      <div class="stat"><div class="v" data-count="${state.movies.filter(m => !m.is_watched).length}">0</div><div class="l">films à voir</div></div>
     </div>
   </div>
 
@@ -2207,6 +2239,13 @@ function renderOverlay() {
   if (overlayMode === 'stats') renderStats();
   else if (overlayMode === 'journal') renderJournal();
   else if (overlayMode === 'wrapped') renderWrapped();
+}
+/* animations communes aux écrans plein page du Profil */
+function animateOverlay() {
+  const ov = $('#overlay-root');
+  animateBars(ov);
+  animateCounts(ov);
+  cascade(ov, '.panel, .scard');
 }
 
 /* Complète les genres manquants (une fois, résultats mémorisés) */
@@ -2317,8 +2356,8 @@ function renderStats() {
     <div class="chart ${small ? 'small' : ''}">
       ${cols.map(c => `<div class="ccol" title="${c.title || ''}">
         <div class="bars">
-          ${c.mv ? `<span class="seg mv" style="height:${c.mv / max * 100}%"></span>` : ''}
-          ${c.ep ? `<span class="seg ep" style="height:${c.ep / max * 100}%"></span>` : ''}
+          ${c.mv ? `<span class="seg mv" style="height:0" data-h="${c.mv / max * 100}%"></span>` : ''}
+          ${c.ep ? `<span class="seg ep" style="height:0" data-h="${c.ep / max * 100}%"></span>` : ''}
         </div>
         <span class="clab">${c.lab}</span>
       </div>`).join('')}
@@ -2333,10 +2372,10 @@ function renderStats() {
     <main style="padding-top:4px">
       <div class="panel">
         <div class="statgrid">
-          <div class="stat"><div class="v">${epCount.toLocaleString('fr-FR')}</div><div class="l">épisodes vus</div></div>
-          <div class="stat"><div class="v">${mvWatched.length.toLocaleString('fr-FR')}</div><div class="l">films vus</div></div>
-          <div class="stat"><div class="v">≈ ${heures.toLocaleString('fr-FR')} h</div><div class="l">devant l'écran*</div></div>
-          <div class="stat"><div class="v">${recN}</div><div class="l">record en 1 jour${recDay ? '<br>' + fmtDate(recDay) : ''}</div></div>
+          <div class="stat"><div class="v" data-count="${epCount}">0</div><div class="l">épisodes vus</div></div>
+          <div class="stat"><div class="v" data-count="${mvWatched.length}">0</div><div class="l">films vus</div></div>
+          <div class="stat"><div class="v" data-count="${heures}" data-prefix="≈ " data-suffix=" h">0</div><div class="l">devant l'écran*</div></div>
+          <div class="stat"><div class="v" data-count="${recN}">0</div><div class="l">record en 1 jour${recDay ? '<br>' + fmtDate(recDay) : ''}</div></div>
         </div>
         <p style="margin:10px 0 0;font-size:11px;color:var(--txt2)">* durées réelles des séries quand connues (sinon 40 min/épisode), 1h50/film</p>
       </div>
@@ -2355,7 +2394,7 @@ function renderStats() {
         ${barChart(years.map(y => ({ lab: y, ...byYear[y], title: `${y} : ${byYear[y].ep} ép. + ${byYear[y].mv} films` })), maxY, true)}
         ${years.map(y => `<div class="grow">
           <span class="gl">${y}</span>
-          <span class="gb"><i style="width:${(byYear[y].ep + byYear[y].mv) / maxY * 100}%"></i></span>
+          <span class="gb"><i style="width:0" data-w="${(byYear[y].ep + byYear[y].mv) / maxY * 100}%"></i></span>
           <span class="gv" style="width:auto">${byYear[y].ep.toLocaleString('fr-FR')} ép. · ${byYear[y].mv} films</span>
         </div>`).join('')}
         <p style="margin:10px 0 0;font-size:11px;color:var(--txt2)">L'année de création de ton compte TV Time inclut tout l'historique coché ce jour-là.</p>
@@ -2372,7 +2411,7 @@ function renderStats() {
         ${topG.length ? topG.map(([g, n]) => `
           <div class="grow">
             <span class="gl">${GENRE_NAMES[g]}</span>
-            <span class="gb"><i style="width:${n / maxG * 100}%"></i></span>
+            <span class="gb"><i style="width:0" data-w="${n / maxG * 100}%"></i></span>
             <span class="gv">${n}</span>
           </div>`).join('')
           : `<p style="color:var(--txt2);font-size:13px">Analyse en cours… <span class="spin"></span></p>`}
@@ -2383,12 +2422,13 @@ function renderStats() {
         ${topS.map(({ s, w }) => `
           <div class="grow" data-action="open-series" data-uuid="${s.uuid}">
             <span class="gl">${esc(s.title)}</span>
-            <span class="gb"><i style="width:${w / maxS * 100}%"></i></span>
+            <span class="gb"><i style="width:0" data-w="${w / maxS * 100}%"></i></span>
             <span class="gv">${w} ép.</span>
           </div>`).join('')}
       </div>
     </main>
   </div>`;
+  animateOverlay();
 }
 
 /* ---------------- Journal de visionnage ---------------- */
@@ -2464,6 +2504,7 @@ function renderJournal() {
     </main>
   </div>`;
   loadVisiblePosters();
+  animateOverlay();
 }
 
 /* ---------------- Rétrospective annuelle ---------------- */
@@ -2519,10 +2560,10 @@ function renderWrapped() {
         <div style="font-size:13px;color:var(--txt2);letter-spacing:.08em;text-transform:uppercase">Ton année</div>
         <div style="font-size:44px;font-weight:800;letter-spacing:-.03em;line-height:1.1;margin:2px 0 14px">${y}</div>
         <div class="statgrid">
-          <div class="stat"><div class="v">${eps.length.toLocaleString('fr-FR')}</div><div class="l">épisodes</div></div>
-          <div class="stat"><div class="v">${mvs.length}</div><div class="l">films</div></div>
-          <div class="stat"><div class="v">${heures.toLocaleString('fr-FR')} h</div><div class="l">de visionnage</div></div>
-          <div class="stat"><div class="v">${joursActifs}</div><div class="l">jours actifs</div></div>
+          <div class="stat"><div class="v" data-count="${eps.length}">0</div><div class="l">épisodes</div></div>
+          <div class="stat"><div class="v" data-count="${mvs.length}">0</div><div class="l">films</div></div>
+          <div class="stat"><div class="v" data-count="${heures}" data-suffix=" h">0</div><div class="l">de visionnage</div></div>
+          <div class="stat"><div class="v" data-count="${joursActifs}">0</div><div class="l">jours actifs</div></div>
         </div>
       </div>
 
@@ -2532,7 +2573,7 @@ function renderWrapped() {
         ${topSeries.map(t => `
           <div class="grow" data-action="open-series" data-uuid="${t.uuid}">
             <span class="gl">${esc(t.title)}</span>
-            <span class="gb"><i style="width:${t.n / maxTop * 100}%"></i></span>
+            <span class="gb"><i style="width:0" data-w="${t.n / maxTop * 100}%"></i></span>
             <span class="gv">${t.n} ép.</span>
           </div>`).join('') || `<p style="color:var(--txt2);font-size:13px">Aucune série cette année.</p>`}
       </div>
@@ -2549,6 +2590,7 @@ function renderWrapped() {
     </main>
   </div>`;
   loadVisiblePosters();
+  animateOverlay();
 }
 
 /* ---------------- Roulette : que regarder ce soir ? ---------------- */
@@ -2631,6 +2673,7 @@ async function rouletteGo() {
   state.roulettePick = cands[Math.floor(Math.random() * cands.length)];
   if (navigator.vibrate) navigator.vibrate(18);
   openRoulette();
+  confetti(26);
 }
 
 /* ---------------- Vue détail série ---------------- */
@@ -2675,6 +2718,7 @@ async function enrichSerieDetail(s) {
 
 function openSeries(uuid) {
   if (!detailUuid) pushLayer('detail');
+  lastDetailAnim = null; // rejoue la cascade d'ouverture
   detailUuid = uuid;
   renderDetail();
   const s = state.series.find(x => x.uuid === uuid);
@@ -2714,7 +2758,7 @@ function renderDetail() {
         </div>
         <div class="meta">${p.watched} / ${p.total} épisodes vus (${pct}%)</div>
         ${meta.nextEp ? `<div class="meta">📅 ${epCode(meta.nextEp.season, meta.nextEp.episode)} le ${fmtDate(meta.nextEp.date)}</div>` : ''}
-        <div class="progress ${pct === 100 ? 'full' : ''}" style="margin-top:10px;max-width:160px"><i style="width:${pct}%"></i></div>
+        <div class="progress ${pct === 100 ? 'full' : ''}" style="margin-top:10px;max-width:160px"><i style="width:0" data-w="${pct}%"></i></div>
       </div>
     </div>
     ${meta.overview ? `<p class="overview clamp" data-action="expand-overview">${esc(meta.overview)}</p>` : ''}
@@ -2773,8 +2817,14 @@ function renderDetail() {
     })()}
   </div>`;
   loadVisiblePosters();
+  animateBars($('#overlay-root'));
+  if (detailUuid !== lastDetailAnim) { // cascade à l'ouverture, pas à chaque coche
+    lastDetailAnim = detailUuid;
+    cascade($('#overlay-root'), '.dethead, #serie-extra, .detactions, details.season');
+  }
   enrichSerieDetail(s);
 }
+let lastDetailAnim = null;
 
 /* ---------------- Filmographie d'un acteur ---------------- */
 async function openPersonModal(pid) {
@@ -3038,9 +3088,11 @@ document.body.addEventListener('click', async e => {
     e.stopPropagation();
     const target = state.series.find(x => x.uuid === el.dataset.uuid);
     if (target) {
+      const avant = progress(target).watched;
       await markNext(target);
       if (navigator.vibrate) navigator.vibrate(12);
       el.dataset.stay ? renderDetail() : render();
+      feteSiTerminee(target, avant);
     }
   }
   else if (act === 'toggle-movie') {
@@ -3070,13 +3122,16 @@ document.body.addEventListener('click', async e => {
     }
   }
   else if (act === 'toggle-ep' && s) {
+    const avant = progress(s).watched;
     await toggleEpisode(s, +el.dataset.season, +el.dataset.ep, el.dataset.special === '1');
     renderDetail();
     const row = document.querySelector(`.eprow[data-season="${el.dataset.season}"][data-ep="${el.dataset.ep}"]${el.dataset.special === '1' ? '[data-special="1"]' : ':not([data-special])'}`);
     if (row && row.classList.contains('watched')) {
+      row.classList.add('flash');
       row.querySelector('.epcheck').style.animation = 'pop .3s ease';
       if (navigator.vibrate) navigator.vibrate(12);
     }
+    feteSiTerminee(s, avant);
   }
   else if (act === 'mark-all-watched' && s) {
     const p = progress(s);
@@ -3084,12 +3139,15 @@ document.body.addEventListener('click', async e => {
       await markAllWatched(s);
       if (navigator.vibrate) navigator.vibrate(20);
       renderDetail();
+      feteSiTerminee(s, p.watched);
     }
   }
   else if (act === 'mark-season' && s) {
     e.preventDefault(); e.stopPropagation();
+    const avant = progress(s).watched;
     await markSeason(s, +el.dataset.season, el.dataset.watched === '1');
     renderDetail();
+    feteSiTerminee(s, avant);
   }
   else if (act === 'toggle-fav' && s) { s.is_favorite = !s.is_favorite; await saveSeries(s); renderDetail(); }
   else if (act === 'toggle-stop' && s) {
@@ -3186,8 +3244,92 @@ document.body.addEventListener('click', async e => {
   }
 });
 
+/* ---------------- Animations ---------------- */
+/* Barres (largeurs/hauteurs) rendues à zéro puis portées à leur valeur */
+function animateBars(root) {
+  const cibles = (root || document).querySelectorAll('[data-w],[data-h]');
+  if (!cibles.length) return;
+  // délai court plutôt que rAF : fiable même quand la page n'est pas composée
+  setTimeout(() => cibles.forEach(el => {
+    if (el.dataset.w) { el.style.width = el.dataset.w; delete el.dataset.w; }
+    if (el.dataset.h) { el.style.height = el.dataset.h; delete el.dataset.h; }
+  }), 40);
+}
+
+/* Compteurs qui grimpent jusqu'à leur valeur */
+function animateCounts(root) {
+  (root || document).querySelectorAll('[data-count]').forEach(el => {
+    const cible = +el.dataset.count;
+    delete el.dataset.count;
+    if (!isFinite(cible)) return;
+    const pre = el.dataset.prefix || '', suf = el.dataset.suffix || '';
+    const duree = cible > 400 ? 1000 : 650, t0 = Date.now();
+    const finale = () => { el.textContent = pre + cible.toLocaleString('fr-FR') + suf; };
+    let fini = false;
+    const pas = () => {
+      if (fini) return;
+      const p = Math.min(1, (Date.now() - t0) / duree);
+      const e = 1 - Math.pow(1 - p, 3);
+      el.textContent = pre + Math.round(cible * e).toLocaleString('fr-FR') + suf;
+      if (p < 1) requestAnimationFrame(pas); else fini = true;
+    };
+    requestAnimationFrame(pas);
+    setTimeout(() => { if (!fini) { fini = true; finale(); } }, duree + 260); // filet de sécurité
+  });
+}
+
+/* Apparition en cascade des premières cartes */
+function cascade(root, sel) {
+  const els = [...root.querySelectorAll(sel)].slice(0, 24);
+  els.forEach((el, i) => {
+    el.style.animation = `riseIn .38s cubic-bezier(.22,.9,.28,1) ${i * 26}ms backwards`;
+  });
+}
+
+/* Pluie de confettis (moment de fête : série terminée, titre pioché) */
+function confetti(n = 46) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let box = $('#confetti');
+  if (!box) { box = document.createElement('div'); box.id = 'confetti'; document.body.appendChild(box); }
+  const couleurs = ['#f2f2f4', '#9aa1b0', '#4ade80', '#fbbf24', '#e8e8ec'];
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('i');
+    p.style.left = (12 + Math.random() * 76) + 'vw';
+    p.style.top = (24 + Math.random() * 18) + 'vh';
+    p.style.background = couleurs[i % couleurs.length];
+    p.style.setProperty('--dx', (Math.random() * 220 - 110) + 'px');
+    p.style.setProperty('--dy', (58 + Math.random() * 62) + 'vh');
+    p.style.setProperty('--rot', (Math.random() * 900 - 450) + 'deg');
+    p.style.animationDelay = (Math.random() * 220) + 'ms';
+    box.appendChild(p);
+  }
+  setTimeout(() => { box.innerHTML = ''; }, 2200);
+}
+
+/* Fête quand une série passe à 100 % */
+function feteSiTerminee(s, avant) {
+  const p = progress(s);
+  if (p.total && avant < p.total && p.watched === p.total) {
+    confetti();
+    if (navigator.vibrate) navigator.vibrate([16, 60, 26]);
+    toast(`🎉 « ${s.title} » terminée — bravo !`, 3600);
+    return true;
+  }
+  return false;
+}
+
+let lastViewKey = null;
 function afterRender() {
   loadVisiblePosters();
+  animateBars($('#view'));
+  animateCounts($('#view'));
+  // cascade uniquement quand on change réellement d'écran (pas à chaque re-rendu)
+  const key = [state.tab, state.seriesView, state.movieView, state.seriesFilter,
+    state.movieFilter, state.exploreType, state.exploreSource].join('|');
+  if (key !== lastViewKey) {
+    lastViewKey = key;
+    cascade($('#view'), '.mcard, .scard, .pcard, .panel, .hero');
+  }
   const heros = $('#heros');
   if (heros) {
     heros.addEventListener('scroll', () => {
