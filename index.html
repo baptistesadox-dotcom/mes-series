@@ -1734,16 +1734,21 @@ function viewNext() {
   return `
     <p style="font-size:12.5px;color:var(--txt2);margin-bottom:14px">${lastR}</p>
     <h2 class="section">À regarder <span class="cnt">${watchable.length}</span></h2>
-    ${watchable.length ? `<div class="card-list">${watchable.map(({ s, nx }) => `
+    ${watchable.length ? `<div class="card-list">${watchable.map(({ s, nx }) => {
+      const p = progress(s);
+      const pct = p.total ? Math.round(p.watched / p.total * 100) : 0;
+      return `
       <div class="scard" data-action="open-series" data-uuid="${s.uuid}">
         ${posterHtml(s, 'tv')}
         <div class="mid">
           <div class="title">${esc(s.title)}</div>
           <div class="sub" style="margin-top:5px"><span class="badge acc">${epCode(nx.season, nx.ep.number)}</span> ${esc(nx.ep.name || '')}</div>
-          <div class="sub" style="margin-top:5px">${(() => { const p = progress(s); return `${p.total - p.watched} épisode(s) restant(s)`; })()}</div>
+          <div class="progress ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%"></i></div>
+          <div class="sub" style="margin-top:5px">${p.watched}/${p.total} épisodes · ${pct}% · ${p.total - p.watched} restant(s)</div>
         </div>
         <button class="checkbtn" data-action="mark-next" data-uuid="${s.uuid}" title="Marquer vu">${ICONS.check}</button>
-      </div>`).join('')}</div>`
+      </div>`;
+    }).join('')}</div>`
       : `<div class="empty">Rien à regarder — tout est vu ! 🎉</div>`}
     ${(() => {
       if (!waiting.length) return '';
