@@ -511,6 +511,7 @@ const ICONS = {
 const state = {
   series: [], movies: [], tmdb: {}, settings: {},
   tab: 'series', seriesView: 'suivre', seriesFilter: 'encours',
+  seriesSort: 'recent', seriesGenre: -1, seriesDecade: 'all', seriesMetaBusy: null,
   movieView: 'avoir', movieFilter: 'vus',
   seriesSearch: '', movieSearch: '', discoverSearch: '',
   discoverResults: null, discoverLoading: false, trending: null,
@@ -722,6 +723,8 @@ async function resolveMeta(item, type) {
         posterBig: r.poster_path ? TMDB_IMG + 'w500' + r.poster_path : null,
         backdrop: r.backdrop_path ? TMDB_IMG + 'w780' + r.backdrop_path : null,
         overview: r.overview || prev.overview || null,
+        year: +((r.first_air_date || r.release_date || '').slice(0, 4)) || null,
+        genres: r.genre_ids || prev.genres,
       });
     }
     base.nextEp = prev.nextEp; base.tvStatus = prev.tvStatus;
@@ -744,6 +747,7 @@ async function resolveMeta(item, type) {
         backdrop: show.image ? show.image.original : null,
         overview: stripHtml(show.summary) || null,
         tvStatus: show.status,
+        year: show.premiered ? +show.premiered.slice(0, 4) : null,
       });
     }
   } else { // imdb (films) — API de suggestions, sans clé
@@ -838,6 +842,7 @@ async function refreshTmdb(s, full) {
   meta.overview = d.overview || meta.overview;
   meta.tvStatus = d.status;
   meta.genres = (d.genres || []).map(g => g.id);
+  meta.year = d.first_air_date ? +d.first_air_date.slice(0, 4) : (meta.year || null);
   meta.runtime = (d.episode_run_time && d.episode_run_time[0]) || (d.last_episode_to_air && d.last_episode_to_air.runtime) || meta.runtime || null;
   meta.nextEp = d.next_episode_to_air ? {
     season: d.next_episode_to_air.season_number, episode: d.next_episode_to_air.episode_number,
@@ -898,6 +903,7 @@ async function refreshTvmaze(s, full) {
   if (d.image) { meta.poster = d.image.medium; meta.posterBig = d.image.original; meta.backdrop = d.image.original; }
   meta.overview = stripHtml(d.summary) || meta.overview;
   meta.tvStatus = d.status;
+  if (d.premiered) meta.year = +d.premiered.slice(0, 4);
   const nx = d._embedded && d._embedded.nextepisode;
   meta.nextEp = nx ? { season: nx.season, episode: nx.number, name: nx.name, date: nx.airdate } : null;
   meta.fetchedAt = nowISO();
@@ -1700,6 +1706,20 @@ function viewSeries() {
   return seg + viewSeriesGrid();
 }
 
+/* Année de première diffusion d'une série (métadonnées, sinon « (2024) » du titre) */
+function serieYear(s) {
+  const m = state.tmdb[s.uuid];
+  return (m && m.year) || titleYear(s.title) || null;
+}
+const dansDecennie = (y, d) => {
+  if (d === 'all') return true;
+  if (!y) return false;
+  if (d === '2020') return y >= 2020;
+  if (d === '2010') return y >= 2010 && y <= 2019;
+  if (d === '2000') return y >= 2000 && y <= 2009;
+  return y < 2000;
+};
+
 function viewSeriesGrid() {
   const f = state.seriesFilter;
   const q = state.seriesSearch.toLowerCase();
@@ -1712,18 +1732,57 @@ function viewSeriesGrid() {
     if (f === 'favoris') return s.is_favorite;
     return true;
   });
-  list.sort((a, b) => lastActivity(b).localeCompare(lastActivity(a)));
+
+  // genres réellement présents dans la bibliothèque (TMDB), du plus fréquent au plus rare
+  const compteGenres = {};
+  for (const s of state.series) {
+    const m = state.tmdb[s.uuid];
+    for (const g of (m && m.genres) || []) if (GENRE_NAMES[g]) compteGenres[g] = (compteGenres[g] || 0) + 1;
+  }
+  const genresDispo = Object.entries(compteGenres).sort((a, b) => b[1] - a[1]);
+
+  if (state.seriesGenre >= 0) {
+    list = list.filter(s => { const m = state.tmdb[s.uuid]; return m && m.genres && m.genres.includes(state.seriesGenre); });
+  }
+  if (state.seriesDecade !== 'all') list = list.filter(s => dansDecennie(serieYear(s), state.seriesDecade));
+
+  const pct = s => { const p = progress(s); return p.total ? p.watched / p.total : 0; };
+  const tri = state.seriesSort;
+  if (tri === 'az') list.sort((a, b) => a.title.localeCompare(b.title, 'fr', { sensitivity: 'base' }));
+  else if (tri === 'za') list.sort((a, b) => b.title.localeCompare(a.title, 'fr', { sensitivity: 'base' }));
+  else if (tri === 'annee') list.sort((a, b) => (serieYear(b) || 0) - (serieYear(a) || 0));
+  else if (tri === 'annee-asc') list.sort((a, b) => (serieYear(a) || 9999) - (serieYear(b) || 9999));
+  else if (tri === 'progress') list.sort((a, b) => pct(b) - pct(a) || a.title.localeCompare(b.title, 'fr'));
+  else if (tri === 'reste') {
+    const reste = s => realEpisodes(s).filter(x => !x.ep.is_watched && !isFuture(x.ep)).length || 1e9;
+    list.sort((a, b) => reste(a) - reste(b));
+  }
+  else list.sort((a, b) => lastActivity(b).localeCompare(lastActivity(a)));
+
   const chips = [
     ['encours', 'En cours'], ['ajour', 'À jour'], ['pascommence', 'Pas commencées'],
     ['arretees', 'Arrêtées'], ['favoris', 'Favoris'], ['toutes', 'Toutes'],
   ];
+  const sel = (name, opts, val, label) => `<select class="fsel ${String(val) !== String(opts[0][0]) ? 'active' : ''}" data-f="${name}" aria-label="${label}">
+    ${opts.map(([v, l]) => `<option value="${v}" ${String(v) === String(val) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+  const filtresActifs = state.seriesSort !== 'recent' || state.seriesGenre >= 0 || state.seriesDecade !== 'all';
+  const busy = state.seriesMetaBusy;
+  const besoinMeta = state.seriesGenre >= 0 || state.seriesDecade !== 'all' || tri === 'annee' || tri === 'annee-asc';
   return `
     <div class="searchbar">${ICONS.search}<input id="series-search" placeholder="Rechercher dans mes séries…" value="${esc(state.seriesSearch)}"></div>
     <div class="chips">${chips.map(([k, l]) =>
       `<button class="chip ${f === k && !q ? 'on' : ''}" data-action="series-filter" data-f="${k}">${l}</button>`).join('')}</div>
+    <div class="fbar">
+      ${sel('ssort', [['recent', 'Activité récente'], ['az', 'A → Z'], ['za', 'Z → A'], ['annee', 'Année ↓'], ['annee-asc', 'Année ↑'], ['progress', 'Progression ↓'], ['reste', 'Presque finies']], state.seriesSort, 'Trier')}
+      ${sel('sgenre', [[-1, 'Tous genres'], ...genresDispo.map(([g, n]) => [g, `${GENRE_NAMES[g]} (${n})`])], state.seriesGenre, 'Genre')}
+      ${sel('sdecade', [['all', 'Toutes années'], ['2020', '2020+'], ['2010', '2010-2019'], ['2000', '2000-2009'], ['old', 'Avant 2000']], state.seriesDecade, 'Années')}
+      ${filtresActifs ? `<button class="chip" data-action="series-reset-filters" title="Réinitialiser le tri et les filtres">✕</button>` : ''}
+    </div>
+    ${busy && besoinMeta ? `<p class="loadrow" style="padding:4px 0 12px"><span class="spin"></span> Analyse de ta bibliothèque… <span id="series-meta-progress">${busy.done}/${busy.total}</span></p>` : ''}
+    <p style="font-size:12px;color:var(--txt2);margin:-4px 2px 10px">${list.length} série${list.length > 1 ? 's' : ''}</p>
     ${list.length
       ? `<div class="mgrid">${list.map(seriesCard).join('')}</div>`
-      : `<div class="empty">Aucune série ici.</div>`}`;
+      : `<div class="empty">Aucune série ne correspond.</div>`}`;
 }
 
 function viewNext() {
@@ -2274,6 +2333,56 @@ function animateOverlay() {
   animateBars(ov);
   animateCounts(ov);
   cascade(ov, '.panel, .scard');
+}
+
+/* Complète les métadonnées de TOUTES les séries (résolution, genres, année
+   de première diffusion) pour que les tris et filtres de « Mes séries »
+   couvrent toute la bibliothèque. Une seule passe par session ; les
+   résultats sont mémorisés, donc les passes suivantes sont quasi vides. */
+const seriesMetaManquante = s => {
+  const m = state.tmdb[s.uuid];
+  if (metaNeedsFetch(s, 'tv')) return true;
+  if (!m || !m.id) return false; // introuvable chez le fournisseur : rien à faire
+  return m.provider === 'tmdb' ? (!m.genres || m.year === undefined) : m.year === undefined;
+};
+const seriesMetaTentees = new Set(); // une tentative par série et par session (pas de boucle si échec)
+async function backfillSeriesMeta(cb) {
+  if (state.seriesMetaBusy) return;
+  const cibles = state.series.filter(s => !seriesMetaTentees.has(s.uuid) && seriesMetaManquante(s));
+  if (!cibles.length) return;
+  cibles.forEach(s => seriesMetaTentees.add(s.uuid));
+  state.seriesMetaBusy = { done: 0, total: cibles.length };
+  await Promise.all(cibles.map(s => pool(async () => {
+    try {
+      const m = await resolveMeta(s, 'tv');
+      if (m && m.id && m.provider === 'tmdb' && (!m.genres || m.year === undefined)) {
+        const d = await tget(`/tv/${m.id}`);
+        m.genres = (d.genres || []).map(g => g.id);
+        m.year = d.first_air_date ? +d.first_air_date.slice(0, 4) : null;
+        await saveMeta(m);
+      } else if (m && m.id && m.provider === 'tvmaze' && m.year === undefined) {
+        const show = await jget(`${TVMAZE}/shows/${m.id}`);
+        m.year = show.premiered ? +show.premiered.slice(0, 4) : null;
+        await saveMeta(m);
+      }
+    } catch (e) {}
+    if (state.seriesMetaBusy) {
+      state.seriesMetaBusy.done++;
+      const el = $('#series-meta-progress'); // mise à jour en place, sans redessiner l'écran
+      if (el) el.textContent = `${state.seriesMetaBusy.done}/${state.seriesMetaBusy.total}`;
+    }
+  })));
+  state.seriesMetaBusy = null;
+  cb && cb();
+}
+
+/* Re-rendu après une tâche de fond, sans voler le focus d'un champ en cours de saisie */
+function rerenderSansPerturber() {
+  const a = document.activeElement;
+  const dansVue = a && $('#view').contains(a);
+  if (dansVue && a.tagName === 'SELECT') { setTimeout(rerenderSansPerturber, 900); return; }
+  if (dansVue && a.tagName === 'INPUT' && a.id) { renderKeepFocus(a.id); return; }
+  render();
 }
 
 /* Complète les genres manquants (une fois, résultats mémorisés) */
@@ -2887,6 +2996,7 @@ async function enrichSerieDetail(s) {
       trailer: pickTrailer(d.videos),
     };
     meta.genres = (d.genres || []).map(g => g.id);
+    if (d.first_air_date) meta.year = +d.first_air_date.slice(0, 4);
     meta.runtime = (d.episode_run_time && d.episode_run_time[0]) || (d.last_episode_to_air && d.last_episode_to_air.runtime) || meta.runtime || null;
     await saveMeta(meta);
     if (detailUuid === s.uuid) renderDetail();
@@ -3176,6 +3286,9 @@ document.body.addEventListener('change', e => {
     if (f === 'msort') { state.movieSort = v; state.movieLimit = 60; }
     else if (f === 'mgenre') { state.movieGenre = +v; state.movieLimit = 60; }
     else if (f === 'mdecade') { state.movieDecade = v; state.movieLimit = 60; }
+    else if (f === 'ssort') state.seriesSort = v;
+    else if (f === 'sgenre') state.seriesGenre = +v;
+    else if (f === 'sdecade') state.seriesDecade = v;
     else state.dFilters[f] = (f === 'genre' || f === 'note') ? +v : v;
     render();
   }
@@ -3191,6 +3304,7 @@ document.body.addEventListener('click', async e => {
   else if (act === 'movie-view') { state.movieView = el.dataset.v; state.movieSearch = ''; state.movieLimit = 60; render(); }
   else if (act === 'series-filter') { state.seriesFilter = el.dataset.f; state.seriesSearch = ''; render(); }
   else if (act === 'movie-filter') { state.movieFilter = el.dataset.f; state.movieSearch = ''; state.movieLimit = 60; render(); }
+  else if (act === 'series-reset-filters') { state.seriesSort = 'recent'; state.seriesGenre = -1; state.seriesDecade = 'all'; render(); }
   else if (act === 'open-series') openSeries(el.dataset.uuid);
   else if (act === 'close-detail') closeDetail();
   else if (act === 'close-modal') { if (e.target === el) closeModalViaHistory(); }
@@ -3517,6 +3631,12 @@ function afterRender() {
   loadVisiblePosters();
   animateBars($('#view'));
   animateCounts($('#view'));
+  // « Mes séries » : complète en fond les années/genres manquants pour les filtres
+  if (state.tab === 'series' && state.seriesView === 'grid' && !state.seriesMetaBusy) {
+    backfillSeriesMeta(() => {
+      if (state.tab === 'series' && state.seriesView === 'grid') rerenderSansPerturber();
+    });
+  }
   // cascade uniquement quand on change réellement d'écran (pas à chaque re-rendu)
   const key = [state.tab, state.seriesView, state.movieView, state.seriesFilter,
     state.movieFilter, state.exploreType, state.exploreSource].join('|');
