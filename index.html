@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -12,7 +12,7 @@
 :root{
   /* OLED Minimal cadré : noir pur, quasi monochrome, contours marqués */
   --bg:#000; --bg2:#0d0d0f; --bg3:#17171a; --line:#313138;
-  --txt:#f2f2f4; --txt2:#7d7f88;
+  --txt:#f2f2f4; --txt2:#8a8c95;
   --acc:#e8e8ec; --acc2:#c9c9d2; --onacc:#000;
   --grad:linear-gradient(135deg,#f2f2f4,#c9c9d2);
   --ok:#4ade80; --warn:#fbbf24; --danger:#f87171;
@@ -155,7 +155,8 @@ h2.section:first-child{margin-top:4px}
 h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 
 /* ---------- Movies / discover grids ---------- */
-.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:13px}
+.mgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (min-width:520px){.mgrid{grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:13px}}
 .mcard{position:relative}
 .mcard .poster{width:100%;height:auto;aspect-ratio:2/3}
 .mcard .mtitle{font-size:12.5px;font-weight:550;margin-top:7px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -163,7 +164,7 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 .mcard .mtoggle{
   position:absolute;top:7px;right:7px;width:31px;height:31px;border-radius:11px;
   background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;
-  color:rgba(255,255,255,.55);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.12);
 }
 .mcard .mtoggle svg{width:15px;height:15px}
 .mcard.watched .mtoggle{background:linear-gradient(135deg,#34d399,#10b981);color:#07120c;border-color:transparent}
@@ -186,7 +187,7 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 .mcard .schip{
   position:absolute;top:7px;right:7px;min-width:26px;height:26px;border-radius:10px;
   padding:0 7px;display:flex;align-items:center;justify-content:center;
-  background:rgba(0,0,0,.72);backdrop-filter:blur(6px);
+  background:rgba(0,0,0,.72);
   border:1px solid #45454d;color:var(--txt);
   font-size:12px;font-weight:700;
 }
@@ -208,7 +209,7 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 /* bouton d'ajout rapide sur les vignettes Découvrir */
 .qadd{
   position:absolute;top:6px;right:6px;width:27px;height:27px;border-radius:10px;
-  background:rgba(0,0,0,.72);color:var(--txt);backdrop-filter:blur(6px);
+  background:rgba(0,0,0,.72);color:var(--txt);
   border:1px solid rgba(255,255,255,.38);
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 2px 8px rgba(0,0,0,.4);
@@ -313,18 +314,18 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 .hero .hb{display:flex;gap:8px}
 .htag{
   position:absolute;top:10px;left:10px;font-size:11px;font-weight:700;
-  background:rgba(0,0,0,.72);backdrop-filter:blur(6px);color:var(--warn);
+  background:rgba(0,0,0,.72);color:var(--warn);
   padding:4px 10px;border-radius:999px;border:1px solid rgba(251,191,36,.4);
 }
 .rchip{
   position:absolute;bottom:6px;left:6px;font-size:10.5px;font-weight:700;
-  background:rgba(0,0,0,.78);backdrop-filter:blur(4px);color:var(--warn);
+  background:rgba(0,0,0,.78);color:var(--warn);
   padding:2px 7px;border-radius:8px;z-index:1;
 }
 .rchip.soon{color:#7dd3fc}
 .hideb{
   position:absolute;top:7px;left:7px;width:25px;height:25px;border-radius:9px;
-  background:rgba(0,0,0,.72);backdrop-filter:blur(6px);color:var(--txt2);
+  background:rgba(0,0,0,.72);color:var(--txt2);
   border:1px solid rgba(255,255,255,.14);font-size:12px;
   display:flex;align-items:center;justify-content:center;z-index:1;
 }
@@ -420,6 +421,10 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 .hidden{display:none!important}
 .loadrow{padding:16px;text-align:center;color:var(--txt2);font-size:13px}
 
+/* ---------- Focus clavier, actualisation en cours ---------- */
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+#btn-refresh.tourne svg{animation:sp 1s linear infinite}
+
 /* ---------- Animations ---------- */
 @keyframes riseIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
 @keyframes viewIn{from{opacity:0}to{opacity:1}}
@@ -450,6 +455,8 @@ nav.tabs button.on .nico{animation:navPop .42s cubic-bezier(.2,1.3,.35,1)}
 }
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}
+  .sk{animation:none!important}
+  .spin,#btn-refresh.tourne svg{animation-duration:1.6s!important}
 }
 </style>
 </head>
@@ -473,7 +480,7 @@ nav.tabs button.on .nico{animation:navPop .42s cubic-bezier(.2,1.3,.35,1)}
 
 <div id="overlay-root"></div>
 <div id="modal-root"></div>
-<div id="toast"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 
 <script>
 'use strict';
@@ -481,7 +488,7 @@ nav.tabs button.on .nico{animation:navPop .42s cubic-bezier(.2,1.3,.35,1)}
    Mes Séries — suivi de séries & films (remplaçant TV Time)
    Données 100% locales (IndexedDB).
    Métadonnées : TMDB (clé perso, fr) avec repli automatique
-   sans clé sur TVMaze (séries) et iTunes (films).
+   sans clé sur TVMaze (séries) et IMDb (films).
    ============================================================ */
 
 const TMDB = 'https://api.themoviedb.org/3';
@@ -520,7 +527,7 @@ const state = {
   journalLimit: 120, wrappedYear: null,
   menageMois: 6, menageIgnore: new Set(),
   roulette: { type: 'all', genre: -1, duree: 'all' }, roulettePick: null,
-  exploreFeed: { key: null, items: [], page: 0, totalPages: 1, loading: false, seen: null },
+  exploreFeed: { key: null, items: [], page: 0, totalPages: 1, loading: false, seen: null, error: null, vides: 0 },
   dFilters: { type: 'all', genre: -1, note: 0, annee: 'all' },
   movieSort: 'recent', movieGenre: -1, movieDecade: 'all', movieLimit: 60,
   hidden: new Set(),
@@ -550,6 +557,7 @@ const DB = {
       const rq = fn(tx.objectStore(store));
       tx.oncomplete = () => res(rq && rq.result);
       tx.onerror = () => rej(tx.error);
+      tx.onabort = () => rej(tx.error || new Error('transaction annulée'));
     });
   },
   getAll: s => DB.op(s, 'readonly', o => o.getAll()),
@@ -564,19 +572,32 @@ const DB = {
 let changedTimer = null;
 function markChanged() {
   state.changedAt = nowISO();
+  libVersion++;
   clearTimeout(changedTimer);
-  changedTimer = setTimeout(() => DB.kvSet('changedAt', state.changedAt), 800);
+  // court délai pour regrouper les rafales, sans risquer de perdre l'info si l'app est fermée aussitôt
+  changedTimer = setTimeout(() => DB.kvSet('changedAt', state.changedAt), 150);
 }
 const saveSeries = s => { markChanged(); return DB.put('series', s); };
 const saveMovie  = m => { markChanged(); return DB.put('movies', m); };
-const saveMeta   = t => { state.tmdb[t.uuid] = t; return DB.put('tmdb', t); };
+const saveMeta   = t => { metaSure(t); state.tmdb[t.uuid] = t; libVersion++; return DB.put('tmdb', t); };
 const saveSettings = () => DB.kvSet('settings', state.settings);
 
 /* ---------------- Utilitaires ---------------- */
 const $ = sel => document.querySelector(sel);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* Données venues de l'extérieur (fournisseurs, sauvegardes, gist) : seules des adresses
+   d'images des 3 sources connues et des identifiants au format sûr sont acceptés. */
+const safeImg = u => /^https:\/\/(image\.tmdb\.org|static\.tvmaze\.com|m\.media-amazon\.com)\/[^"'()<>\s\\]+$/.test(u || '') ? u : null;
+const uuidSur = u => /^[\w-]{1,64}$/.test(u || '');
+function metaSure(t) {
+  if (!t || !uuidSur(t.uuid)) return null;
+  for (const k of ['poster', 'posterBig', 'backdrop']) if (k in t) t[k] = safeImg(t[k]);
+  return t;
+}
 const nowISO = () => new Date().toISOString();
-const fmtDate = d => d ? new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+// une date seule « AAAA-MM-JJ » est lue comme un jour local (pas minuit UTC)
+const asDate = d => /^\d{4}-\d{2}-\d{2}$/.test(d) ? new Date(d + 'T00:00:00') : new Date(d);
+const fmtDate = d => d ? asDate(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
 const pad2 = n => String(n).padStart(2, '0');
 const epCode = (s, e) => `S${pad2(s)}E${pad2(e)}`;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -621,13 +642,22 @@ function lastActivity(s) {
       if (ep.watched_at && ep.watched_at > max) max = ep.watched_at;
   return max;
 }
-function isFuture(ep) { return ep.air_date && ep.air_date > new Date().toISOString().slice(0, 10); }
+/* Jour LOCAL « AAAA-MM-JJ » d'une date ou d'un horodatage ISO. Les dates de
+   diffusion sont des jours calendaires ; les horodatages de visionnage sont
+   en UTC : sans conversion, ce qui est vu après minuit tombait la veille. */
+function dayOf(d) {
+  const x = d instanceof Date ? d : new Date(d);
+  return `${x.getFullYear()}-${pad2(x.getMonth() + 1)}-${pad2(x.getDate())}`;
+}
+function isFuture(ep) { return !!ep.air_date && ep.air_date > dayOf(new Date()); }
+/* Épisodes déjà diffusés et pas encore vus : la seule définition de « restant » */
+function episodesRestants(s) { return realEpisodes(s).filter(x => !x.ep.is_watched && !isFuture(x.ep)).length; }
 function autoStatus(s) {
   if (s.status === 'stopped') return;
-  const p = progress(s);
-  if (p.total > 0 && p.watched === p.total) s.status = 'up_to_date';
-  else if (p.watched > 0) s.status = 'continuing';
-  else s.status = 'not_started_yet';
+  const eps = realEpisodes(s);
+  if (!eps.some(x => x.ep.is_watched)) s.status = 'not_started_yet';
+  else if (eps.some(x => !x.ep.is_watched && !isFuture(x.ep))) s.status = 'continuing';
+  else s.status = 'up_to_date'; // tout ce qui est diffusé est vu (les annonces ne comptent pas)
 }
 const STATUS_LABEL = {
   continuing: 'En cours', up_to_date: 'À jour',
@@ -636,7 +666,7 @@ const STATUS_LABEL = {
 
 /* ================= FOURNISSEURS DE MÉTADONNÉES =================
    TMDB si une clé est configurée (images + textes en français),
-   sinon TVMaze (séries) et iTunes (films) — gratuits, sans clé. */
+   sinon TVMaze (séries) et IMDb (films) — gratuits, sans clé. */
 
 function tmdbKey() { return (state.settings.tmdbKey || '').trim(); }
 function providerFor(type) { return tmdbKey() ? 'tmdb' : (type === 'tv' ? 'tvmaze' : 'imdb'); }
@@ -688,9 +718,12 @@ function metaNeedsFetch(item, type) {
   const cur = state.tmdb[item.uuid];
   if (!cur) return true;
   const pref = providerFor(type);
-  if (cur.provider === 'tmdb') return false;          // déjà la meilleure source
-  if (pref === 'tmdb') return true;                   // clé ajoutée → on améliore
-  if (cur.provider === pref) return false;            // déjà tenté avec ce fournisseur
+  // un « introuvable » n'est pas définitif (titre mal reconnu, fiche créée plus tard) : nouvel essai après 7 jours
+  const recent = d => !!d && Date.now() - new Date(d).getTime() < 7 * 86400000;
+  if (cur.provider === 'tmdb' && cur.id) return false;          // déjà la meilleure source
+  if (!cur.id) return !recent([cur.missAt, cur.tmdbMissAt, cur.fetchedAt].filter(Boolean).sort().pop());
+  if (pref === 'tmdb') return !recent(cur.tmdbMissAt);          // clé ajoutée → on améliore
+  if (cur.provider === pref) return false;                      // déjà résolu avec ce fournisseur
   return !cur.poster;
 }
 
@@ -712,9 +745,19 @@ async function resolveMeta(item, type) {
       r = (type === 'tv' ? f.tv_results : f.movie_results)[0];
     }
     if (!r) {
-      const q = { query: item.title };
+      // « Foundation (2021) » → recherche « Foundation » limitée à 2021
+      const q = { query: String(item.title).replace(/\s*\(\d{4}\)\s*$/, '') };
       if (type === 'movie' && item.year) q.year = item.year;
+      if (type === 'tv' && titleYear(item.title)) q.first_air_date_year = titleYear(item.title);
       r = ((await tget(`/search/${type}`, q)).results || [])[0];
+    }
+    if (!r) {
+      // introuvable chez TMDB : on garde ce qu'on avait (affiche, fiche TVMaze/IMDb)
+      // et on note l'échec pour ne réessayer que dans quelques jours
+      const garde = prev.uuid ? { ...prev, tmdbMissAt: nowISO(), ...(prev.id ? {} : { missAt: nowISO() }) }
+        : { ...base, missAt: nowISO() };
+      await saveMeta(garde);
+      return garde;
     }
     if (r) {
       Object.assign(base, {
@@ -729,16 +772,18 @@ async function resolveMeta(item, type) {
     }
     base.nextEp = prev.nextEp; base.tvStatus = prev.tvStatus;
   } else if (pref === 'tvmaze') {
-    let show = null;
-    try {
-      if (item.id && item.id.imdb) show = await jget(`${TVMAZE}/lookup/shows?imdb=${item.id.imdb}`);
-    } catch (e) {}
-    try {
-      if (!show && item.id && item.id.tvdb) show = await jget(`${TVMAZE}/lookup/shows?thetvdb=${item.id.tvdb}`);
-    } catch (e) {}
-    try {
-      if (!show) show = await jget(`${TVMAZE}/singlesearch/shows?q=${encodeURIComponent(item.title)}`);
-    } catch (e) {}
+    // « introuvable » (404) et panne (réseau, 429, 5xx) ne sont pas la même chose :
+    // une panne ne doit jamais marquer la série comme introuvable
+    let show = null, panne = false;
+    const essai = async url => {
+      try { return await jget(url); }
+      catch (e) { if (!/HTTP 404/.test(e.message)) panne = true; return null; }
+    };
+    if (item.id && item.id.imdb) show = await essai(`${TVMAZE}/lookup/shows?imdb=${encodeURIComponent(item.id.imdb)}`);
+    if (!show && item.id && item.id.tvdb) show = await essai(`${TVMAZE}/lookup/shows?thetvdb=${encodeURIComponent(item.id.tvdb)}`);
+    if (!show) show = await essai(`${TVMAZE}/singlesearch/shows?q=${encodeURIComponent(String(item.title).replace(/\s*\(\d{4}\)\s*$/, ''))}`);
+    if (!show && panne) return prev.uuid ? prev : null; // on réessaiera plus tard
+    if (!show) base.missAt = nowISO();
     if (show) {
       Object.assign(base, {
         id: show.id,
@@ -808,11 +853,10 @@ const onScrollLoad = () => {
     // rendu progressif de la grille Films : 60 cartes de plus près du bas
     if (state.tab === 'movies' && state._movieTotal > state.movieLimit &&
         document.documentElement.scrollHeight - scrollY - innerHeight < 1200) {
-      state.movieLimit += 60;
-      render();
+      ajouterLotFilms();
     }
     // flux infini Explorer : page TMDB suivante près du bas
-    if (state.tab === 'discover' && !state.discoverSearch && state.exploreSource !== 'foryou' &&
+    if (state.tab === 'discover' && state.discoverSearch.trim().length < 2 && state.exploreSource !== 'foryou' &&
         document.documentElement.scrollHeight - scrollY - innerHeight < 1400) {
       loadExplorePage();
     }
@@ -830,12 +874,17 @@ function posterHtml(item, type, big) {
 
 /* ---------------- Actualisation (nouveaux épisodes) ---------------- */
 async function refreshSeries(s, full = false) {
-  return tmdbKey() ? refreshTmdb(s, full) : refreshTvmaze(s, full);
+  if (!tmdbKey()) return refreshTvmaze(s, full);
+  const r = await refreshTmdb(s, full);
+  // série absente de TMDB mais connue de TVMaze : on continue à la suivre par TVMaze
+  const m = state.tmdb[s.uuid];
+  if (!r.found && m && m.provider === 'tvmaze' && m.id) return refreshTvmaze(s, full);
+  return r;
 }
 
 async function refreshTmdb(s, full) {
   const meta = await resolveMeta(s, 'tv');
-  if (!meta || !meta.id) return { added: 0, found: false };
+  if (!meta || !meta.id || meta.provider !== 'tmdb') return { added: 0, found: false };
   const d = await tget(`/tv/${meta.id}`);
   if (d.poster_path) { meta.poster = TMDB_IMG + 'w342' + d.poster_path; meta.posterBig = TMDB_IMG + 'w500' + d.poster_path; }
   if (d.backdrop_path) meta.backdrop = TMDB_IMG + 'w780' + d.backdrop_path;
@@ -850,7 +899,7 @@ async function refreshTmdb(s, full) {
   } : null;
   meta.fetchedAt = nowISO();
 
-  let added = 0, removed = 0;
+  let added = 0, removed = 0, changed = false;
   const remoteSeasons = new Set((d.seasons || []).map(ds => ds.season_number));
   const toFetch = [];
   for (const ds of d.seasons || []) {
@@ -871,17 +920,38 @@ async function refreshTmdb(s, full) {
       s.seasons = s.seasons.filter(x => x !== local);
     }
   }
+  // Découpage différent (TV Time/TVDB : S1 12 + S2 12 ; TMDB : S1 de 24) : il reste
+  // alors des saisons locales inconnues de TMDB. Les épisodes « en trop » d'une
+  // saison TMDB sont ces mêmes épisodes : on plafonne les ajouts pour ne pas les
+  // dupliquer. Sans saison orpheline, aucun plafond (vrais nouveaux épisodes).
+  const orphelins = (s.seasons || []).filter(x => x.number > 0 && !x.is_specials && !remoteSeasons.has(x.number))
+    .reduce((a, x) => a + x.episodes.filter(e => !e.special).length, 0);
+  const surplus = (d.seasons || []).filter(ds => ds.season_number > 0).reduce((a, ds) => {
+    const loc = (s.seasons || []).find(x => x.number === ds.season_number);
+    return a + Math.max(0, (ds.episode_count || 0) - (loc ? loc.episodes.filter(e => !e.special).length : 0));
+  }, 0);
+  const budget = { n: orphelins ? Math.max(0, surplus - orphelins) : Infinity };
   for (const sn of toFetch) {
     const sd = await tget(`/tv/${meta.id}/season/${sn}`);
-    added += mergeEpisodes(s, sn, (sd.episodes || []).map(de => ({
+    const r = mergeEpisodes(s, sn, (sd.episodes || []).map(de => ({
       number: de.episode_number, name: de.name, air_date: de.air_date,
-    })), full);
+    })), full, budget);
+    added += r.added; changed = changed || r.changed;
     removed += cleanSeasonGhosts(s, sn);
   }
-  if (added || removed) autoStatus(s);
-  await saveSeries(s);
-  await saveMeta(meta);
-  return { added, removed, found: true };
+  return finirActualisation(s, meta, added, removed, changed);
+}
+
+/* Fin commune des actualisations : statut recalculé (une date qui passe peut le
+   changer), écriture seulement si quelque chose a bougé, et jamais sur un objet
+   remplacé entre-temps (synchro ou restauration pendant l'actualisation). */
+async function finirActualisation(s, meta, added, removed, changed) {
+  const avant = s.status;
+  autoStatus(s);
+  const actuelle = state.series.includes(s);
+  if (actuelle && (added || removed || changed || s.status !== avant)) await saveSeries(s);
+  if (state.tmdb[s.uuid] === meta) await saveMeta(meta);
+  return { added: actuelle ? added : 0, removed: actuelle ? removed : 0, found: true };
 }
 
 /* Après rapprochement avec la source : les épisodes non vus toujours sans
@@ -911,13 +981,15 @@ async function refreshTvmaze(s, full) {
   const eps = await jget(`${TVMAZE}/shows/${meta.id}/episodes`);
   const bySeason = {};
   for (const e of eps) (bySeason[e.season] = bySeason[e.season] || []).push({ number: e.number, name: e.name, air_date: e.airdate });
-  let added = 0, removed = 0;
+  let added = 0, removed = 0, changed = false;
+  const budget = { n: Infinity }; // TVMaze suit la numérotation TVDB de l'import
   for (const sn of Object.keys(bySeason)) {
     const local = (s.seasons || []).find(x => x.number === +sn);
     const localCount = local ? local.episodes.filter(e => !e.special).length : 0;
     const ghosts = local && local.episodes.some(e => !e.special && !e.is_watched && !e.air_date);
     if (bySeason[sn].length > localCount || ghosts || full) {
-      added += mergeEpisodes(s, +sn, bySeason[sn], full);
+      const r = mergeEpisodes(s, +sn, bySeason[sn], full, budget);
+      added += r.added; changed = changed || r.changed;
       removed += cleanSeasonGhosts(s, +sn);
     }
   }
@@ -930,20 +1002,22 @@ async function refreshTvmaze(s, full) {
       s.seasons = s.seasons.filter(x => x !== local);
     }
   }
-  if (added || removed) autoStatus(s);
-  await saveSeries(s);
-  await saveMeta(meta);
-  return { added, removed, found: true };
+  return finirActualisation(s, meta, added, removed, changed);
 }
 
-function mergeEpisodes(s, seasonNum, episodes, full) {
+/* Fusionne les épisodes d'une saison venant du fournisseur. Renvoie le nombre
+   d'ajouts et si des dates ou titres existants ont changé. */
+function mergeEpisodes(s, seasonNum, episodes, full, budget) {
   let local = (s.seasons || []).find(x => x.number === seasonNum);
-  if (!local) { local = { number: seasonNum, is_specials: false, episodes: [] }; s.seasons.push(local); }
-  let added = 0;
+  const nouvelle = !local;
+  if (!local) local = { number: seasonNum, is_specials: false, episodes: [] };
+  let added = 0, changed = false;
   for (const de of episodes) {
-    let ep = local.episodes.find(e => e.number === de.number && !e.special);
+    const ep = local.episodes.find(e => e.number === de.number && !e.special);
     if (!ep) {
       if (!de.air_date) continue; // pas de date = annonce spéculative, on n'ajoute pas
+      if (budget && budget.n <= 0) continue; // plafond anti-doublons (découpage différent)
+      if (budget) budget.n--;
       local.episodes.push({
         id: { tvdb: null, imdb: null }, number: de.number, name: de.name,
         special: false, is_watched: false, watched_at: null,
@@ -951,18 +1025,31 @@ function mergeEpisodes(s, seasonNum, episodes, full) {
       });
       added++;
     } else {
-      if (de.air_date) ep.air_date = de.air_date;
-      if (full && de.name) ep.name = de.name;
+      if (de.air_date && ep.air_date !== de.air_date) { ep.air_date = de.air_date; changed = true; }
+      if (full && de.name && ep.name !== de.name) { ep.name = de.name; changed = true; }
     }
   }
-  return added;
+  if (nouvelle && local.episodes.length) s.seasons.push(local); // jamais de saison vide
+  return { added, changed };
 }
 
+/* « 3 épisodes », « 1 épisode » — accord sans parenthèses */
+const pl = (n, sing, plur) => `${n.toLocaleString('fr-FR')} ${n > 1 ? (plur || sing + 's') : sing}`;
+
 async function refreshAll(quiet = false) {
-  if (state.refreshing) return;
+  if (state.refreshing) { if (!quiet) toast('Actualisation déjà en cours…'); return; }
   state.refreshing = true;
-  const targets = state.series.filter(s => s.status === 'continuing' || s.status === 'up_to_date');
-  if (!quiet) toast(`Recherche de nouveaux épisodes (${targets.length} séries)…`, 120000);
+  $('#btn-refresh') && $('#btn-refresh').classList.add('tourne');
+  // séries terminées, sans épisode annoncé, vérifiées il y a moins de 30 jours : inutile de les réinterroger chaque jour
+  const il30j = Date.now() - 30 * 86400000;
+  const targets = state.series.filter(s => {
+    if (s.status === 'stopped') return false;
+    const m = state.tmdb[s.uuid];
+    const finie = m && (m.tvStatus === 'Ended' || m.tvStatus === 'Canceled') && !m.nextEp &&
+      m.fetchedAt && new Date(m.fetchedAt).getTime() > il30j;
+    return !finie || realEpisodes(s).some(x => !x.ep.is_watched && !x.ep.air_date);
+  });
+  if (!quiet) toast(`Recherche de nouveaux épisodes (${pl(targets.length, 'série')})…`, 120000);
   let totalAdded = 0, totalRemoved = 0, done = 0, errors = 0;
   await Promise.all(targets.map(s => pool(async () => {
     try { const r = await refreshSeries(s); totalAdded += r.added; totalRemoved += r.removed || 0; }
@@ -970,18 +1057,29 @@ async function refreshAll(quiet = false) {
     done++;
     if (!quiet && done % 10 === 0 && done < targets.length) toast(`Actualisation… ${done}/${targets.length}`, 120000);
   })));
-  state.refreshing = false;
-  state.lastRefresh = nowISO();
-  await DB.kvSet('lastRefresh', state.lastRefresh);
-  const nettoyage = totalRemoved ? ` · ${totalRemoved} fantôme(s) retiré(s)` : '';
-  if (!quiet) {
-    toast(totalAdded
-      ? `${totalAdded} nouvel(s) épisode(s) trouvé(s) 🎉${nettoyage}`
-      : `Tout est à jour ✓${nettoyage}${errors ? ` (${errors} séries en erreur)` : ''}`);
-  } else if (totalAdded || totalRemoved) {
-    toast(`${totalAdded ? totalAdded + ' nouvel(s) épisode(s) 🎉' : 'Nettoyage'}${nettoyage}`, 4000);
+  // une date de diffusion qui passe peut changer un statut sans aucun ajout
+  for (const s of state.series) {
+    const avant = s.status; autoStatus(s);
+    if (s.status !== avant) await saveSeries(s);
   }
-  render();
+  state.refreshing = false;
+  $('#btn-refresh') && $('#btn-refresh').classList.remove('tourne');
+  const toutEchoue = targets.length > 0 && errors === targets.length;
+  if (!toutEchoue) { // sinon on réessaiera au prochain lancement au lieu d'attendre 20 h
+    state.lastRefresh = nowISO();
+    await DB.kvSet('lastRefresh', state.lastRefresh);
+  }
+  const nettoyage = totalRemoved ? ` · ${pl(totalRemoved, 'fantôme retiré', 'fantômes retirés')}` : '';
+  if (toutEchoue) {
+    if (!quiet) toast('Actualisation impossible — vérifie ta connexion ou ta clé TMDB', 4500);
+  } else if (!quiet) {
+    toast(totalAdded
+      ? `${pl(totalAdded, 'nouvel épisode trouvé', 'nouveaux épisodes trouvés')} 🎉${nettoyage}`
+      : `Tout est à jour ✓${nettoyage}${errors ? ` (${pl(errors, 'série')} en erreur)` : ''}`);
+  } else if (totalAdded || totalRemoved) {
+    toast(`${totalAdded ? pl(totalAdded, 'nouvel épisode', 'nouveaux épisodes') + ' 🎉' : 'Nettoyage'}${nettoyage}`, 4000);
+  }
+  if (!quiet || totalAdded || totalRemoved) rerenderSansPerturber();
 }
 
 /* ---------------- Recherche / tendances (Découvrir) ---------------- */
@@ -1000,7 +1098,7 @@ async function searchDiscover(q) {
         out.push({
           type: 'tv', provider: 'tvmaze', provId: show.id,
           title: show.name, year: show.premiered ? +show.premiered.slice(0, 4) : null,
-          poster: show.image ? show.image.medium : null,
+          poster: safeImg(show.image && show.image.medium),
           overview: stripHtml(show.summary),
           rating: (show.rating && show.rating.average) || null,
         });
@@ -1013,7 +1111,7 @@ async function searchDiscover(q) {
         out.push({
           type: 'movie', provider: 'imdb', provId: x.id,
           title: x.l, year: x.y || null,
-          poster: imdbImg(x.i && x.i.imageUrl, 342),
+          poster: safeImg(imdbImg(x.i && x.i.imageUrl, 342)),
           overview: x.s || null, // acteurs principaux, faute de synopsis
         });
       }
@@ -1028,15 +1126,15 @@ function normTmdb(x, type) {
     title: x.title || x.name,
     orig: x.original_title || x.original_name || null,
     year: +((x.release_date || x.first_air_date || '').slice(0, 4)) || null,
-    poster: x.poster_path ? TMDB_IMG + 'w342' + x.poster_path : null,
+    poster: x.poster_path ? safeImg(TMDB_IMG + 'w342' + x.poster_path) : null,
     overview: x.overview || null,
     rating: x.vote_average ? Math.round(x.vote_average * 10) / 10 : null,
     genreIds: x.genre_ids || [],
-    backdrop: x.backdrop_path ? TMDB_IMG + 'w780' + x.backdrop_path : null,
+    backdrop: x.backdrop_path ? safeImg(TMDB_IMG + 'w780' + x.backdrop_path) : null,
     date: x.release_date || x.first_air_date || null,
   };
 }
-const todayStr = () => new Date().toISOString().slice(0, 10);
+const todayStr = () => dayOf(new Date());
 /* Nombre de jours d'ici à une date (négatif = passé) */
 function joursAvant(d) {
   if (!d) return null;
@@ -1044,6 +1142,9 @@ function joursAvant(d) {
   const auj = new Date(); auj.setHours(0, 0, 0, 0);
   return Math.round((cible - auj) / 86400000);
 }
+/* Prochain épisode annoncé, seulement s'il n'est pas déjà passé : une date périmée
+   (actualisation pas encore faite) ne doit pas s'afficher comme « à venir » */
+const nextEpValide = m => (m && m.nextEp && (!m.nextEp.date || m.nextEp.date >= todayStr())) ? m.nextEp : null;
 /* « demain », « dans 3 jours », « dans 5 semaines »… */
 function compteARebours(d) {
   const n = joursAvant(d);
@@ -1065,6 +1166,14 @@ function normTitle(t) {
     .replace(/[̀-ͯ]/g, '').replace(/\(\d{4}\)/g, '')
     .replace(/[^a-z0-9]+/g, ' ').trim();
 }
+/* Recherche tolérante (accents, ponctuation, espaces en trop), avec repli simple quand la saisie
+   est dans une écriture non latine (que normTitle viderait) */
+function correspond(titre, saisie) {
+  const qn = normTitle(saisie);
+  if (qn) return normTitle(titre).includes(qn);
+  const qb = String(saisie || '').trim().toLowerCase();
+  return !qb || String(titre).toLowerCase().includes(qb);
+}
 function titleYear(t) {
   const m = String(t || '').match(/\((\d{4})\)/);
   return m ? +m[1] : null;
@@ -1073,18 +1182,32 @@ function titleYear(t) {
 /* Liste noire persistante des suggestions « pas intéressé » */
 const hkey = n => `${n.provider}:${n.type}:${n.provId}`;
 
+/* Index « déjà dans ma bibliothèque », reconstruit seulement quand la bibliothèque
+   change (et non plus pour chaque vignette d'Explorer). Les métadonnées orphelines
+   (titre supprimé, ajout interrompu) ne comptent pas. */
+let libVersion = 0, libIdx = null, libIdxSig = '';
+function libIndex() {
+  const sig = `${state.series.length}|${state.movies.length}|${Object.keys(state.tmdb).length}|${libVersion}`;
+  if (libIdx && sig === libIdxSig) return libIdx;
+  const existe = new Set([...state.series.map(s => s.uuid), ...state.movies.map(m => m.uuid)]);
+  const ids = new Set();
+  for (const m of Object.values(state.tmdb)) if (m.id && existe.has(m.uuid)) ids.add(`${m.provider}:${m.type}:${m.id}`);
+  const ajoute = (map, k, v) => { if (!map.has(k)) map.set(k, []); map.get(k).push(v); };
+  const films = new Map(), series = new Map();
+  for (const m of state.movies) ajoute(films, normTitle(m.title), m.year || null);
+  for (const s of state.series) ajoute(series, normTitle(s.title), titleYear(s.title));
+  libIdx = { ids, films, series };
+  libIdxSig = sig;
+  return libIdx;
+}
 function inLibrary(n) {
-  if (Object.values(state.tmdb).some(m => m.provider === n.provider && m.id === n.provId && m.type === n.type)) return true;
+  const ix = libIndex();
+  if (ix.ids.has(`${n.provider}:${n.type}:${n.provId}`)) return true;
   const cands = [n.title, n.orig].filter(Boolean).map(normTitle);
-  const match = t => cands.includes(normTitle(t));
-  if (n.type === 'movie') return state.movies.some(m => match(m.title) && (!n.year || !m.year || Math.abs(m.year - n.year) <= 1));
+  if (n.type === 'movie') return cands.some(c => (ix.films.get(c) || []).some(y => !n.year || !y || Math.abs(y - n.year) <= 1));
   // séries : si les deux années sont connues et diffèrent, ce sont deux séries
   // distinctes (ex. Avatar 2005 animé vs Avatar 2024 Netflix)
-  return state.series.some(s => {
-    if (!match(s.title)) return false;
-    const sy = titleYear(s.title);
-    return !(sy && n.year && Math.abs(sy - n.year) > 1);
-  });
+  return cands.some(c => (ix.series.get(c) || []).some(sy => !(sy && n.year && Math.abs(sy - n.year) > 1)));
 }
 
 /* Genres : identifiants TMDB (films / séries n'ont pas les mêmes) */
@@ -1229,7 +1352,7 @@ async function loadSection(key) {
     state.discoverData[key] = { error: e.message };
   }
   state.discoverBusy[key] = false;
-  if (state.tab === 'discover') render();
+  if (state.tab === 'discover') rerenderSansPerturber();
 }
 
 async function loadTrending() {
@@ -1268,7 +1391,7 @@ async function loadTrending() {
           .map(sh => ({
             type: 'tv', provider: 'tvmaze', provId: sh.id,
             title: sh.name, year: sh.premiered ? +sh.premiered.slice(0, 4) : null,
-            poster: sh.image.medium, overview: stripHtml(sh.summary),
+            poster: safeImg(sh.image.medium), overview: stripHtml(sh.summary),
           }));
         state.trending = { mode: 'tvmaze', tv, mv: [] };
         await DB.kvSet('trendingNoKey', { date: today, data: state.trending });
@@ -1276,12 +1399,18 @@ async function loadTrending() {
     }
   } catch (e) {}
   state.trendingLoading = false;
-  if (state.tab === 'discover') render();
+  if (state.tab === 'discover') rerenderSansPerturber();
 }
 
 /* ---------------- Ajout à la bibliothèque ---------------- */
+const ajoutsEnCours = new Set(); // un double appui ne crée jamais de doublon
 async function addItem(n, watched = false) {
+  const cle = `${n.type}:${n.provider}:${n.provId}`;
+  if (ajoutsEnCours.has(cle)) return;
+  if (inLibrary(n)) { toast(`« ${n.title} » est déjà dans ta bibliothèque`); return; }
+  ajoutsEnCours.add(cle);
   toast('Ajout en cours…', 30000);
+  let serieEnCours = null;
   try {
     if (n.type === 'movie') {
       const m = {
@@ -1333,25 +1462,34 @@ async function addItem(n, watched = false) {
         created_at: nowISO(), title: n.title, status: 'not_started_yet',
         is_favorite: false, seasons: [],
       };
-      if (n.provider === 'tmdb') {
-        await saveMeta({ uuid: s.uuid, type: 'tv', provider: 'tmdb', id: n.provId,
-          poster: n.poster, overview: n.overview, fetchedAt: nowISO() });
-      } else {
-        await saveMeta({ uuid: s.uuid, type: 'tv', provider: 'tvmaze', id: n.provId,
-          poster: n.poster, overview: n.overview, fetchedAt: nowISO() });
-      }
+      serieEnCours = s;
+      // méta en mémoire seulement : elle n'est enregistrée qu'avec la série, une fois l'ajout réussi
+      state.tmdb[s.uuid] = { uuid: s.uuid, type: 'tv', provider: n.provider === 'tmdb' ? 'tmdb' : 'tvmaze', id: n.provId,
+        poster: n.poster, overview: n.overview, year: n.year || null, genres: n.genreIds && n.genreIds.length ? n.genreIds : undefined, fetchedAt: nowISO() };
       state.series.push(s);
-      await refreshSeries(s, true); // récupère toutes les saisons + épisodes
+      const r = await refreshSeries(s, true); // récupère toutes les saisons + épisodes
+      if (!r.found) throw new Error('série introuvable chez le fournisseur');
       if (watched) await markAllWatched(s);
       await saveSeries(s);
+      if (state.tmdb[s.uuid]) await saveMeta(state.tmdb[s.uuid]);
+      serieEnCours = null;
       const p = progress(s);
       toast(watched
-        ? `« ${n.title} » ajoutée, ${p.watched} épisodes marqués vus ✓`
-        : `« ${n.title} » ajoutée (${p.total} épisodes) ✓`);
+        ? `« ${n.title} » ajoutée, ${pl(p.watched, 'épisode marqué vu', 'épisodes marqués vus')} ✓`
+        : `« ${n.title} » ajoutée (${pl(p.total, 'épisode')}) ✓`);
     }
     render();
   } catch (e) {
-    toast(`Erreur lors de l'ajout : ${e.message}`);
+    if (serieEnCours) { // ajout interrompu (réseau…) : aucune trace, le titre reste ajoutable
+      state.series = state.series.filter(x => x !== serieEnCours);
+      delete state.tmdb[serieEnCours.uuid];
+      await DB.del('series', serieEnCours.uuid).catch(() => {});
+      await DB.del('tmdb', serieEnCours.uuid).catch(() => {});
+    }
+    toast(`Ajout impossible : ${e.message}`);
+    render();
+  } finally {
+    ajoutsEnCours.delete(cle);
   }
 }
 
@@ -1359,25 +1497,66 @@ async function addItem(n, watched = false) {
 function classifyImport(arr) {
   const series = [], movies = [];
   for (const it of arr) {
-    if (!it || !it.uuid || !it.title) continue;
+    if (!it || !uuidSur(it.uuid) || !it.title) continue;
     if (Array.isArray(it.seasons)) series.push(it); else movies.push(it);
   }
   return { series, movies };
 }
+
+/* Import d'un export TV Time : FUSION avec la bibliothèque, jamais d'écrasement.
+   Une série ou un film déjà présent (même uuid, ou mêmes identifiants TVDB/IMDb)
+   garde sa progression ; l'import ne fait que cocher ce qui ne l'était pas, et
+   ne décoche jamais rien. */
 async function importData(arr) {
   const { series, movies } = classifyImport(arr);
+  const trouveSerie = s => state.series.find(x => x.uuid === s.uuid) ||
+    (s.id && s.id.tvdb && state.series.find(x => x.id && x.id.tvdb === s.id.tvdb)) ||
+    (s.id && s.id.imdb && state.series.find(x => x.id && x.id.imdb === s.id.imdb)) || null;
+  const trouveFilm = m => state.movies.find(x => x.uuid === m.uuid) ||
+    (m.id && m.id.imdb && state.movies.find(x => x.id && x.id.imdb === m.id.imdb)) || null;
+  const aEcrireS = [], aEcrireM = [];
+  let nouvellesS = 0, fusionneesS = 0, nouveauxM = 0, fusionnesM = 0;
   for (const s of series) {
-    autoStatus(s); // normalise les statuts parfois incohérents de l'export TV Time
-    const i = state.series.findIndex(x => x.uuid === s.uuid);
-    if (i >= 0) state.series[i] = s; else state.series.push(s);
-    await saveSeries(s);
+    const loc = trouveSerie(s);
+    if (!loc) {
+      autoStatus(s); // normalise les statuts parfois incohérents de l'export TV Time
+      state.series.push(s); aEcrireS.push(s); nouvellesS++;
+      continue;
+    }
+    let change = false;
+    for (const seaI of s.seasons || []) {
+      let seaL = loc.seasons.find(x => x.number === seaI.number);
+      if (!seaL) { loc.seasons.push(seaI); change = true; continue; }
+      for (const epI of seaI.episodes || []) {
+        const epL = seaL.episodes.find(e => e.number === epI.number && !!e.special === !!epI.special);
+        if (!epL) { seaL.episodes.push(epI); change = true; continue; }
+        if (epI.is_watched && !epL.is_watched) {
+          Object.assign(epL, { is_watched: true, watched_at: epI.watched_at, watched_count: Math.max(1, epI.watched_count || 0) });
+          change = true;
+        } else if (epI.is_watched && epL.is_watched && epI.watched_at && (!epL.watched_at || epI.watched_at < epL.watched_at)) {
+          epL.watched_at = epI.watched_at; change = true; // la date la plus ancienne est la vraie
+        }
+      }
+    }
+    if (s.is_favorite && !loc.is_favorite) { loc.is_favorite = true; change = true; }
+    if (change) { autoStatus(loc); aEcrireS.push(loc); }
+    fusionneesS++;
   }
   for (const m of movies) {
-    const i = state.movies.findIndex(x => x.uuid === m.uuid);
-    if (i >= 0) state.movies[i] = m; else state.movies.push(m);
-    await saveMovie(m);
+    const loc = trouveFilm(m);
+    if (!loc) { state.movies.push(m); aEcrireM.push(m); nouveauxM++; continue; }
+    let change = false;
+    if (m.is_watched && !loc.is_watched) { Object.assign(loc, { is_watched: true, watched_at: m.watched_at }); change = true; }
+    else if (m.is_watched && loc.is_watched && m.watched_at && (!loc.watched_at || m.watched_at < loc.watched_at)) { loc.watched_at = m.watched_at; change = true; }
+    if (m.is_favorite && !loc.is_favorite) { loc.is_favorite = true; change = true; }
+    if (change) aEcrireM.push(loc);
+    fusionnesM++;
   }
-  return { series: series.length, movies: movies.length };
+  // une seule transaction par magasin, au lieu d'une par élément
+  if (aEcrireS.length) await DB.putAll('series', aEcrireS);
+  if (aEcrireM.length) await DB.putAll('movies', aEcrireM);
+  if (aEcrireS.length || aEcrireM.length) markChanged();
+  return { series: series.length, movies: movies.length, nouvellesS, fusionneesS, nouveauxM, fusionnesM };
 }
 window.__import = importData; // hook de test/débogage
 
@@ -1392,47 +1571,76 @@ function fullBackupPayload() {
   };
 }
 
-/* Restauration complète (remplace tout) */
+/* Une sauvegarde est-elle exploitable ? (évite d'appliquer un fichier tronqué ou étranger) */
+function sauvegardeValide(p) {
+  return !!p && p.app === 'mes-series' && Array.isArray(p.series) && Array.isArray(p.movies) &&
+    p.series.every(s => s && uuidSur(s.uuid) && s.title && Array.isArray(s.seasons)) &&
+    p.movies.every(m => m && uuidSur(m.uuid) && m.title);
+}
+
+/* Restauration complète, ATOMIQUE : tout est remplacé dans une seule transaction.
+   Si quoi que ce soit échoue, rien n'est modifié (plus de base à moitié vidée). */
 async function importFull(p) {
-  await DB.clear('series'); await DB.clear('movies'); await DB.clear('tmdb');
-  state.series = p.series || [];
-  state.movies = p.movies || [];
-  state.tmdb = {};
-  for (const t of p.tmdb || []) state.tmdb[t.uuid] = t;
-  await DB.putAll('series', state.series);
-  await DB.putAll('movies', state.movies);
-  await DB.putAll('tmdb', p.tmdb || []);
-  state.hidden = new Set(p.hidden || []);
-  await DB.kvSet('hidden', [...state.hidden]);
-  if (p.settings && p.settings.tmdbKey && !tmdbKey()) {
-    state.settings.tmdbKey = p.settings.tmdbKey;
-    await saveSettings();
-  }
+  if (!sauvegardeValide(p)) throw new Error('sauvegarde invalide ou incomplète');
+  // jamais pendant une actualisation (synchro, restauration, connexion : tous les chemins passent ici)
+  while (state.refreshing) await sleep(300);
+  return new Promise((res, rej) => {
+    const tx = DB.db.transaction(['series', 'movies', 'tmdb', 'kv'], 'readwrite');
+    const S = tx.objectStore('series'), M = tx.objectStore('movies'), T = tx.objectStore('tmdb'), K = tx.objectStore('kv');
+    S.clear(); M.clear(); T.clear();
+    for (const s of p.series) S.put(s);
+    for (const m of p.movies) M.put(m);
+    const metas = (p.tmdb || []).map(metaSure).filter(Boolean);
+    for (const t of metas) T.put(t);
+    const hidden = [...new Set(p.hidden || [])];
+    K.put(hidden, 'hidden');
+    tx.oncomplete = async () => {
+      state.series = p.series;
+      state.movies = p.movies;
+      state.tmdb = {};
+      for (const t of metas) state.tmdb[t.uuid] = t;
+      state.hidden = new Set(hidden);
+      libVersion++;
+      if (p.settings && p.settings.tmdbKey && !tmdbKey()) {
+        state.settings.tmdbKey = p.settings.tmdbKey;
+        await saveSettings();
+      }
+      res();
+    };
+    tx.onerror = tx.onabort = () => rej(tx.error || new Error('restauration annulée'));
+  });
 }
 
 async function handleFiles(files) {
-  let tot = { series: 0, movies: 0 };
+  const tot = { nouvellesS: 0, fusionneesS: 0, nouveauxM: 0, fusionnesM: 0 };
+  let lu = false;
   for (const f of files) {
     try {
       const data = JSON.parse(await f.text());
       if (data && data.app === 'mes-series') {
         // sauvegarde complète → restauration intégrale
-        if (!confirm(`Restaurer la sauvegarde complète du ${fmtDate(data.exported_at)} ?\n(${(data.series || []).length} séries, ${(data.movies || []).length} films — remplace les données actuelles)`)) continue;
+        if (!sauvegardeValide(data)) throw new Error('format');
+        if (state.refreshing) { toast('Actualisation en cours — réessaie dans un instant'); return; }
+        if (!confirm(`Restaurer la sauvegarde complète du ${fmtDate(data.exported_at)} ?\n(${pl(data.series.length, 'série')}, ${pl(data.movies.length, 'film')} — remplace les données actuelles)`)) continue;
         await importFull(data);
         markChanged();
-        toast(`Sauvegarde restaurée : ${state.series.length} séries, ${state.movies.length} films ✓`);
+        toast(`Sauvegarde restaurée : ${pl(state.series.length, 'série')}, ${pl(state.movies.length, 'film')} ✓`);
         render();
         return;
       }
       if (!Array.isArray(data)) throw new Error('format');
       const r = await importData(data);
-      tot.series += r.series; tot.movies += r.movies;
+      for (const k in tot) tot[k] += r[k];
+      lu = true;
     } catch (e) {
       toast(`Fichier « ${f.name} » illisible ou au mauvais format`);
     }
   }
-  if (tot.series || tot.movies) {
-    toast(`Import réussi : ${tot.series} séries, ${tot.movies} films ✓`);
+  if (lu) {
+    const bouts = [];
+    if (tot.nouvellesS || tot.nouveauxM) bouts.push(`ajoutés : ${pl(tot.nouvellesS, 'série')}, ${pl(tot.nouveauxM, 'film')}`);
+    if (tot.fusionneesS || tot.fusionnesM) bouts.push(`déjà présents, fusionnés sans rien décocher : ${pl(tot.fusionneesS + tot.fusionnesM, 'titre')}`);
+    toast(`Import réussi ✓ ${bouts.join(' · ')}`, 5000);
     render();
   }
 }
@@ -1447,12 +1655,19 @@ function download(name, data) {
 
 /* ================= SYNCHRONISATION CLOUD =================
    Sauvegarde dans un gist GitHub privé. Chaque personne utilise
-   SON propre compte GitHub : les données ne se mélangent jamais. */
+   SON propre compte GitHub : les données ne se mélangent jamais.
+
+   Chaque synchro réussie mémorise la RÉVISION du gist (lastSyncVersion) :
+   - avant d'envoyer, on vérifie que le cloud n'a pas bougé depuis (sinon
+     on réconcilie au lieu d'écraser ce qu'un autre appareil a envoyé) ;
+   - au lancement et au retour dans l'app, une simple lecture de la révision
+     dit s'il y a quelque chose à télécharger (plus de 2 Mo à chaque ouverture). */
 const GH = 'https://api.github.com';
 const SYNC_FILE = 'mes-series-sync.json';
 
 async function ghFetch(path, opts = {}) {
   const r = await fetch(GH + path, {
+    cache: 'no-store', // l'API GitHub autorise 60 s de cache : une révision périmée fausserait la synchro
     ...opts,
     headers: {
       Authorization: 'Bearer ' + (state.settings.ghToken || ''),
@@ -1460,95 +1675,186 @@ async function ghFetch(path, opts = {}) {
       ...(opts.headers || {}),
     },
   });
-  if (r.status === 401) throw new Error('Jeton GitHub invalide ou expiré');
+  if (r.status === 401) { const e = new Error('Jeton GitHub invalide ou expiré'); e.auth = true; throw e; }
   if (!r.ok) throw new Error('GitHub ' + r.status);
   return r.json();
 }
 
-async function syncConnect(token) {
-  state.settings.ghToken = token.trim();
-  const user = await ghFetch('/user');
-  const gists = await ghFetch('/gists?per_page=100');
-  let g = gists.find(x => x.description === 'mes-series-sync');
-  if (!g) {
-    g = await ghFetch('/gists', {
-      method: 'POST',
-      body: JSON.stringify({
-        description: 'mes-series-sync', public: false,
-        files: { [SYNC_FILE]: { content: JSON.stringify(fullBackupPayload()) } },
-      }),
-    });
-    state.lastSync = nowISO();
-    await DB.kvSet('lastSync', state.lastSync);
-  }
-  state.settings.gistId = g.id;
-  state.settings.ghLogin = user.login;
-  await saveSettings();
-  return user.login;
+const syncPret = () => !!(state.settings.ghToken && state.settings.gistId);
+
+async function noterSynchro(version, depuisCloud) {
+  state.lastSync = nowISO();
+  if (version) state.lastSyncVersion = version;
+  if (depuisCloud) state.changedAt = state.lastSync; // les données locales sont celles du cloud
+  state.syncErr = null;
+  await DB.kvSet('lastSync', state.lastSync);
+  await DB.kvSet('lastSyncVersion', state.lastSyncVersion || null);
+  await DB.kvSet('changedAt', state.changedAt);
+  await DB.kvSet('syncErr', null);
 }
 
-async function syncPush() {
-  if (!state.settings.ghToken || !state.settings.gistId) throw new Error('Sync non configurée');
-  await ghFetch('/gists/' + state.settings.gistId, {
-    method: 'PATCH',
-    body: JSON.stringify({ files: { [SYNC_FILE]: { content: JSON.stringify(fullBackupPayload()) } } }),
-  });
-  state.lastSync = nowISO();
-  await DB.kvSet('lastSync', state.lastSync);
+let syncErrAnnoncee = false;
+async function noterErreurSynchro(e) {
+  state.syncErr = { msg: e.message, at: nowISO(), auth: !!e.auth };
+  await DB.kvSet('syncErr', state.syncErr);
+  if (e.auth && !syncErrAnnoncee) {
+    syncErrAnnoncee = true;
+    toast('☁️ Ton jeton GitHub a expiré — va dans Profil pour le renouveler', 6000);
+  }
+}
+
+async function versionDistante() {
+  const c = await ghFetch(`/gists/${state.settings.gistId}/commits?per_page=1`);
+  return (c && c[0] && c[0].version) || null;
 }
 
 async function syncFetchRemote() {
   const g = await ghFetch('/gists/' + state.settings.gistId);
   const f = g.files[SYNC_FILE];
-  if (!f) return null;
-  const content = f.truncated ? await (await fetch(f.raw_url)).text() : f.content;
-  return JSON.parse(content);
+  if (!f) return { data: null, version: (g.history && g.history[0] && g.history[0].version) || null };
+  const content = f.truncated ? await (await fetch(f.raw_url, { cache: 'no-store' })).text() : f.content;
+  return { data: JSON.parse(content), version: (g.history && g.history[0] && g.history[0].version) || null };
+}
+
+/* Envoi vers le cloud. Sans force, refuse d'écraser un cloud modifié ailleurs
+   depuis la dernière synchro (renvoie false : il faut réconcilier). */
+async function syncPush(force = false) {
+  if (!syncPret()) throw new Error('Sync non configurée');
+  if (!force && state.lastSyncVersion) {
+    const v = await versionDistante();
+    if (v && v !== state.lastSyncVersion) return false;
+  }
+  const g = await ghFetch('/gists/' + state.settings.gistId, {
+    method: 'PATCH',
+    body: JSON.stringify({ files: { [SYNC_FILE]: { content: JSON.stringify(fullBackupPayload()) } } }),
+  });
+  await noterSynchro(g.history && g.history[0] && g.history[0].version, false);
+  return true;
+}
+
+/* Connexion (ou reconnexion avec un nouveau jeton). Si une sauvegarde existe déjà
+   sur le compte, on la récupère ou on demande — jamais d'écrasement silencieux. */
+async function syncConnect(token) {
+  const ancienJeton = state.settings.ghToken, ancienGist = state.settings.gistId;
+  state.settings.ghToken = token.trim();
+  try {
+    const user = await ghFetch('/user');
+    const gists = await ghFetch('/gists?per_page=100');
+    let g = gists.find(x => x.description === 'mes-series-sync');
+    if (g && g.id === ancienGist && state.lastSyncVersion) {
+      // simple renouvellement du jeton : réconciliation normale
+      state.settings.gistId = g.id;
+    } else if (!g) {
+      g = await ghFetch('/gists', {
+        method: 'POST',
+        body: JSON.stringify({
+          description: 'mes-series-sync', public: false,
+          files: { [SYNC_FILE]: { content: JSON.stringify(fullBackupPayload()) } },
+        }),
+      });
+      state.settings.gistId = g.id;
+      await noterSynchro(g.history && g.history[0] && g.history[0].version, false);
+    } else {
+      state.settings.gistId = g.id;
+      const { data, version } = await syncFetchRemote();
+      const localVide = !state.series.length && !state.movies.length;
+      if (sauvegardeValide(data) && (data.series.length || data.movies.length)) {
+        if (localVide || confirm(`☁️ Une sauvegarde existe déjà sur ce compte : ${compteSauvegarde(data)}.\nCe téléphone : ${compteSauvegarde(state)}.\n\nOK = récupérer la sauvegarde du cloud\nAnnuler = garder ce téléphone (le cloud sera remplacé)`)) {
+          await importFull(data);
+          await noterSynchro(version, true);
+        } else {
+          await syncPush(true);
+        }
+      } else {
+        await syncPush(true);
+      }
+    }
+    state.settings.ghLogin = user.login;
+    state.syncErr = null; await DB.kvSet('syncErr', null);
+    await saveSettings();
+    if (g.id === ancienGist && state.lastSyncVersion) await syncAuto();
+    return user.login;
+  } catch (e) {
+    state.settings.ghToken = ancienJeton; state.settings.gistId = ancienGist;
+    throw e;
+  }
+}
+
+const compteSauvegarde = p =>`${pl((p.series || []).length, 'série')}, ${pl((p.movies || []).length, 'film')}`;
+
+/* Applique les données du cloud, avec un garde-fou si elles sont nettement plus pauvres */
+async function appliquerCloud(remote, version, demander) {
+  // chaque catégorie est comparée séparément : 90 séries perdues ne doivent pas
+  // passer inaperçues derrière 400 films inchangés
+  const vus = list => list.reduce((a, s) => a + (s.seasons || []).reduce((b, sea) => b + (sea.episodes || []).filter(e => e.is_watched).length, 0), 0);
+  const perte = (loc, dist) => loc > 5 && dist < loc * 0.8;
+  if (demander || perte(state.series.length, remote.series.length) || perte(state.movies.length, remote.movies.length) ||
+      perte(vus(state.series), vus(remote.series))) {
+    if (!confirm(`☁️ Le cloud contient ${compteSauvegarde(remote)}, ce téléphone ${compteSauvegarde(state)}.\n\nOK = prendre la version du CLOUD\nAnnuler = garder CE TÉLÉPHONE (le cloud sera remplacé)`)) {
+      await syncPush(true);
+      return false;
+    }
+  }
+  await importFull(remote);
+  await noterSynchro(version, true);
+  return true;
 }
 
 async function syncPull() {
-  const remote = await syncFetchRemote();
-  if (!remote || remote.app !== 'mes-series') throw new Error('Aucune sauvegarde valide dans le cloud');
-  await importFull(remote);
-  state.lastSync = nowISO();
-  state.changedAt = state.lastSync;
-  await DB.kvSet('lastSync', state.lastSync);
-  await DB.kvSet('changedAt', state.changedAt);
-  return remote;
+  const { data, version } = await syncFetchRemote();
+  if (!sauvegardeValide(data)) throw new Error('Aucune sauvegarde valide dans le cloud');
+  await importFull(data);
+  await noterSynchro(version, true);
+  return data;
 }
 
-/* Au lancement : réconciliation simple « dernière écriture gagne » */
-async function syncAuto() {
-  if (!state.settings.ghToken || !state.settings.gistId || navigator.onLine === false) return;
+/* Réconciliation : au lancement et à chaque retour dans l'app */
+let syncEnCours = null;
+function syncAuto() {
+  if (!syncPret() || navigator.onLine === false) return Promise.resolve();
+  if (!syncEnCours) syncEnCours = syncAutoInterne().finally(() => { syncEnCours = null; });
+  return syncEnCours;
+}
+async function syncAutoInterne() {
   try {
-    const remote = await syncFetchRemote();
-    const remoteAt = (remote && remote.exported_at) || '';
-    const localAt = state.changedAt || '';
-    const lastSync = state.lastSync || '';
-    if (remoteAt > lastSync && localAt > lastSync) {
-      // les deux côtés ont changé : on demande
-      if (confirm(`☁️ Le cloud a des données plus récentes (${fmtDate(remoteAt)}) ET ce téléphone a des changements locaux.\n\nOK = prendre le cloud\nAnnuler = garder ce téléphone (le cloud sera écrasé)`)) {
-        await importFull(remote);
-        state.lastSync = nowISO(); state.changedAt = state.lastSync;
-        await DB.kvSet('lastSync', state.lastSync); await DB.kvSet('changedAt', state.changedAt);
-        toast('☁️ Données du cloud restaurées'); render();
-      } else {
-        await syncPush();
-      }
-    } else if (remoteAt > lastSync) {
-      await importFull(remote);
-      state.lastSync = nowISO(); state.changedAt = state.lastSync;
-      await DB.kvSet('lastSync', state.lastSync); await DB.kvSet('changedAt', state.changedAt);
-      toast('☁️ Synchronisé depuis le cloud'); render();
-    } else if (localAt > lastSync) {
-      await syncPush(); // pousse silencieusement les changements locaux
+    const localChange = (state.changedAt || '') > (state.lastSync || '');
+    let distant = null, version = null, distantChange;
+    if (state.lastSyncVersion) {
+      version = await versionDistante();
+      distantChange = !!version && version !== state.lastSyncVersion;
+    } else { // anciennes installations : comparaison par date d'export
+      ({ data: distant, version } = await syncFetchRemote());
+      distantChange = !!distant && (distant.exported_at || '') > (state.lastSync || '');
     }
-  } catch (e) {}
+    if (!distantChange && !localChange) { if (version && !state.lastSyncVersion) await noterSynchro(version, false); return; }
+    if (!distantChange && localChange) { await syncPush(true); return; }
+    if (!distant || !sauvegardeValide(distant)) {
+      ({ data: distant, version } = await syncFetchRemote());
+      if (!sauvegardeValide(distant)) throw new Error('sauvegarde du cloud illisible');
+    }
+    if (distantChange && !localChange) {
+      if (await appliquerCloud(distant, version, false)) { toast('☁️ Synchronisé depuis le cloud'); rerenderSansPerturber(); }
+      return;
+    }
+    // les deux côtés ont changé : on demande
+    if (confirm(`☁️ Modifications des deux côtés.\n\nCloud (${fmtDate(distant.exported_at)}) : ${compteSauvegarde(distant)}\nCe téléphone : ${compteSauvegarde(state)}\n\nOK = garder la version du CLOUD\nAnnuler = garder CE TÉLÉPHONE (le cloud sera remplacé)`)) {
+      await importFull(distant);
+      await noterSynchro(version, true);
+      toast('☁️ Données du cloud restaurées'); rerenderSansPerturber();
+    } else {
+      await syncPush(true);
+    }
+  } catch (e) {
+    await noterErreurSynchro(e);
+  }
 }
 
 /* ---------------- Actions ---------------- */
 async function toggleEpisode(s, seasonNum, epNum, special = false) {
   const sea = s.seasons.find(x => x.number === seasonNum);
-  const ep = sea && sea.episodes.find(e => e.number === epNum && (special || !e.special));
+  // correspondance exacte du type : un spécial n° 3 ne doit jamais cocher l'épisode normal n° 3
+  const estSpecial = e => !!e.special || !!sea.is_specials || sea.number === 0;
+  const ep = sea && sea.episodes.find(e => e.number === epNum && estSpecial(e) === !!special);
   if (!ep) return;
   if (!ep.is_watched && isFuture(ep)) {
     toast(`Pas encore diffusé — sortie le ${fmtDate(ep.air_date)} 📅`);
@@ -1565,7 +1871,8 @@ async function markSeason(s, seasonNum, watched) {
   if (!sea) return;
   for (const ep of sea.episodes) {
     if (ep.special) continue;
-    if (watched && isFuture(ep)) continue;
+    // « Tout vu » ne touche pas aux épisodes déjà vus : leurs vraies dates sont conservées
+    if (watched && (isFuture(ep) || ep.is_watched)) continue;
     ep.is_watched = watched;
     ep.watched_at = watched ? nowISO() : null;
     ep.watched_count = watched ? Math.max(1, ep.watched_count || 0) : 0;
@@ -1611,15 +1918,21 @@ window.addEventListener('popstate', () => {
     else { $('#overlay-root').innerHTML = ''; render(); }
     return;
   }
-  if (overlayMode) { overlayMode = null; $('#overlay-root').innerHTML = ''; return; }
+  if (overlayMode) { overlayMode = null; overlayCle = null; $('#overlay-root').innerHTML = ''; render(); return; }
   if (state.tab !== 'series') { state.tab = 'series'; render(); }
 });
 
 function setTab(tab) {
+  // revenir sur Séries par la barre : on dépile l'entrée d'historique posée en partant,
+  // sinon un appui sur « retour » ne ferait plus rien
+  if (tab === 'series' && state.tab !== 'series' && history.state && history.state.layer === 'tab') { history.back(); return; }
   if (tab !== state.tab && state.tab === 'series') pushLayer('tab');
   state.tab = tab;
   render();
 }
+
+/* rafraîchit l'onglet ET l'écran plein page ouvert (Journal, Ménage…) s'il y en a un */
+function rafraichirEcrans() { render(); if (overlayMode && !detailUuid) renderOverlay(); }
 
 let lastRenderedTab = null;
 function render() {
@@ -1667,8 +1980,9 @@ function seriesCard(s) {
   const p = progress(s);
   const pct = p.total ? Math.round(p.watched / p.total * 100) : 0;
   const nx = nextUnwatched(s);
-  const remaining = realEpisodes(s).filter(x => !x.ep.is_watched && !isFuture(x.ep)).length;
+  const remaining = episodesRestants(s);
   const meta = state.tmdb[s.uuid];
+  const nep = nextEpValide(meta);
   // pastille sur l'affiche : épisodes restants, ✓ à jour, ou date à venir
   let chip, sub;
   if (remaining > 0) {
@@ -1676,7 +1990,7 @@ function seriesCard(s) {
     sub = nx ? epCode(nx.season, nx.ep.number) + ` · ${p.watched}/${p.total}` : `${p.watched}/${p.total}`;
   } else {
     const coming = (nx && nx.ep.air_date) ? { s: nx.season, e: nx.ep.number, d: nx.ep.air_date }
-      : (meta && meta.nextEp ? { s: meta.nextEp.season, e: meta.nextEp.episode, d: meta.nextEp.date } : null);
+      : (nep ? { s: nep.season, e: nep.episode, d: nep.date } : null);
     if (coming) {
       chip = `<span class="schip wait">📅</span>`;
       sub = `${epCode(coming.s, coming.e)} · ${compteARebours(coming.d)}`;
@@ -1722,9 +2036,9 @@ const dansDecennie = (y, d) => {
 
 function viewSeriesGrid() {
   const f = state.seriesFilter;
-  const q = state.seriesSearch.toLowerCase();
+  const q = state.seriesSearch.trim();
   let list = state.series.filter(s => {
-    if (q) return s.title.toLowerCase().includes(q);
+    if (q) return correspond(s.title, q);
     if (f === 'encours') return s.status === 'continuing';
     if (f === 'ajour') return s.status === 'up_to_date';
     if (f === 'pascommence') return s.status === 'not_started_yet';
@@ -1757,7 +2071,7 @@ function viewSeriesGrid() {
     const reste = s => realEpisodes(s).filter(x => !x.ep.is_watched && !isFuture(x.ep)).length || 1e9;
     list.sort((a, b) => reste(a) - reste(b));
   }
-  else list.sort((a, b) => lastActivity(b).localeCompare(lastActivity(a)));
+  else { const act = new Map(list.map(s => [s, lastActivity(s)])); list.sort((a, b) => act.get(b).localeCompare(act.get(a))); }
 
   const chips = [
     ['encours', 'En cours'], ['ajour', 'À jour'], ['pascommence', 'Pas commencées'],
@@ -1795,17 +2109,15 @@ function viewNext() {
     // des épisodes déjà diffusés restent à regarder
     let fut = null;
     for (const x of realEpisodes(s)) if (isFuture(x.ep)) { fut = x; break; }
-    const meta = state.tmdb[s.uuid];
+    const nep = nextEpValide(state.tmdb[s.uuid]); // jamais une date déjà passée
     const coming = fut
-      || (meta && meta.nextEp && meta.nextEp.date && meta.nextEp.date > todayStr()
-        ? { season: meta.nextEp.season, ep: { number: meta.nextEp.episode, name: meta.nextEp.name, air_date: meta.nextEp.date } }
-        : null)
-      || (!nx && meta && meta.nextEp
-        ? { season: meta.nextEp.season, ep: { number: meta.nextEp.episode, name: meta.nextEp.name, air_date: meta.nextEp.date } }
+      || (nep && (!nx || (nep.date && nep.date > todayStr()))
+        ? { season: nep.season, ep: { number: nep.episode, name: nep.name, air_date: nep.date } }
         : null);
     if (coming) waiting.push({ s, nx: coming });
   }
-  watchable.sort((a, b) => lastActivity(b.s).localeCompare(lastActivity(a.s)));
+  const activite = new Map(watchable.map(w => [w.s, lastActivity(w.s)])); // calculée une fois, pas à chaque comparaison
+  watchable.sort((a, b) => activite.get(b.s).localeCompare(activite.get(a.s)));
   waiting.sort((a, b) => (a.nx.ep.air_date || '9999').localeCompare(b.nx.ep.air_date || '9999'));
   const lastR = state.lastRefresh
     ? `Dernière actualisation : ${fmtDate(state.lastRefresh)}`
@@ -1823,7 +2135,7 @@ function viewNext() {
           <div class="title">${esc(s.title)}</div>
           <div class="sub" style="margin-top:5px"><span class="badge acc">${epCode(nx.season, nx.ep.number)}</span> ${esc(nx.ep.name || '')}</div>
           <div class="progress ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%"></i></div>
-          <div class="sub" style="margin-top:5px">${p.watched}/${p.total} épisodes · ${pct}% · ${p.total - p.watched} restant(s)</div>
+          <div class="sub" style="margin-top:5px">${p.watched}/${p.total} épisodes · ${pct}% · ${pl(episodesRestants(s), 'restant')}</div>
         </div>
         <button class="checkbtn" data-action="mark-next" data-uuid="${s.uuid}" title="Marquer vu">${ICONS.check}</button>
       </div>`;
@@ -1895,9 +2207,10 @@ function applyDFilters(arr) {
       if (f.annee === 'old' && n.year >= 2000) return false;
     }
     if (f.genre >= 0) {
+      // un genre se compare avec l'identifiant propre au type (films et séries n'ont pas les mêmes)
       const g = GENRES[f.genre];
-      const ids = n.genreIds || [];
-      if (!(ids.includes(g.mv) || (g.tv && ids.includes(g.tv)))) return false;
+      const id = n.type === 'tv' ? g.tv : g.mv;
+      if (!id || !(n.genreIds || []).includes(id)) return false;
     }
     return true;
   });
@@ -1906,12 +2219,14 @@ const prep = arr => applyDFilters(fresh(arr));
 
 function filterBar(showGenre) {
   const f = state.dFilters;
-  const sel = (name, opts, val) => `<select class="fsel ${String(val) !== String(opts[0][0]) ? 'active' : ''}" data-f="${name}">
+  const sel = (name, opts, val, label) => `<select class="fsel ${String(val) !== String(opts[0][0]) ? 'active' : ''}" data-f="${name}" aria-label="${label}">
     ${opts.map(([v, l]) => `<option value="${v}" ${String(v) === String(val) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+  // pour les séries, seuls les genres qui existent côté séries sont proposés (pas de « Romance » TV chez TMDB)
+  const genres = GENRES.map((g, i) => [i, g]).filter(([, g]) => state.exploreType !== 'tv' || g.tv);
   return `<div class="fbar">
-    ${showGenre ? sel('genre', [[-1, 'Tous genres'], ...GENRES.map((g, i) => [i, g.label])], f.genre) : ''}
-    ${sel('note', [[0, 'Toutes notes'], [7, '★ 7+'], [7.5, '★ 7,5+'], [8, '★ 8+']], f.note)}
-    ${sel('annee', [['all', 'Toutes années'], ['2020', '2020+'], ['2010', '2010-2019'], ['2000', '2000-2009'], ['old', 'Avant 2000']], f.annee)}
+    ${showGenre ? sel('genre', [[-1, 'Tous genres'], ...genres.map(([i, g]) => [i, g.label])], f.genre, 'Genre') : ''}
+    ${sel('note', [[0, 'Toutes notes'], [7, '★ 7+'], [7.5, '★ 7,5+'], [8, '★ 8+']], f.note, 'Note minimale')}
+    ${sel('annee', [['all', 'Toutes années'], ['2020', '2020+'], ['2010', '2010-2019'], ['2000', '2000-2009'], ['old', 'Avant 2000']], f.annee, 'Années')}
   </div>`;
 }
 
@@ -1957,13 +2272,7 @@ function viewDiscover() {
   let hero = '', heroIds = new Set();
   if (!state.trending) { loadTrending(); }
   else {
-    const heroTv = prep(state.trending.tv).filter(n => n.backdrop).slice(0, 4);
-    const heroMv = prep(state.trending.mv).filter(n => n.backdrop).slice(0, 4);
-    const cands = [];
-    for (let i = 0; i < 4; i++) {
-      if (heroTv[i]) cands.push(heroTv[i]);
-      if (heroMv[i]) cands.push(heroMv[i]);
-    }
+    const cands = herosExplorer();
     if (cands.length) {
       hero = `<div class="heros" id="heros">${cands.map(h => {
         const hk = esc(JSON.stringify(h)).replace(/"/g, '&quot;');
@@ -2004,16 +2313,48 @@ function viewDiscover() {
   } else {
     const feed = state.exploreFeed;
     if (feed.key !== exploreKey()) loadExplorePage();
-    const items = prep(feed.items).filter(n => !heroIds.has(n.type + ':' + n.provId));
-    if (items.length) grid = `<div class="mgrid">${items.map(discoverCardG).join('')}</div>`;
-    if (feed.loading || feed.key !== exploreKey()) grid += skelGrid;
-    else if (!items.length) grid = `<div class="empty">Rien avec ces filtres.</div>`;
-    else if (feed.page >= feed.totalPages) grid += `<p style="text-align:center;color:var(--txt2);font-size:12px;padding:14px">— fin de la liste —</p>`;
-    // si le filtrage a trop réduit la page, on recharge la suivante
-    if (!feed.loading && feed.key === exploreKey() && items.length < 12 && feed.page < feed.totalPages) setTimeout(loadExplorePage, 60);
+    const items = itemsExplorer();
+    grid = `<div class="mgrid" id="explore-grid">${items.map(discoverCardG).join('')}</div><div id="explore-pied">${piedExplore(items.length)}</div>`;
+    relancerSiPeu(items.length);
   }
 
-  return `<div class="searchbar">${ICONS.search}<input id="discover-search" placeholder="Chercher une série ou un film à ajouter…" value="${esc(q)}"></div>${filterBar(true)}${hero}${seg}${srcChips}${grid}`;
+  return `<div class="searchbar">${ICONS.search}<input id="discover-search" placeholder="Chercher une série ou un film à ajouter…" value="${esc(q)}" aria-label="Chercher une série ou un film"></div>${filterBar(true)}${hero}${seg}${srcChips}${grid}`;
+}
+
+/* Titres du carrousel « À la une » (séries et films alternés) */
+function herosExplorer() {
+  if (!state.trending) return [];
+  const heroTv = prep(state.trending.tv).filter(n => n.backdrop).slice(0, 4);
+  const heroMv = prep(state.trending.mv).filter(n => n.backdrop).slice(0, 4);
+  const cands = [];
+  for (let i = 0; i < 4; i++) {
+    if (heroTv[i]) cands.push(heroTv[i]);
+    if (heroMv[i]) cands.push(heroMv[i]);
+  }
+  return cands;
+}
+/* Titres affichables de la grille infinie (filtres appliqués, carrousel exclu) */
+function itemsExplorer() {
+  const heroIds = new Set(herosExplorer().map(h => h.type + ':' + h.provId));
+  return prep(state.exploreFeed.items).filter(n => !heroIds.has(n.type + ':' + n.provId));
+}
+/* Bas de la grille : chargement, erreur avec « Réessayer », fin de liste… */
+function piedExplore(nb) {
+  const feed = state.exploreFeed;
+  const skel = `<div class="mgrid" style="margin-top:12px">${'<div class="mcard"><div class="poster sk" style="width:100%;aspect-ratio:2/3"></div></div>'.repeat(6)}</div>`;
+  if (feed.loading || feed.key !== exploreKey()) return skel;
+  if (feed.error) return `<div class="empty" style="padding:24px 10px">${nb ? '' : '<div class="big">📡</div>'}Chargement impossible : ${esc(feed.error)}<br><button class="btn ghost small" style="margin-top:12px" data-action="explore-retry">↻ Réessayer</button></div>`;
+  if (feed.page < feed.totalPages && feed.vides >= 3) return `<div style="text-align:center;padding:16px">${nb ? '' : '<p style="color:var(--txt2);margin-bottom:10px">Rien pour l’instant avec ces filtres.</p>'}<button class="btn ghost small" data-action="explore-more">Charger plus</button></div>`;
+  if (!nb) return `<div class="empty">Rien avec ces filtres.</div>`;
+  if (feed.page >= feed.totalPages) return `<p style="text-align:center;color:var(--txt2);font-size:12px;padding:14px">— fin de la liste —</p>`;
+  return '';
+}
+/* Si les filtres ont trop réduit la page, on charge la suivante — mais jamais en
+   boucle : pas après une erreur, et au plus 3 pages vides d'affilée */
+function relancerSiPeu(nb) {
+  const feed = state.exploreFeed;
+  if (!feed.loading && !feed.error && feed.key === exploreKey() && nb < 12 &&
+      feed.page < feed.totalPages && feed.vides < 3) setTimeout(loadExplorePage, 60);
 }
 
 /* ----- flux infini Explorer : /discover TMDB paginé, filtres serveur ----- */
@@ -2048,9 +2389,13 @@ async function loadExplorePage() {
   const key = exploreKey();
   if (feed.key !== key) {
     feed.key = key; feed.items = []; feed.page = 0; feed.totalPages = 1; feed.seen = new Set();
+    feed.error = null; feed.vides = 0;
   }
-  if (feed.loading || (feed.page > 0 && feed.page >= feed.totalPages)) return;
+  if (feed.loading || feed.error || (feed.page > 0 && feed.page >= feed.totalPages)) return;
   feed.loading = true;
+  const avant = itemsExplorer().length;
+  const pied0 = $('#explore-pied');
+  if (pied0) pied0.innerHTML = piedExplore(avant); // squelettes pendant le chargement
   try {
     const d = await tget(`/discover/${state.exploreType}`, exploreParams(feed.page + 1));
     if (feed.key !== key) { feed.loading = false; return; } // filtres changés entre-temps
@@ -2061,9 +2406,24 @@ async function loadExplorePage() {
       const k = n.type + n.provId;
       if (!feed.seen.has(k)) { feed.seen.add(k); feed.items.push(n); }
     }
-  } catch (e) {}
+    feed.error = null;
+  } catch (e) {
+    if (feed.key !== key) { feed.loading = false; return; }
+    feed.error = e.message === 'Failed to fetch' ? 'pas de connexion' : e.message;
+  }
   feed.loading = false;
-  if (state.tab === 'discover' && !state.discoverSearch) render();
+  const items = itemsExplorer();
+  feed.vides = items.length > avant ? 0 : feed.vides + 1;
+  if (state.tab !== 'discover' || state.discoverSearch.trim().length >= 2) return;
+  // ajout à la suite des cartes déjà affichées (pas de reconstruction de tout l'écran)
+  const grille = $('#explore-grid'), pied = $('#explore-pied');
+  if (grille && pied && grille.children.length <= items.length) {
+    grille.insertAdjacentHTML('beforeend', items.slice(grille.children.length).map(discoverCardG).join(''));
+    pied.innerHTML = piedExplore(items.length);
+    relancerSiPeu(items.length);
+  } else {
+    rerenderSansPerturber();
+  }
 }
 
 function discoverCardG(n) {
@@ -2156,11 +2516,23 @@ function viewMoviesWatchlist() {
       : `<div class="empty">Ta liste est vide — ajoute des films depuis l'onglet Explorer ! 🍿</div>`}`;
 }
 
+const piedFilms = (vus, total) => total > vus ? `<p style="text-align:center;color:var(--txt2);font-size:12.5px;padding:16px">${vus} / ${total} films — fais défiler pour la suite</p>` : '';
+/* lot suivant de 60 cartes ajouté à la suite (pas de reconstruction ni de clignotement) */
+function ajouterLotFilms() {
+  const grille = $('#movies-grid'), pied = $('#movies-pied'), list = state._movieList;
+  if (!grille || !pied || !list) { state.movieLimit += 60; render(); return; }
+  const deja = grille.children.length;
+  state.movieLimit = deja + 60;
+  grille.insertAdjacentHTML('beforeend', list.slice(deja, state.movieLimit).map(movieCard).join(''));
+  pied.innerHTML = piedFilms(grille.children.length, list.length);
+  loadVisiblePosters();
+}
+
 function viewMoviesGrid() {
   const f = state.movieFilter;
-  const q = state.movieSearch.toLowerCase();
+  const q = state.movieSearch.trim();
   let list = state.movies.filter(m => {
-    if (q) return m.title.toLowerCase().includes(q);
+    if (q) return correspond(m.title, q);
     if (f === 'vus') return m.is_watched;
     if (f === 'avoir') return !m.is_watched;
     if (f === 'favoris') return m.is_favorite;
@@ -2190,6 +2562,7 @@ function viewMoviesGrid() {
   else list.sort((a, b) => (b.watched_at || b.created_at || '').localeCompare(a.watched_at || a.created_at || ''));
 
   state._movieTotal = list.length;
+  state._movieList = list; // pour ajouter les lots suivants sans tout redessiner
   const shown = list.slice(0, state.movieLimit);
   const chips = [['vus', 'Vus'], ['favoris', 'Favoris'], ['tous', 'Tous']];
   const sel = (name, opts, val) => `<select class="fsel ${String(val) !== String(opts[0][0]) ? 'active' : ''}" data-f="${name}">
@@ -2204,8 +2577,8 @@ function viewMoviesGrid() {
       ${sel('mdecade', [['all', 'Toutes années'], ['2020', '2020+'], ['2010', '2010-2019'], ['2000', '2000-2009'], ['old', 'Avant 2000']], state.movieDecade)}
     </div>
     ${shown.length
-      ? `<div class="mgrid">${shown.map(movieCard).join('')}</div>
-         ${list.length > shown.length ? `<p style="text-align:center;color:var(--txt2);font-size:12.5px;padding:16px">${shown.length} / ${list.length} films — fais défiler pour la suite</p>` : ''}`
+      ? `<div class="mgrid" id="movies-grid">${shown.map(movieCard).join('')}</div>
+         <div id="movies-pied">${piedFilms(shown.length, list.length)}</div>`
       : `<div class="empty">Aucun film ici.</div>`}`;
 }
 
@@ -2271,19 +2644,26 @@ function viewSettings() {
   <div class="panel">
     <h3>☁️ Synchronisation cloud</h3>
     ${state.settings.gistId ? `
+      ${state.syncErr ? `<div class="hint" style="border-color:var(--warn)"><span class="em">⚠️</span><p><b>Synchro en panne depuis le ${fmtDate(state.syncErr.at)}</b> : ${esc(state.syncErr.msg)}.${state.syncErr.auth ? ' Crée un nouveau jeton (même lien que lors de la connexion, en choisissant « No expiration ») et colle-le ci-dessous : ta sauvegarde est conservée.' : ' Elle réessaiera toute seule.'}</p></div>` : ''}
       <p>✅ Connectée au compte <b style="color:var(--ok)">@${esc(state.settings.ghLogin || '')}</b><br>
-      Dernière synchro : ${state.lastSync ? fmtDate(state.lastSync) : 'jamais'} — sauvegarde automatique à chaque fermeture de l'app et réconciliation à l'ouverture.</p>
+      Dernière synchro : <b style="color:${!state.lastSync || Date.now() - new Date(state.lastSync) > 7 * 86400000 ? 'var(--warn)' : 'var(--txt)'}">${state.lastSync ? fmtDate(state.lastSync) : 'jamais'}</b> — envoi automatique quand tu quittes l'app, réconciliation à chaque retour.</p>
       <div class="row">
-        <button class="btn ghost small" data-action="sync-push">Pousser maintenant</button>
+        <button class="btn ghost small" data-action="sync-push">Envoyer maintenant</button>
         <button class="btn ghost small" data-action="sync-pull">Récupérer du cloud</button>
         <button class="btn danger small" data-action="sync-off">Déconnecter</button>
-      </div>`
+      </div>
+      ${state.syncErr && state.syncErr.auth ? `
+      <div class="row" style="margin-top:10px">
+        <input class="field" id="gh-token" type="password" placeholder="Nouveau jeton GitHub (ghp_…)" aria-label="Nouveau jeton GitHub">
+        <button class="btn small" data-action="sync-connect">Renouveler</button>
+      </div>
+      <p id="sync-status" style="margin:8px 0 0"></p>` : ''}`
     : `
       <p>Sauvegarde automatique de tes données dans un espace privé de <b>ton</b> compte GitHub — et restauration sur un nouveau téléphone en collant le même jeton. <b>Chaque personne utilise son propre compte</b> : si quelqu'un d'autre installe l'app, ses données restent les siennes.</p>
       <p>1. Crée un compte sur <a href="https://github.com/signup" target="_blank" rel="noopener">github.com</a> (gratuit) si besoin.<br>
-      2. Va sur <a href="https://github.com/settings/tokens/new?scopes=gist&description=mes-series-sync" target="_blank" rel="noopener">ce lien direct</a> → « Generate token » (la case <b>gist</b> est déjà cochée) et colle le jeton ici :</p>
+      2. Va sur <a href="https://github.com/settings/tokens/new?scopes=gist&description=mes-series-sync" target="_blank" rel="noopener">ce lien direct</a>, choisis <b>Expiration : No expiration</b> (sinon la synchro s'arrêtera au bout de 30 jours), puis « Generate token » (la case <b>gist</b> est déjà cochée) et colle le jeton ici :</p>
       <div class="row">
-        <input class="field" id="gh-token" type="password" placeholder="Jeton GitHub (ghp_…)">
+        <input class="field" id="gh-token" type="password" placeholder="Jeton GitHub (ghp_…)" aria-label="Jeton GitHub">
         <button class="btn small" data-action="sync-connect">Connecter</button>
       </div>
       <p id="sync-status" style="margin:8px 0 0"></p>`}
@@ -2292,7 +2672,7 @@ function viewSettings() {
   <div class="panel">
     <h3>🧨 Zone dangereuse</h3>
     <div class="row">
-      ${state.hidden.size ? `<button class="btn ghost small" data-action="clear-hidden">Réafficher ${state.hidden.size} suggestion(s) masquée(s)</button>` : ''}
+      ${state.hidden.size ? `<button class="btn ghost small" data-action="clear-hidden">Réafficher ${pl(state.hidden.size, 'suggestion masquée', 'suggestions masquées')}</button>` : ''}
       <button class="btn danger small" data-action="clear-all">Tout effacer</button>
     </div>
   </div>
@@ -2327,9 +2707,48 @@ function renderOverlay() {
   else if (overlayMode === 'wrapped') renderWrapped();
   else if (overlayMode === 'menage') renderMenage();
 }
-/* animations communes aux écrans plein page du Profil */
-function animateOverlay() {
+/* Remplit l'écran plein page. Quand c'est un RE-rendu du même écran (une coche dans
+   une fiche, un « Arrêter » dans le ménage…), on garde la position de défilement et
+   les saisons ouvertes/fermées, sans rejouer l'animation d'entrée. */
+let overlayCle = null, memoEcran = null;
+/* avant d'ouvrir une fiche par-dessus un écran (Journal, Ménage…), on retient sa position */
+function memoriserEcran() {
+  const ov = $('#overlay-root .overlay');
+  memoEcran = ov && overlayCle && overlayCle.startsWith('ecran:') ? { cle: overlayCle, top: ov.scrollTop } : null;
+}
+function remplirOverlay(html) {
+  const root = $('#overlay-root');
+  const cle = detailUuid ? 'detail:' + detailUuid : 'ecran:' + overlayMode;
+  const ancien = root.querySelector('.overlay');
+  const retour = !detailUuid && memoEcran && memoEcran.cle === cle; // retour depuis une fiche
+  const meme = (!!ancien && cle === overlayCle) || retour;
+  const defil = retour ? memoEcran.top : meme ? ancien.scrollTop : 0;
+  if (retour) memoEcran = null;
+  const etats = new Map(meme && ancien ? [...ancien.querySelectorAll('details[data-n]')].map(d => [d.dataset.n, d.open]) : []);
+  root.innerHTML = html;
+  overlayCle = cle;
+  const nv = root.querySelector('.overlay');
+  if (meme && nv) {
+    nv.style.animation = 'none';
+    nv.querySelectorAll('details[data-n]').forEach(d => { if (etats.has(d.dataset.n)) d.open = etats.get(d.dataset.n); });
+    nv.scrollTop = defil;
+  }
+  return meme;
+}
+/* animations communes aux écrans plein page du Profil (pas rejouées sur un re-rendu) */
+function animateOverlay(meme) {
   const ov = $('#overlay-root');
+  if (meme) {
+    ov.querySelectorAll('[data-count]').forEach(el => {
+      el.textContent = (el.dataset.prefix || '') + (+el.dataset.count).toLocaleString('fr-FR') + (el.dataset.suffix || '');
+      delete el.dataset.count;
+    });
+    ov.querySelectorAll('[data-w],[data-h]').forEach(el => {
+      if (el.dataset.w) el.style.width = el.dataset.w;
+      if (el.dataset.h) el.style.height = el.dataset.h;
+    });
+    return;
+  }
   animateBars(ov);
   animateCounts(ov);
   cascade(ov, '.panel, .scard');
@@ -2381,8 +2800,16 @@ function rerenderSansPerturber() {
   const a = document.activeElement;
   const dansVue = a && $('#view').contains(a);
   if (dansVue && a.tagName === 'SELECT') { setTimeout(rerenderSansPerturber, 900); return; }
-  if (dansVue && a.tagName === 'INPUT' && a.id) { renderKeepFocus(a.id); return; }
+  // les champs qui ne sont pas liés à l'état (clé TMDB et jeton en cours de saisie) gardent leur contenu
+  const saisies = {};
+  for (const id of ['tmdb-key', 'gh-token']) { const el = $('#' + id); if (el && el.value) saisies[id] = el.value; }
+  const focus = dansVue && a.tagName === 'INPUT' && a.id ? { id: a.id, pos: a.selectionStart } : null;
   render();
+  for (const id in saisies) { const el = $('#' + id); if (el) el.value = saisies[id]; }
+  if (focus) {
+    const el = $('#' + focus.id);
+    if (el) { el.focus(); try { el.setSelectionRange(focus.pos, focus.pos); } catch (e) {} }
+  }
 }
 
 /* Complète les genres manquants (une fois, résultats mémorisés) */
@@ -2421,9 +2848,12 @@ function renderStats() {
   for (const s of state.series)
     for (const sea of s.seasons || [])
       for (const ep of sea.episodes)
-        if (ep.is_watched) { epCount++; if (ep.watched_at) events.push({ d: ep.watched_at.slice(0, 10), t: 'ep' }); }
+        if (ep.is_watched) { epCount++; if (ep.watched_at) events.push({ d: dayOf(ep.watched_at), t: 'ep' }); }
   const mvWatched = state.movies.filter(m => m.is_watched);
-  for (const m of mvWatched) if (m.watched_at) events.push({ d: m.watched_at.slice(0, 10), t: 'mv' });
+  for (const m of mvWatched) {
+    if (m.watched_at) events.push({ d: dayOf(m.watched_at), t: 'mv' });
+    for (const r of m.rewatches || []) events.push({ d: dayOf(r), t: 'mv' });
+  }
 
   // 12 derniers mois
   const now = new Date();
@@ -2442,7 +2872,7 @@ function renderStats() {
   for (const e of events) {
     const mk = e.d.slice(0, 7);
     if (mk in mIdx) months[mIdx[mk]][e.t]++;
-    if (!bulk.has(e.d)) days[(new Date(e.d).getDay() + 6) % 7]++;
+    if (!bulk.has(e.d)) days[(asDate(e.d).getDay() + 6) % 7]++;
   }
   const maxM = Math.max(1, ...months.map(m => m.ep + m.mv));
   const maxD = Math.max(1, ...days);
@@ -2500,10 +2930,10 @@ function renderStats() {
       </div>`).join('')}
     </div>`;
 
-  $('#overlay-root').innerHTML = `
+  const memeEcran = remplirOverlay(`
   <div class="overlay">
     <div class="detbar">
-      <button class="iconbtn" data-action="close-stats">${ICONS.back}</button>
+      <button class="iconbtn" data-action="close-stats" aria-label="Retour">${ICONS.back}</button>
       <span class="t" style="flex:1;font-weight:700">📊 Statistiques</span>
     </div>
     <main style="padding-top:4px">
@@ -2564,8 +2994,8 @@ function renderStats() {
           </div>`).join('')}
       </div>
     </main>
-  </div>`;
-  animateOverlay();
+  </div>`);
+  animateOverlay(memeEcran);
 }
 
 /* ---------------- Journal de visionnage ---------------- */
@@ -2583,10 +3013,13 @@ function collectEvents() {
     for (const sea of s.seasons || [])
       for (const ep of sea.episodes)
         if (ep.is_watched && ep.watched_at)
-          ev.push({ t: 'ep', at: ep.watched_at, uuid: s.uuid, title: s.title, code: epCode(sea.number, ep.number), name: ep.name });
-  for (const m of state.movies)
-    if (m.is_watched && m.watched_at)
-      ev.push({ t: 'mv', at: m.watched_at, uuid: m.uuid, title: m.title, year: m.year });
+          ev.push({ t: 'ep', at: ep.watched_at, d: dayOf(ep.watched_at), uuid: s.uuid, title: s.title, code: epCode(sea.number, ep.number), name: ep.name });
+  for (const m of state.movies) {
+    if (!m.is_watched) continue;
+    if (m.watched_at) ev.push({ t: 'mv', at: m.watched_at, d: dayOf(m.watched_at), uuid: m.uuid, title: m.title, year: m.year });
+    for (const r of m.rewatches || [])
+      ev.push({ t: 'mv', at: r, d: dayOf(r), uuid: m.uuid, title: m.title, year: m.year, revu: true });
+  }
   ev.sort((a, b) => b.at.localeCompare(a.at));
   return ev;
 }
@@ -2596,15 +3029,14 @@ function renderJournal() {
   const shown = ev.slice(0, state.journalLimit);
   const jours = [];
   for (const e of shown) {
-    const d = e.at.slice(0, 10);
     const last = jours[jours.length - 1];
-    if (!last || last.d !== d) jours.push({ d, items: [e] });
+    if (!last || last.d !== e.d) jours.push({ d: e.d, items: [e] });
     else last.items.push(e);
   }
   const today = todayStr();
-  const hier = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
+  const hier = dayOf(new Date(Date.now() - 86400000));
   const label = d => d === today ? "Aujourd'hui" : d === hier ? 'Hier'
-    : new Date(d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    : asDate(d).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   const ligne = e => e.t === 'ep'
     ? `<div class="scard" style="padding:8px" data-action="open-series" data-uuid="${e.uuid}">
@@ -2618,14 +3050,14 @@ function renderJournal() {
          ${miniPoster(e.uuid, e.title)}
          <div class="mid">
            <div class="title" style="font-size:13.5px">🎬 ${esc(e.title)}</div>
-           <div class="sub">${e.year || ''} · film</div>
+           <div class="sub">${e.year || ''} · ${e.revu ? 'film revu 🔁' : 'film'}</div>
          </div>
        </div>`;
 
-  $('#overlay-root').innerHTML = `
+  const memeEcran = remplirOverlay(`
   <div class="overlay">
     <div class="detbar">
-      <button class="iconbtn" data-action="close-stats">${ICONS.back}</button>
+      <button class="iconbtn" data-action="close-stats" aria-label="Retour">${ICONS.back}</button>
       <span class="t" style="flex:1;font-weight:700">📖 Journal de visionnage</span>
     </div>
     <main style="padding-top:4px">
@@ -2639,18 +3071,18 @@ function renderJournal() {
         ? `<div style="text-align:center;padding:18px"><button class="btn ghost small" data-action="journal-more">Afficher plus (${shown.length}/${ev.length})</button></div>`
         : ev.length ? `<p style="text-align:center;color:var(--txt2);font-size:12px;padding:18px">— début de ton historique —</p>` : ''}
     </main>
-  </div>`;
+  </div>`);
   loadVisiblePosters();
-  animateOverlay();
+  animateOverlay(memeEcran);
 }
 
 /* ---------------- Rétrospective annuelle ---------------- */
 /* Calculs de la rétrospective (partagés avec l'export image) */
 function computeWrapped() {
   const ev = collectEvents();
-  const years = [...new Set(ev.map(e => e.at.slice(0, 4)))].sort().reverse();
+  const years = [...new Set(ev.map(e => e.d.slice(0, 4)))].sort().reverse();
   const y = String(state.wrappedYear || years[0] || new Date().getFullYear());
-  const yEv = ev.filter(e => e.at.startsWith(y));
+  const yEv = ev.filter(e => e.d.startsWith(y));
   const eps = yEv.filter(e => e.t === 'ep');
   const mvs = yEv.filter(e => e.t === 'mv');
 
@@ -2667,9 +3099,9 @@ function computeWrapped() {
   const maxTop = Math.max(1, ...topSeries.map(x => x.n));
 
   const perMois = {};
-  for (const e of yEv) perMois[+e.at.slice(5, 7)] = (perMois[+e.at.slice(5, 7)] || 0) + 1;
+  for (const e of yEv) perMois[+e.d.slice(5, 7)] = (perMois[+e.d.slice(5, 7)] || 0) + 1;
   const bestMois = Object.entries(perMois).sort((a, b) => b[1] - a[1])[0];
-  const joursActifs = new Set(yEv.map(e => e.at.slice(0, 10))).size;
+  const joursActifs = new Set(yEv.map(e => e.d)).size;
 
   const gc = {};
   for (const e of eps) { const m = state.tmdb[e.uuid]; if (m && m.genres) for (const id of m.genres) gc[id] = (gc[id] || 0) + 1; }
@@ -2688,10 +3120,10 @@ function computeWrapped() {
 function renderWrapped() {
   const { years, y, yEv, eps, mvs, heures, topSeries, maxTop, bestMois, joursActifs, topGenres, terminees } = computeWrapped();
 
-  $('#overlay-root').innerHTML = `
+  const memeEcran = remplirOverlay(`
   <div class="overlay">
     <div class="detbar">
-      <button class="iconbtn" data-action="close-stats">${ICONS.back}</button>
+      <button class="iconbtn" data-action="close-stats" aria-label="Retour">${ICONS.back}</button>
       <span class="t" style="flex:1;font-weight:700">🏆 Ma rétrospective</span>
       <button class="iconbtn" data-action="share-wrapped" title="Partager en image">🖼️</button>
     </div>
@@ -2731,9 +3163,9 @@ function renderWrapped() {
         </p>
       </div>`}
     </main>
-  </div>`;
+  </div>`);
   loadVisiblePosters();
-  animateOverlay();
+  animateOverlay(memeEcran);
 }
 
 /* ---------------- Rétrospective en image (partage) ---------------- */
@@ -2841,10 +3273,10 @@ function moisDepuis(iso) {
 function renderMenage() {
   const liste = seriesDormantes();
   const seuils = [3, 6, 12, 24];
-  $('#overlay-root').innerHTML = `
+  const memeEcran = remplirOverlay(`
   <div class="overlay">
     <div class="detbar">
-      <button class="iconbtn" data-action="close-stats">${ICONS.back}</button>
+      <button class="iconbtn" data-action="close-stats" aria-label="Retour">${ICONS.back}</button>
       <span class="t" style="flex:1;font-weight:700">🧹 Ménage</span>
     </div>
     <main style="padding-top:4px">
@@ -2862,7 +3294,7 @@ function renderMenage() {
               <div class="title">${esc(s.title)}</div>
               <div class="sub"><span class="badge warn">${moisDepuis(lastActivity(s))}</span> sans activité</div>
               <div class="progress"><i style="width:0" data-w="${pct}%"></i></div>
-              <div class="sub" style="margin-top:5px">${p.watched}/${p.total} · ${reste} épisode(s) en attente</div>
+              <div class="sub" style="margin-top:5px">${p.watched}/${p.total} · ${pl(reste, 'épisode')} en attente</div>
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:6px;flex:none">
@@ -2872,14 +3304,15 @@ function renderMenage() {
         </div>`;
       }).join('')}</div>`
       : `<div class="empty"><div class="big">✨</div>Rien à ranger — ta liste est impeccable !</div>`}
-      ${state.menageIgnore.size ? `<div style="text-align:center;padding:18px"><button class="btn ghost small" data-action="menage-reset">Réafficher les ${state.menageIgnore.size} série(s) gardée(s)</button></div>` : ''}
+      ${state.menageIgnore.size ? `<div style="text-align:center;padding:18px"><button class="btn ghost small" data-action="menage-reset">Réafficher ${pl(state.menageIgnore.size, 'série gardée', 'séries gardées')}</button></div>` : ''}
     </main>
-  </div>`;
+  </div>`);
   loadVisiblePosters();
-  animateOverlay();
+  animateOverlay(memeEcran);
 }
 
 /* ---------------- Roulette : que regarder ce soir ? ---------------- */
+let genresCompletes = false;
 function rouletteCandidats() {
   const f = state.roulette;
   const g = f.genre >= 0 ? GENRES[f.genre] : null;
@@ -2913,7 +3346,7 @@ function rouletteResultHtml() {
   const p = state.roulettePick;
   if (!p) {
     const n = rouletteCandidats().length;
-    return `<div class="hint" style="margin:4px 0 0"><span class="em">🍿</span><p><b>${n}</b> titre(s) correspondent à ton envie. Lance le dé et laisse le hasard décider !</p></div>`;
+    return `<div class="hint" style="margin:4px 0 0"><span class="em">🍿</span><p><b>${pl(n, 'titre')}</b> ${n > 1 ? 'correspondent' : 'correspond'} à ton envie. Lance le dé et laisse le hasard décider !</p></div>`;
   }
   return `<div class="scard" style="margin:4px 0 0" data-action="roulette-open" data-kind="${p.kind}" data-uuid="${p.uuid}">
     ${miniPoster(p.uuid, p.title)}
@@ -2927,7 +3360,8 @@ function rouletteResultHtml() {
 
 function openRoulette() {
   if (!$('#modal-root').innerHTML) pushLayer('modal');
-  backfillGenres(() => { if ($('#modal-root').innerHTML) openRoulette(); });
+  // genres complétés une fois par session ; on ne redessine que si c'est toujours la roulette qui est ouverte
+  if (!genresCompletes) { genresCompletes = true; backfillGenres(() => { if ($('#roulette-res')) openRoulette(); }); }
   const f = state.roulette;
   const sel = (name, opts, val) => `<select class="fsel" data-r="${name}" style="flex:1;min-width:0">
     ${opts.map(([v, l]) => `<option value="${v}" ${String(v) === String(val) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
@@ -2950,12 +3384,14 @@ function openRoulette() {
 async function rouletteGo() {
   const cands = rouletteCandidats();
   if (!cands.length) { toast('Aucun titre ne correspond — élargis les filtres'); return; }
-  const box = $('#roulette-res');
   for (let i = 0; i < 9; i++) { // petit suspense
+    const box = $('#roulette-res');
+    if (!box) return; // fenêtre fermée pendant le tirage : on s'arrête là
     state.roulettePick = cands[Math.floor(Math.random() * cands.length)];
-    if (box) box.innerHTML = rouletteResultHtml();
+    box.innerHTML = rouletteResultHtml();
     await sleep(60 + i * 26);
   }
+  if (!$('#roulette-res')) return;
   state.roulettePick = cands[Math.floor(Math.random() * cands.length)];
   if (navigator.vibrate) navigator.vibrate(18);
   openRoulette();
@@ -3004,7 +3440,7 @@ async function enrichSerieDetail(s) {
 }
 
 function openSeries(uuid) {
-  if (!detailUuid) pushLayer('detail');
+  if (!detailUuid) { pushLayer('detail'); memoriserEcran(); }
   lastDetailAnim = null; // rejoue la cascade d'ouverture
   detailUuid = uuid;
   renderDetail();
@@ -3026,10 +3462,10 @@ function renderDetail() {
   const seasons = sortedSeasons(s).filter(x => !x.is_specials && x.number !== 0);
   const nx = nextUnwatched(s);
   const bg = meta.backdrop || meta.posterBig;
-  $('#overlay-root').innerHTML = `
+  const memeEcran = remplirOverlay(`
   <div class="overlay">
     <div class="detbar">
-      <button class="iconbtn" data-action="close-detail">${ICONS.back}</button>
+      <button class="iconbtn" data-action="close-detail" aria-label="Retour">${ICONS.back}</button>
       <span style="flex:1"></span>
       <button class="iconbtn" data-action="refresh-one" title="Actualiser cette série">${ICONS.refresh}</button>
     </div>
@@ -3044,7 +3480,7 @@ function renderDetail() {
           ${s.is_favorite ? '<span class="badge warn">★ Favori</span>' : ''}
         </div>
         <div class="meta">${p.watched} / ${p.total} épisodes vus (${pct}%)</div>
-        ${meta.nextEp ? `<div class="meta">📅 ${epCode(meta.nextEp.season, meta.nextEp.episode)} ${compteARebours(meta.nextEp.date)} <span style="opacity:.7">(${fmtDate(meta.nextEp.date)})</span></div>` : ''}
+        ${(() => { const nep = nextEpValide(meta); return nep ? `<div class="meta">📅 ${epCode(nep.season, nep.episode)} ${nep.date ? `${compteARebours(nep.date)} <span style="opacity:.7">(${fmtDate(nep.date)})</span>` : 'date à venir'}</div>` : ''; })()}
         <div class="progress ${pct === 100 ? 'full' : ''}" style="margin-top:10px;max-width:160px"><i style="width:0" data-w="${pct}%"></i></div>
       </div>
     </div>
@@ -3061,13 +3497,13 @@ function renderDetail() {
       const eps = sea.episodes.filter(e => !e.special).sort((a, b) => a.number - b.number);
       const w = eps.filter(e => e.is_watched).length;
       const open = nx && nx.season === sea.number;
-      return `<details class="season" ${open ? 'open' : ''}>
+      return `<details class="season" data-n="${sea.number}" ${open ? 'open' : ''}>
         <summary>
           <span class="arrow">${ICONS.chevron}</span>
           <span class="n">Saison ${sea.number}</span>
           <span class="cnt">${w}/${eps.length}</span>
           <button class="btn ghost small seasonbtn" data-action="mark-season" data-season="${sea.number}" data-watched="${w < eps.length ? 1 : 0}">
-            ${w < eps.length ? 'Tout vu' : 'Tout dévu'}
+            ${w < eps.length ? 'Tout vu' : 'Tout non vu'}
           </button>
         </summary>
         ${eps.map(ep => `
@@ -3092,7 +3528,7 @@ function renderDetail() {
       }
       if (!specials.length) return '';
       const w = specials.filter(x => x.ep.is_watched).length;
-      return `<details class="season">
+      return `<details class="season" data-n="speciaux">
         <summary><span class="arrow">${ICONS.chevron}</span><span class="n">🎁 Spéciaux</span><span class="cnt">${w}/${specials.length}</span></summary>
         ${specials.map(({ sea, ep }) => `
           <div class="eprow ${ep.is_watched ? 'watched' : ''}" data-action="toggle-ep" data-season="${sea}" data-ep="${ep.number}" data-special="1">
@@ -3102,7 +3538,7 @@ function renderDetail() {
           </div>`).join('')}
       </details>`;
     })()}
-  </div>`;
+  </div>`);
   loadVisiblePosters();
   animateBars($('#overlay-root'));
   if (detailUuid !== lastDetailAnim) { // cascade à l'ouverture, pas à chaque coche
@@ -3186,9 +3622,10 @@ function castLinks(cast) {
 function pickTrailer(videos) {
   const list = (videos && videos.results || []).filter(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
   const fr = list.find(v => v.iso_639_1 === 'fr' && v.type === 'Trailer');
-  return (fr || list.find(v => v.type === 'Trailer') || list[0] || {}).key || null;
+  const key = (fr || list.find(v => v.type === 'Trailer') || list[0] || {}).key;
+  return /^[\w-]{6,20}$/.test(key || '') ? key : null; // identifiant YouTube au format attendu seulement
 }
-const trailerBtn = key => key
+const trailerBtn = key => /^[\w-]{6,20}$/.test(key || '')
   ? `<a class="btn ghost small" style="margin-top:10px" href="https://www.youtube.com/watch?v=${key}" target="_blank" rel="noopener">▶ Bande-annonce</a>`
   : '';
 
@@ -3244,7 +3681,7 @@ $('#btn-add').addEventListener('click', () => {
 });
 $('#btn-refresh').addEventListener('click', () => refreshAll(false));
 
-let discoverTimer = null;
+let discoverTimer = null, rechercheNo = 0;
 document.body.addEventListener('input', e => {
   if (e.target.id === 'series-search') { state.seriesSearch = e.target.value; renderKeepFocus('series-search'); }
   if (e.target.id === 'movie-search') { state.movieSearch = e.target.value; renderKeepFocus('movie-search'); }
@@ -3252,12 +3689,16 @@ document.body.addEventListener('input', e => {
     state.discoverSearch = e.target.value;
     clearTimeout(discoverTimer);
     const q = e.target.value.trim();
-    if (q.length < 2) { state.discoverResults = null; state.discoverLoading = false; renderKeepFocus('discover-search'); return; }
+    if (q.length < 2) { rechercheNo++; state.discoverResults = null; state.discoverLoading = false; renderKeepFocus('discover-search'); return; }
     state.discoverLoading = true;
     renderKeepFocus('discover-search');
+    const numero = ++rechercheNo; // seule la DERNIÈRE recherche lancée peut afficher ses résultats
     discoverTimer = setTimeout(async () => {
-      try { state.discoverResults = await searchDiscover(q); }
-      catch (err) { state.discoverResults = []; toast('Erreur de recherche : ' + err.message); }
+      let res;
+      try { res = await searchDiscover(q); }
+      catch (err) { res = []; if (numero === rechercheNo) toast('Recherche impossible : ' + (err.message === 'Failed to fetch' ? 'pas de connexion' : err.message)); }
+      if (numero !== rechercheNo) return;
+      state.discoverResults = res;
       state.discoverLoading = false;
       renderKeepFocus('discover-search');
     }, 420);
@@ -3309,7 +3750,15 @@ document.body.addEventListener('click', async e => {
   else if (act === 'close-detail') closeDetail();
   else if (act === 'close-modal') { if (e.target === el) closeModalViaHistory(); }
   else if (act === 'expand-overview') el.classList.toggle('clamp');
-  else if (act === 'explore-type') { state.exploreType = el.dataset.v; render(); }
+  else if (act === 'explore-type') {
+    state.exploreType = el.dataset.v;
+    // genre sans équivalent pour ce type (Romance côté séries) : on le retire
+    const g = GENRES[state.dFilters.genre];
+    if (g && !(el.dataset.v === 'tv' ? g.tv : g.mv)) state.dFilters.genre = -1;
+    render();
+  }
+  else if (act === 'explore-retry') { state.exploreFeed.error = null; state.exploreFeed.vides = 0; loadExplorePage(); }
+  else if (act === 'explore-more') { state.exploreFeed.vides = 0; loadExplorePage(); }
   else if (act === 'explore-source') { state.exploreSource = el.dataset.k; render(); }
   else if (act === 'discover-detail') openDiscoverModal(JSON.parse(el.dataset.key));
   else if (act === 'open-person') openPersonModal(el.dataset.pid);
@@ -3320,6 +3769,7 @@ document.body.addEventListener('click', async e => {
     const n = JSON.parse(el.dataset.key);
     state.hidden.add(hkey(n));
     await DB.kvSet('hidden', [...state.hidden]);
+    markChanged(); // fait partie de la sauvegarde synchronisée
     closeModalViaHistory();
     toast(`« ${n.title} » ne sera plus suggéré`);
     render();
@@ -3328,6 +3778,7 @@ document.body.addEventListener('click', async e => {
   else if (act === 'clear-hidden') {
     state.hidden.clear();
     await DB.kvSet('hidden', []);
+    markChanged();
     toast('Suggestions masquées réaffichées');
     render();
   }
@@ -3358,27 +3809,29 @@ document.body.addEventListener('click', async e => {
   else if (act === 'roulette-go') rouletteGo();
   else if (act === 'roulette-open') {
     const { kind, uuid } = el.dataset;
-    history.back(); // ferme la modale, puis ouvre la fiche
-    setTimeout(() => { kind === 'tv' ? openSeries(uuid) : openMovieModal(uuid); }, 80);
+    // ferme la modale, puis ouvre la fiche une fois le retour effectivement traité
+    addEventListener('popstate', () => setTimeout(() => { kind === 'tv' ? openSeries(uuid) : openMovieModal(uuid); }, 0), { once: true });
+    history.back();
   }
   else if (act === 'movie-watch') {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
-    if (m) { await toggleMovieWatched(m); openMovieModal(m.uuid); render(); }
+    if (m) { await toggleMovieWatched(m); openMovieModal(m.uuid); rafraichirEcrans(); }
   }
   else if (act === 'movie-fav') {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
-    if (m) { m.is_favorite = !m.is_favorite; await saveMovie(m); openMovieModal(m.uuid); render(); }
+    if (m) { m.is_favorite = !m.is_favorite; await saveMovie(m); openMovieModal(m.uuid); rafraichirEcrans(); }
   }
   else if (act === 'movie-rewatch') {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
     if (m) {
       m.rewatch_count = (m.rewatch_count || 0) + 1;
-      m.watched_at = nowISO();
+      // la date du premier visionnage reste intacte ; chaque revisionnage est daté à part
+      m.rewatches = [...(m.rewatches || []), nowISO()];
       await saveMovie(m);
       if (navigator.vibrate) navigator.vibrate(12);
       toast(`« ${m.title} » revu — ×${m.rewatch_count + 1} au compteur 🔁`);
       openMovieModal(m.uuid);
-      render();
+      rafraichirEcrans();
     }
   }
   else if (act === 'movie-del') {
@@ -3387,9 +3840,10 @@ document.body.addEventListener('click', async e => {
       state.movies = state.movies.filter(x => x.uuid !== m.uuid);
       delete state.tmdb[m.uuid];
       await DB.del('movies', m.uuid);
+      markChanged(); // sinon la synchro ferait revenir le film supprimé
       await DB.del('tmdb', m.uuid);
       closeModalViaHistory();
-      render();
+      rafraichirEcrans();
     }
   }
   else if (act === 'mark-next') {
@@ -3468,6 +3922,7 @@ document.body.addEventListener('click', async e => {
       state.series = state.series.filter(x => x.uuid !== s.uuid);
       delete state.tmdb[s.uuid];
       await DB.del('series', s.uuid);
+      markChanged(); // sinon la synchro ferait revenir la série supprimée
       await DB.del('tmdb', s.uuid);
       closeDetail();
     }
@@ -3477,24 +3932,33 @@ document.body.addEventListener('click', async e => {
     try {
       const r = await refreshSeries(s, true);
       const bouts = [];
-      if (r.added) bouts.push(`${r.added} épisode(s) ajouté(s)`);
-      if (r.removed) bouts.push(`${r.removed} fantôme(s) retiré(s)`);
+      if (r.added) bouts.push(pl(r.added, 'épisode ajouté', 'épisodes ajoutés'));
+      if (r.removed) bouts.push(pl(r.removed, 'fantôme retiré', 'fantômes retirés'));
       toast(r.found ? (bouts.length ? bouts.join(' · ') : 'Série à jour ✓') : 'Série introuvable chez le fournisseur');
     } catch (err) { toast('Erreur : ' + err.message); }
     renderDetail();
   }
   else if (act === 'save-key') {
-    state.settings.tmdbKey = $('#tmdb-key').value.trim();
-    await saveSettings();
-    state.trending = null;
-    if (!tmdbKey()) { $('#key-status').textContent = 'ℹ️ Sans clé : affiches via TVMaze / iTunes'; return; }
+    const nouvelle = $('#tmdb-key').value.trim();
+    if (!nouvelle) { // effacer la clé : retour aux sources sans clé
+      state.settings.tmdbKey = ''; await saveSettings();
+      state.trending = null; state.exploreFeed.key = null;
+      $('#key-status').textContent = 'ℹ️ Sans clé : affiches via TVMaze / IMDb';
+      return;
+    }
+    // la clé est VÉRIFIÉE avant d'être enregistrée : une clé refusée casserait toute l'app
     $('#key-status').innerHTML = '<span class="spin"></span> Vérification…';
     try {
-      await tget('/configuration');
+      const r = await fetch(`${TMDB}/configuration?api_key=${encodeURIComponent(nouvelle)}`);
+      if (r.status === 401) throw new Error('clé refusée par TMDB — vérifie que tu as copié la « Clé d’API » (v3), pas le « Jeton d’accès en lecture » (v4)');
+      if (!r.ok) throw new Error('TMDB ne répond pas (' + r.status + '), réessaie plus tard');
+      state.settings.tmdbKey = nouvelle;
+      await saveSettings();
+      state.trending = null; state.exploreFeed.key = null; state.discoverData = {};
       $('#key-status').textContent = '✅ Clé valide et enregistrée';
       toast('Clé TMDB enregistrée ✓');
     } catch (err) {
-      $('#key-status').textContent = '❌ ' + err.message;
+      $('#key-status').textContent = '❌ ' + (err.message === 'Failed to fetch' ? 'pas de connexion, réessaie plus tard' : err.message) + (tmdbKey() ? ' (l’ancienne clé est conservée)' : '');
     }
   }
   else if (act === 'export-full') {
@@ -3513,44 +3977,59 @@ document.body.addEventListener('click', async e => {
       toast(`☁️ Sync activée pour @${login} ✓`);
       render();
     } catch (err) {
-      $('#sync-status').textContent = '❌ ' + err.message;
-      state.settings.ghToken = '';
+      if ($('#sync-status')) $('#sync-status').textContent = '❌ ' + err.message;
     }
   }
   else if (act === 'sync-push') {
     el.textContent = '…';
-    try { await syncPush(); toast('☁️ Données poussées vers le cloud ✓'); }
-    catch (err) { toast('Erreur : ' + err.message); }
+    try {
+      const ok = await syncPush(false);
+      if (ok) toast('☁️ Données envoyées vers le cloud ✓');
+      else { toast('☁️ Le cloud a changé depuis un autre appareil — réconciliation…'); await syncAuto(); }
+    } catch (err) { await noterErreurSynchro(err); toast('Erreur : ' + err.message); }
     render();
   }
   else if (act === 'sync-pull') {
+    if (state.refreshing) { toast('Actualisation en cours — réessaie dans un instant'); return; }
     if (confirm('Remplacer les données de cet appareil par celles du cloud ?')) {
       el.textContent = '…';
       try {
         const r = await syncPull();
-        toast(`☁️ Restauré : ${(r.series || []).length} séries, ${(r.movies || []).length} films ✓`);
-      } catch (err) { toast('Erreur : ' + err.message); }
+        toast(`☁️ Restauré : ${compteSauvegarde(r)} ✓`);
+      } catch (err) { await noterErreurSynchro(err); toast('Erreur : ' + err.message); }
       render();
     }
   }
   else if (act === 'sync-off') {
     if (confirm('Déconnecter la synchronisation ? (les données locales et le cloud sont conservés, mais ne se parleront plus)')) {
-      delete state.settings.ghToken; delete state.settings.gistId; delete state.settings.ghLogin;
-      await saveSettings();
+      await deconnecterSynchro();
       toast('Synchronisation déconnectée');
       render();
     }
   }
   else if (act === 'clear-all') {
-    if (confirm('Effacer TOUTES les données de l’application ? Cette action est irréversible.')) {
+    const cloud = syncPret();
+    const msg = cloud
+      ? 'Effacer TOUTES les données de ce téléphone ?\n\nLa synchronisation sera d’abord déconnectée (et le jeton GitHub retiré) : ta sauvegarde dans le cloud reste intacte et pourra être récupérée.'
+      : 'Effacer TOUTES les données de l’application ? Cette action est irréversible.';
+    if (confirm(msg)) {
+      if (cloud) await deconnecterSynchro(); // sinon le téléphone vide écraserait le cloud
       await DB.clear('series'); await DB.clear('movies'); await DB.clear('tmdb');
       state.series = []; state.movies = []; state.tmdb = {};
-      markChanged();
+      libVersion++;
       toast('Données effacées');
       render();
     }
   }
 });
+
+/* Déconnexion complète de la synchro (jeton retiré, état de synchro remis à zéro) */
+async function deconnecterSynchro() {
+  delete state.settings.ghToken; delete state.settings.gistId; delete state.settings.ghLogin;
+  state.lastSync = null; state.lastSyncVersion = null; state.syncErr = null;
+  await saveSettings();
+  await DB.kvSet('lastSync', null); await DB.kvSet('lastSyncVersion', null); await DB.kvSet('syncErr', null);
+}
 
 /* ---------------- Animations ---------------- */
 /* Barres (largeurs/hauteurs) rendues à zéro puis portées à leur valeur */
@@ -3659,10 +4138,11 @@ function afterRender() {
 /* ---------------- Démarrage ---------------- */
 (async function init() {
   await DB.open();
-  const [series, movies, tmdb, settings, lastRefresh, hidden, lastExport, changedAt, lastSync] = await Promise.all([
+  const [series, movies, tmdb, settings, lastRefresh, hidden, lastExport, changedAt, lastSync, lastSyncVersion, syncErr] = await Promise.all([
     DB.getAll('series'), DB.getAll('movies'), DB.getAll('tmdb'),
     DB.kvGet('settings'), DB.kvGet('lastRefresh'), DB.kvGet('hidden'),
     DB.kvGet('lastExport'), DB.kvGet('changedAt'), DB.kvGet('lastSync'),
+    DB.kvGet('lastSyncVersion'), DB.kvGet('syncErr'),
   ]);
   state.menageIgnore = new Set((await DB.kvGet('menageIgnore')) || []);
   state.series = series || [];
@@ -3672,27 +4152,45 @@ function afterRender() {
   state.lastExport = lastExport || null;
   state.changedAt = changedAt || null;
   state.lastSync = lastSync || null;
+  state.lastSyncVersion = lastSyncVersion || null;
+  state.syncErr = syncErr || null;
   state.hidden = new Set(hidden || []);
-  for (const t of tmdb || []) state.tmdb[t.uuid] = t;
+  // les métadonnées orphelines (titre supprimé, ajout interrompu) sont retirées
+  const existe = new Set([...state.series.map(s => s.uuid), ...state.movies.map(m => m.uuid)]);
+  for (const t of tmdb || []) {
+    if (existe.has(t.uuid) && metaSure(t)) state.tmdb[t.uuid] = t;
+    else DB.del('tmdb', t.uuid).catch(() => {});
+  }
   render();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
   // stockage persistant : empêche Android de purger les données
-  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
-  // synchronisation cloud
-  setTimeout(syncAuto, 1500);
+  if (navigator.storage && navigator.storage.persist) {
+    navigator.storage.persist().then(ok => { state.stockagePersistant = ok; }).catch(() => {});
+  }
+  // synchronisation cloud à chaque retour dans l'app (une PWA reste souvent ouverte
+  // des jours), envoi des changements quand on la quitte — sans jamais écraser un
+  // cloud modifié ailleurs entre-temps (syncPush vérifie la révision)
+  let derniereVerif = Date.now();
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden' &&
-        state.settings.ghToken && state.settings.gistId &&
-        (state.changedAt || '') > (state.lastSync || '')) {
-      syncPush().catch(() => {});
+    if (!syncPret()) return;
+    if (document.visibilityState === 'hidden') {
+      if (state.lastSync && (state.changedAt || '') > state.lastSync) syncPush(false).catch(noterErreurSynchro);
+    } else if (Date.now() - derniereVerif > 30000) {
+      derniereVerif = Date.now();
+      syncAuto();
     }
   });
 
-  // actualisation automatique silencieuse : au plus une fois par 20 h
-  if (state.series.length && navigator.onLine !== false &&
-      (!state.lastRefresh || Date.now() - new Date(state.lastRefresh) > 20 * 3600 * 1000)) {
-    setTimeout(() => refreshAll(true), 2500);
-  }
+  // d'abord la synchro, ENSUITE l'actualisation automatique (au plus une fois par
+  // 20 h) : en parallèle, l'actualisation réécrivait d'anciennes données par-dessus
+  // celles qui venaient d'arriver du cloud
+  setTimeout(async () => {
+    await syncAuto();
+    if (state.series.length && navigator.onLine !== false &&
+        (!state.lastRefresh || Date.now() - new Date(state.lastRefresh) > 20 * 3600 * 1000)) {
+      refreshAll(true);
+    }
+  }, 1200);
   // rappel de sauvegarde : au-delà de 30 jours
   const dataAge = state.lastExport ? Date.now() - new Date(state.lastExport) : Infinity;
   if ((state.series.length || state.movies.length) && dataAge > 30 * 86400 * 1000) {

@@ -2,6 +2,7 @@
   "name": "Mes Séries",
   "short_name": "Mes Séries",
   "description": "Suivi de séries et films — données 100% locales",
+  "id": "/mes-series/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
