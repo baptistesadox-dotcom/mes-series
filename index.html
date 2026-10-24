@@ -160,7 +160,7 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 .mcard{position:relative}
 .mcard .poster{width:100%;height:auto;aspect-ratio:2/3}
 .mcard .mtitle{font-size:12.5px;font-weight:550;margin-top:7px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.mcard .myear{font-size:11px;color:var(--txt2);margin-top:1px}
+.mcard .myear{font-size:11px;color:var(--txt2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mcard .mtoggle{
   position:absolute;top:7px;right:7px;width:31px;height:31px;border-radius:11px;
   background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;
@@ -270,6 +270,45 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 }
 .epcheck svg{width:14px;height:14px}
 .eprow.watched .epcheck{background:linear-gradient(135deg,#34d399,#10b981);border-color:transparent;color:#07120c}
+.epcheck{position:relative}
+.epcheck::after{content:'';position:absolute;inset:-9px} /* zone de toucher plus large que le rond */
+
+/* ---------- Fiche épisode / date de visionnage ---------- */
+.epstill{
+  aspect-ratio:16/9;border-radius:14px;background:var(--bg3) center/cover no-repeat;border:var(--card-border);
+  margin-bottom:12px;display:flex;align-items:center;justify-content:center;color:#3a3a42;
+}
+.epstill svg{width:34px;height:34px}
+.epserie{font-size:11.5px;color:var(--txt2);font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.epinfos{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0 14px}
+.epresume{margin-top:14px;color:var(--txt2);font-size:13.5px;line-height:1.5}
+.vulabel{font-size:12px;color:var(--txt2);font-weight:650;margin:0 0 8px}
+.vuchoix{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.vuchoix .vuprim{flex-basis:100%;justify-content:center}
+.vudate-in{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;color-scheme:dark}
+.vudate-in.visible{position:static;opacity:1;width:auto;height:auto;pointer-events:auto}
+
+/* ---------- Nouveautés ---------- */
+.nxhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.nxhead p{font-size:12.5px;color:var(--txt2)}
+.nvlink{flex:none;font-size:12px;font-weight:700;padding:6px 11px;border-radius:999px;border:var(--card-border);background:var(--bg2);color:var(--txt2)}
+.nvlink.on{background:var(--txt);color:#000;border-color:transparent}
+.nvgroup{margin-bottom:14px}
+.nvep{display:flex;align-items:center;gap:8px;padding:6px 4px 6px 12px;font-size:13.5px}
+.nvep .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nvep .d{font-size:11.5px;color:var(--txt2);flex:none}
+
+/* ---------- Sagas ---------- */
+#modal-saga{margin-top:12px}
+#modal-saga:empty{display:none}
+.sagarow{display:flex;align-items:center;gap:11px;padding:8px 0;border-top:1px solid rgba(255,255,255,.06)}
+.sagarow .poster{width:42px;height:63px;font-size:12px}
+.sagarow .mid{flex:1;min-width:0}
+.sagarow .t{font-weight:650;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sagarow .s{font-size:12px;color:var(--txt2);margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.sagarow .acts{display:flex;gap:6px;flex:none;align-items:center}
+.sagarow .checkbtn{width:38px;height:38px;border-radius:12px}
+.sagarow.vu .t{color:var(--txt2)}
 .seasonbtn{margin-left:auto}
 
 /* ---------- Settings ---------- */
@@ -396,9 +435,13 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
   position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(-50%);
   background:var(--bg3);border:1px solid rgba(255,255,255,.1);color:var(--txt);
   padding:11px 18px;border-radius:14px;z-index:100;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.5);
-  opacity:0;pointer-events:none;transition:opacity .2s;max-width:88vw;text-align:center;
+  opacity:0;pointer-events:none;transition:opacity .2s;width:max-content;max-width:88vw;text-align:center;
 }
 #toast.show{opacity:1}
+/* toast avec bouton (« Annuler », « Voir ») : cliquable seulement quand il est affiché */
+#toast.actionable{display:flex;align-items:center;gap:14px;text-align:left;padding:8px 8px 8px 16px}
+#toast.show.actionable{pointer-events:auto}
+#toast .toast-btn{flex:none;background:var(--txt);color:#000;font-weight:750;font-size:13px;padding:7px 12px;border-radius:10px}
 .modal-bg{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.65);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
 .modal{
   background:var(--bg2);border-radius:22px 22px 0 0;width:100%;max-width:760px;
@@ -530,6 +573,8 @@ const state = {
   exploreFeed: { key: null, items: [], page: 0, totalPages: 1, loading: false, seen: null, error: null, vides: 0 },
   dFilters: { type: 'all', genre: -1, note: 0, annee: 'all' },
   movieSort: 'recent', movieGenre: -1, movieDecade: 'all', movieLimit: 60,
+  avSort: 'recent', avGenre: -1, filmsMetaBusy: null, sagasBusy: null,
+  nouveautes: [], nouveautesVues: null, aCommencerTout: false,
   hidden: new Set(),
   refreshing: false, lastRefresh: null,
 };
@@ -603,9 +648,23 @@ const epCode = (s, e) => `S${pad2(s)}E${pad2(e)}`;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function stripHtml(h) { const d = document.createElement('div'); d.innerHTML = h || ''; return d.textContent.trim(); }
 
-function toast(msg, ms = 2600) {
+/* action facultative : { label, run } → bouton dans le toast (« Annuler », « Voir ») */
+function toast(msg, ms = 2600, action = null) {
   const t = $('#toast');
   t.textContent = msg;
+  t.classList.toggle('actionable', !!action);
+  if (action) {
+    const b = document.createElement('button');
+    b.className = 'toast-btn';
+    b.textContent = action.label;
+    b.onclick = ev => {
+      ev.stopPropagation();
+      clearTimeout(t._h);
+      t.classList.remove('show');
+      Promise.resolve(action.run()).catch(err => toast('Erreur : ' + err.message));
+    };
+    t.appendChild(b);
+  }
   t.classList.add('show');
   clearTimeout(t._h);
   t._h = setTimeout(() => t.classList.remove('show'), ms);
@@ -851,7 +910,7 @@ const onScrollLoad = () => {
     scrollTimer = null;
     loadVisiblePosters();
     // rendu progressif de la grille Films : 60 cartes de plus près du bas
-    if (state.tab === 'movies' && state._movieTotal > state.movieLimit &&
+    if (state.tab === 'movies' && state.movieView === 'grid' && state._movieTotal > state.movieLimit &&
         document.documentElement.scrollHeight - scrollY - innerHeight < 1200) {
       ajouterLotFilms();
     }
@@ -931,27 +990,28 @@ async function refreshTmdb(s, full) {
     return a + Math.max(0, (ds.episode_count || 0) - (loc ? loc.episodes.filter(e => !e.special).length : 0));
   }, 0);
   const budget = { n: orphelins ? Math.max(0, surplus - orphelins) : Infinity };
+  const nouveaux = [];
   for (const sn of toFetch) {
     const sd = await tget(`/tv/${meta.id}/season/${sn}`);
     const r = mergeEpisodes(s, sn, (sd.episodes || []).map(de => ({
       number: de.episode_number, name: de.name, air_date: de.air_date,
-    })), full, budget);
+    })), full, budget, nouveaux);
     added += r.added; changed = changed || r.changed;
     removed += cleanSeasonGhosts(s, sn);
   }
-  return finirActualisation(s, meta, added, removed, changed);
+  return finirActualisation(s, meta, added, removed, changed, nouveaux);
 }
 
 /* Fin commune des actualisations : statut recalculé (une date qui passe peut le
    changer), écriture seulement si quelque chose a bougé, et jamais sur un objet
    remplacé entre-temps (synchro ou restauration pendant l'actualisation). */
-async function finirActualisation(s, meta, added, removed, changed) {
+async function finirActualisation(s, meta, added, removed, changed, nouveaux = []) {
   const avant = s.status;
   autoStatus(s);
   const actuelle = state.series.includes(s);
   if (actuelle && (added || removed || changed || s.status !== avant)) await saveSeries(s);
   if (state.tmdb[s.uuid] === meta) await saveMeta(meta);
-  return { added: actuelle ? added : 0, removed: actuelle ? removed : 0, found: true };
+  return { added: actuelle ? added : 0, removed: actuelle ? removed : 0, found: true, nouveaux: actuelle ? nouveaux : [] };
 }
 
 /* Après rapprochement avec la source : les épisodes non vus toujours sans
@@ -983,12 +1043,13 @@ async function refreshTvmaze(s, full) {
   for (const e of eps) (bySeason[e.season] = bySeason[e.season] || []).push({ number: e.number, name: e.name, air_date: e.airdate });
   let added = 0, removed = 0, changed = false;
   const budget = { n: Infinity }; // TVMaze suit la numérotation TVDB de l'import
+  const nouveaux = [];
   for (const sn of Object.keys(bySeason)) {
     const local = (s.seasons || []).find(x => x.number === +sn);
     const localCount = local ? local.episodes.filter(e => !e.special).length : 0;
     const ghosts = local && local.episodes.some(e => !e.special && !e.is_watched && !e.air_date);
     if (bySeason[sn].length > localCount || ghosts || full) {
-      const r = mergeEpisodes(s, +sn, bySeason[sn], full, budget);
+      const r = mergeEpisodes(s, +sn, bySeason[sn], full, budget, nouveaux);
       added += r.added; changed = changed || r.changed;
       removed += cleanSeasonGhosts(s, +sn);
     }
@@ -1002,12 +1063,13 @@ async function refreshTvmaze(s, full) {
       s.seasons = s.seasons.filter(x => x !== local);
     }
   }
-  return finirActualisation(s, meta, added, removed, changed);
+  return finirActualisation(s, meta, added, removed, changed, nouveaux);
 }
 
 /* Fusionne les épisodes d'une saison venant du fournisseur. Renvoie le nombre
-   d'ajouts et si des dates ou titres existants ont changé. */
-function mergeEpisodes(s, seasonNum, episodes, full, budget) {
+   d'ajouts et si des dates ou titres existants ont changé ; les épisodes ajoutés
+   sont aussi notés dans `liste` (pour l'écran « Nouveautés »). */
+function mergeEpisodes(s, seasonNum, episodes, full, budget, liste) {
   let local = (s.seasons || []).find(x => x.number === seasonNum);
   const nouvelle = !local;
   if (!local) local = { number: seasonNum, is_specials: false, episodes: [] };
@@ -1023,6 +1085,7 @@ function mergeEpisodes(s, seasonNum, episodes, full, budget) {
         special: false, is_watched: false, watched_at: null,
         rewatch_count: 0, watched_count: 0, air_date: de.air_date,
       });
+      if (liste) liste.push({ season: seasonNum, number: de.number, name: de.name || null, air_date: de.air_date });
       added++;
     } else {
       if (de.air_date && ep.air_date !== de.air_date) { ep.air_date = de.air_date; changed = true; }
@@ -1051,8 +1114,13 @@ async function refreshAll(quiet = false) {
   });
   if (!quiet) toast(`Recherche de nouveaux épisodes (${pl(targets.length, 'série')})…`, 120000);
   let totalAdded = 0, totalRemoved = 0, done = 0, errors = 0;
+  const trouvailles = [];
   await Promise.all(targets.map(s => pool(async () => {
-    try { const r = await refreshSeries(s); totalAdded += r.added; totalRemoved += r.removed || 0; }
+    try {
+      const r = await refreshSeries(s);
+      totalAdded += r.added; totalRemoved += r.removed || 0;
+      for (const x of r.nouveaux || []) trouvailles.push({ uuid: s.uuid, ...x });
+    }
     catch (e) { errors++; }
     done++;
     if (!quiet && done % 10 === 0 && done < targets.length) toast(`Actualisation… ${done}/${targets.length}`, 120000);
@@ -1069,17 +1137,77 @@ async function refreshAll(quiet = false) {
     state.lastRefresh = nowISO();
     await DB.kvSet('lastRefresh', state.lastRefresh);
   }
+  await noterNouveautes(trouvailles);
+  const voir = trouvailles.length ? { label: 'Voir', run: openNouveautes } : null;
   const nettoyage = totalRemoved ? ` · ${pl(totalRemoved, 'fantôme retiré', 'fantômes retirés')}` : '';
   if (toutEchoue) {
     if (!quiet) toast('Actualisation impossible — vérifie ta connexion ou ta clé TMDB', 4500);
   } else if (!quiet) {
     toast(totalAdded
       ? `${pl(totalAdded, 'nouvel épisode trouvé', 'nouveaux épisodes trouvés')} 🎉${nettoyage}`
-      : `Tout est à jour ✓${nettoyage}${errors ? ` (${pl(errors, 'série')} en erreur)` : ''}`);
+      : `Tout est à jour ✓${nettoyage}${errors ? ` (${pl(errors, 'série')} en erreur)` : ''}`, voir ? 6000 : 2600, voir);
   } else if (totalAdded || totalRemoved) {
-    toast(`${totalAdded ? pl(totalAdded, 'nouvel épisode', 'nouveaux épisodes') + ' 🎉' : 'Nettoyage'}${nettoyage}`, 4000);
+    toast(`${totalAdded ? pl(totalAdded, 'nouvel épisode', 'nouveaux épisodes') + ' 🎉' : 'Nettoyage'}${nettoyage}`, voir ? 6000 : 4000, voir);
   }
   if (!quiet || totalAdded || totalRemoved) rerenderSansPerturber();
+}
+
+/* ---------------- Nouveautés : épisodes trouvés par les actualisations ----------------
+   Gardés 14 jours sur l'appareil (pas synchronisés : chaque appareil a ses actualisations). */
+const NV_JOURS = 14;
+async function noterNouveautes(liste) {
+  if (!liste.length) return;
+  const trouve = nowISO();
+  const cle = x => `${x.uuid}|${x.season}|${x.number}`;
+  const neufs = new Set(liste.map(cle));
+  const anciens = nouveautesActuelles().filter(x => !neufs.has(cle(x)));
+  state.nouveautes = [...liste.map(x => ({ ...x, trouve })), ...anciens].slice(0, 300);
+  await DB.kvSet('nouveautes', state.nouveautes);
+}
+function nouveautesActuelles() {
+  const limite = Date.now() - NV_JOURS * 86400000;
+  const existe = new Set(state.series.map(s => s.uuid));
+  return (state.nouveautes || []).filter(x => existe.has(x.uuid) && new Date(x.trouve).getTime() > limite);
+}
+function openNouveautes() {
+  const items = nouveautesActuelles();
+  if (!$('#modal-root').innerHTML) pushLayer('modal');
+  modaleCourante = null;
+  state.nouveautesVues = nowISO();
+  DB.kvSet('nouveautesVues', state.nouveautesVues).catch(() => {});
+  const groupes = new Map();
+  for (const x of items) { if (!groupes.has(x.uuid)) groupes.set(x.uuid, []); groupes.get(x.uuid).push(x); }
+  const auj = todayStr();
+  for (const eps of groupes.values()) eps.sort((a, b) => a.season - b.season || a.number - b.number);
+  // d'abord les séries qui ont quelque chose à regarder, puis les annonces les plus proches
+  const ordre = eps => (eps.some(e => e.air_date <= auj) ? '0' : '1') + eps[0].air_date;
+  const html = [...groupes].sort((a, b) => ordre(a[1]).localeCompare(ordre(b[1]))).map(([uuid, eps]) => {
+    const s = state.series.find(x => x.uuid === uuid);
+    const dispo = eps.filter(e => e.air_date <= auj).length;
+    const resume = [dispo ? pl(dispo, 'disponible') : '', eps.length > dispo ? pl(eps.length - dispo, 'annoncé') : ''].filter(Boolean).join(' · ');
+    return `<div class="nvgroup">
+      <div class="scard" style="padding:8px" data-action="nv-open" data-uuid="${uuid}">
+        ${miniPoster(uuid, s.title)}
+        <div class="mid"><div class="title" style="font-size:14px">${esc(s.title)}</div><div class="sub">${resume}</div></div>
+      </div>
+      ${eps.map(e => {
+        const ep = trouverEpisode(s, e.season, e.number);
+        const sorti = e.air_date <= auj;
+        const etat = ep && ep.is_watched ? '✓ vu' : sorti ? 'disponible' : '📅 ' + compteARebours(e.air_date);
+        return `<div class="nvep"><span class="badge ${sorti ? 'acc' : 'warn'}">${epCode(e.season, e.number)}</span><span class="nm">${esc(e.name || '')}</span><span class="d">${etat}</span></div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+  $('#modal-root').innerHTML = `
+  <div class="modal-bg" data-action="close-modal">
+    <div class="modal">
+      <div class="grab"></div>
+      <h3 style="margin-bottom:4px">🆕 Nouveaux épisodes</h3>
+      <p style="font-size:12.5px;color:var(--txt2);margin-bottom:14px">Trouvés par les actualisations des ${NV_JOURS} derniers jours</p>
+      ${html || '<div class="empty" style="padding:30px 10px">Aucune nouveauté récente.</div>'}
+    </div>
+  </div>`;
+  if (state.tab === 'series') rerenderSansPerturber(); // le lien « nouveaux » redevient discret
 }
 
 /* ---------------- Recherche / tendances (Découvrir) ---------------- */
@@ -1425,12 +1553,13 @@ async function addItem(n, watched = false) {
           toast(`« ${n.title} » est déjà dans tes films`); render(); return;
         }
         m.id.imdb = d.imdb_id || null;
-        await saveMeta({ uuid: m.uuid, type: 'movie', provider: 'tmdb', id: d.id,
+        const meta = { uuid: m.uuid, type: 'movie', provider: 'tmdb', id: d.id,
           poster: d.poster_path ? TMDB_IMG + 'w342' + d.poster_path : null,
           posterBig: d.poster_path ? TMDB_IMG + 'w500' + d.poster_path : null,
           backdrop: d.backdrop_path ? TMDB_IMG + 'w780' + d.backdrop_path : null,
-          genres: (d.genres || []).map(g => g.id),
-          overview: d.overview, fetchedAt: nowISO() });
+          overview: d.overview, fetchedAt: nowISO() };
+        appliquerDetailsFilm(meta, d); // durée, sortie, saga, genres
+        await saveMeta(meta);
       } else {
         m.id.imdb = String(n.provId).startsWith('tt') ? n.provId : null;
         await saveMeta({ uuid: m.uuid, type: 'movie', provider: n.provider, id: n.provId,
@@ -1850,51 +1979,110 @@ async function syncAutoInterne() {
 }
 
 /* ---------------- Actions ---------------- */
-async function toggleEpisode(s, seasonNum, epNum, special = false) {
-  const sea = s.seasons.find(x => x.number === seasonNum);
+function trouverEpisode(s, seasonNum, epNum, special = false) {
+  const sea = (s.seasons || []).find(x => x.number === seasonNum);
+  if (!sea) return null;
   // correspondance exacte du type : un spécial n° 3 ne doit jamais cocher l'épisode normal n° 3
   const estSpecial = e => !!e.special || !!sea.is_specials || sea.number === 0;
-  const ep = sea && sea.episodes.find(e => e.number === epNum && estSpecial(e) === !!special);
-  if (!ep) return;
+  return sea.episodes.find(e => e.number === epNum && estSpecial(e) === !!special) || null;
+}
+/* Horodatage d'un visionnage : 'now', 'air' (jour de diffusion), 'unknown' (pas de date)
+   ou un jour « AAAA-MM-JJ ». Un jour seul est enregistré à midi, heure locale : il reste
+   le même jour une fois relu, quel que soit le fuseau. */
+function horodatage(quand, ep) {
+  if (quand === 'now') return nowISO();
+  const jour = quand === 'air' ? ep && ep.air_date : quand === 'unknown' ? null : quand;
+  return /^\d{4}-\d{2}-\d{2}/.test(jour || '') ? new Date(jour.slice(0, 10) + 'T12:00:00').toISOString() : null;
+}
+function marquerVu(ep, quand = 'now') {
+  ep.is_watched = true;
+  ep.watched_at = horodatage(quand, ep);
+  ep.watched_count = Math.max(1, ep.watched_count || 0);
+}
+function marquerNonVu(ep) { ep.is_watched = false; ep.watched_at = null; ep.watched_count = 0; }
+/* épisodes concernés par « Tout vu » : diffusés, pas encore vus, hors spéciaux.
+   Les épisodes déjà vus ne sont pas touchés : leurs vraies dates sont conservées. */
+function episodesAMarquer(s, seasonNum = null) {
+  const out = [];
+  for (const sea of s.seasons || []) {
+    if (sea.is_specials || sea.number === 0) continue;
+    if (seasonNum !== null && sea.number !== seasonNum) continue;
+    for (const ep of sea.episodes) if (!ep.special && !ep.is_watched && !isFuture(ep)) out.push(ep);
+  }
+  return out;
+}
+
+/* Renvoie l'épisode modifié, ou null si rien n'a changé */
+async function toggleEpisode(s, seasonNum, epNum, special = false) {
+  const ep = trouverEpisode(s, seasonNum, epNum, special);
+  if (!ep) return null;
   if (!ep.is_watched && isFuture(ep)) {
     toast(`Pas encore diffusé — sortie le ${fmtDate(ep.air_date)} 📅`);
-    return;
+    return null;
   }
-  ep.is_watched = !ep.is_watched;
-  ep.watched_at = ep.is_watched ? nowISO() : null;
-  ep.watched_count = ep.is_watched ? Math.max(1, ep.watched_count || 0) : 0;
+  ep.is_watched ? marquerNonVu(ep) : marquerVu(ep);
   autoStatus(s);
   await saveSeries(s);
+  return ep;
 }
-async function markSeason(s, seasonNum, watched) {
+async function markSeason(s, seasonNum, watched, quand = 'now') {
   const sea = s.seasons.find(x => x.number === seasonNum);
   if (!sea) return;
-  for (const ep of sea.episodes) {
-    if (ep.special) continue;
-    // « Tout vu » ne touche pas aux épisodes déjà vus : leurs vraies dates sont conservées
-    if (watched && (isFuture(ep) || ep.is_watched)) continue;
-    ep.is_watched = watched;
-    ep.watched_at = watched ? nowISO() : null;
-    ep.watched_count = watched ? Math.max(1, ep.watched_count || 0) : 0;
-  }
+  if (watched) episodesAMarquer(s, seasonNum).forEach(ep => marquerVu(ep, quand));
+  else sea.episodes.forEach(ep => { if (!ep.special) marquerNonVu(ep); });
   autoStatus(s);
   await saveSeries(s);
 }
 async function markNext(s) {
   const nx = nextUnwatched(s);
-  if (nx) await toggleEpisode(s, nx.season, nx.ep.number);
+  return nx ? toggleEpisode(s, nx.season, nx.ep.number) : null;
 }
-async function markAllWatched(s) {
-  for (const sea of s.seasons || [])
-    for (const ep of sea.episodes) {
-      if (ep.special || sea.is_specials || sea.number === 0) continue;
-      if (isFuture(ep) || ep.is_watched) continue;
-      ep.is_watched = true;
-      ep.watched_at = nowISO();
-      ep.watched_count = Math.max(1, ep.watched_count || 0);
-    }
+async function markAllWatched(s, quand = 'now') {
+  episodesAMarquer(s).forEach(ep => marquerVu(ep, quand));
   autoStatus(s);
   await saveSeries(s);
+}
+
+/* ---------------- Annuler ----------------
+   Les actions de visionnage, d'arrêt et de suppression proposent « Annuler » quelques
+   secondes. Pour une série, on ne retient que l'état de visionnage de chaque épisode et
+   le statut : restaurer la série entière effacerait un épisode ajouté entre-temps par
+   l'actualisation. */
+function etatSerie(s) {
+  const eps = [];
+  for (const sea of s.seasons || []) for (const ep of sea.episodes) eps.push([ep, ep.is_watched, ep.watched_at, ep.watched_count]);
+  return { s, status: s.status, eps };
+}
+async function restaurerSerie(snap) {
+  const { s } = snap;
+  if (!state.series.includes(s)) return toast('Trop tard pour annuler : les données ont été rechargées');
+  for (const [ep, w, at, c] of snap.eps) Object.assign(ep, { is_watched: w, watched_at: at, watched_count: c });
+  s.status = snap.status;
+  autoStatus(s);
+  await saveSeries(s);
+}
+const etatFilm = m => ({ m, avant: JSON.parse(JSON.stringify(m)) });
+async function restaurerFilm({ m, avant }) {
+  if (!state.movies.includes(m)) return toast('Trop tard pour annuler : les données ont été rechargées');
+  for (const k of Object.keys(m)) if (!(k in avant)) delete m[k];
+  Object.assign(m, avant);
+  await saveMovie(m);
+}
+function proposerAnnulation(msg, annuler, ms = 5000) {
+  toast(msg, ms, { label: 'Annuler', run: async () => {
+    await annuler();
+    if (navigator.vibrate) navigator.vibrate(8);
+    if (detailUuid) renderDetail();
+    redessinerModale();
+    rafraichirEcrans();
+  } });
+}
+/* Modale capable de se redessiner (fiche film, épisode, saga) : redessinée après une
+   annulation ou un ajout, seulement si c'est toujours elle qui est affichée */
+let modaleCourante = null;
+function redessinerModale() {
+  const box = $('#modal-root .modal');
+  if (box && modaleCourante && box.dataset.rr === modaleCourante.cle) modaleCourante.fn();
 }
 async function toggleMovieWatched(m) {
   m.is_watched = !m.is_watched;
@@ -2119,11 +2307,36 @@ function viewNext() {
   const activite = new Map(watchable.map(w => [w.s, lastActivity(w.s)])); // calculée une fois, pas à chaque comparaison
   watchable.sort((a, b) => activite.get(b.s).localeCompare(activite.get(a.s)));
   waiting.sort((a, b) => (a.nx.ep.air_date || '9999').localeCompare(b.nx.ep.air_date || '9999'));
+  // séries ajoutées mais jamais commencées, dont le 1er épisode est sorti : les plus récentes d'abord
+  const aCommencer = state.series.filter(s => s.status === 'not_started_yet')
+    .map(s => ({ s, nx: nextUnwatched(s) })).filter(x => x.nx && !isFuture(x.nx.ep))
+    .sort((a, b) => (b.s.created_at || '').localeCompare(a.s.created_at || ''));
   const lastR = state.lastRefresh
     ? `Dernière actualisation : ${fmtDate(state.lastRefresh)}`
     : `Appuie sur ⟳ en haut pour chercher les nouveaux épisodes.`;
+  const nv = nouveautesActuelles();
+  const nonVues = nv.filter(x => x.trouve > (state.nouveautesVues || '')).length;
+  const lienNv = nv.length
+    ? `<button class="nvlink ${nonVues ? 'on' : ''}" data-action="open-nouveautes">🆕 ${nonVues ? pl(nonVues, 'nouvel épisode', 'nouveaux épisodes') : 'Nouveautés'}</button>`
+    : '';
+  const nbSaisons = s => sortedSeasons(s).filter(x => !x.is_specials && x.number !== 0).length;
+  const AC_MAX = 4;
+  const sectionACommencer = aCommencer.length ? `
+    <h2 class="section" style="margin-top:26px">✨ À commencer <span class="cnt">${aCommencer.length}</span></h2>
+    <div class="card-list">${aCommencer.slice(0, state.aCommencerTout ? Infinity : AC_MAX).map(({ s, nx }) => `
+      <div class="scard" data-action="open-series" data-uuid="${s.uuid}">
+        ${posterHtml(s, 'tv')}
+        <div class="mid">
+          <div class="title">${esc(s.title)}</div>
+          <div class="sub" style="margin-top:5px"><span class="badge">${epCode(nx.season, nx.ep.number)}</span> ${esc(nx.ep.name || '')}</div>
+          <div class="sub" style="margin-top:4px">${pl(nbSaisons(s), 'saison')} · ${pl(episodesRestants(s), 'épisode')} disponible${episodesRestants(s) > 1 ? 's' : ''}</div>
+        </div>
+        <button class="checkbtn" data-action="mark-next" data-uuid="${s.uuid}" title="Marquer ${epCode(nx.season, nx.ep.number)} vu">${ICONS.check}</button>
+      </div>`).join('')}</div>
+    ${aCommencer.length > AC_MAX && !state.aCommencerTout
+      ? `<button class="btn ghost small" style="margin-top:10px;width:100%;justify-content:center" data-action="a-commencer-tout">Voir les ${aCommencer.length}</button>` : ''}` : '';
   return `
-    <p style="font-size:12.5px;color:var(--txt2);margin-bottom:14px">${lastR}</p>
+    <div class="nxhead"><p>${lastR}</p>${lienNv}</div>
     <h2 class="section">À regarder <span class="cnt">${watchable.length}</span></h2>
     ${watchable.length ? `<div class="card-list">${watchable.map(({ s, nx }) => {
       const p = progress(s);
@@ -2140,11 +2353,14 @@ function viewNext() {
         <button class="checkbtn" data-action="mark-next" data-uuid="${s.uuid}" title="Marquer vu">${ICONS.check}</button>
       </div>`;
     }).join('')}</div>`
-      : `<div class="empty">Rien à regarder — tout est vu ! 🎉</div>`}
+      : aCommencer.length
+        ? `<div class="empty" style="padding:24px 20px">Tu es à jour dans tes séries en cours 🎉</div>`
+        : `<div class="empty">Rien à regarder — tout est vu ! 🎉</div>`}
+    ${sectionACommencer}
     ${(() => {
       if (!waiting.length) return '';
       // calendrier des sorties : groupé par échéance
-      const day = n => new Date(Date.now() + n * 86400000).toISOString().slice(0, 10);
+      const day = n => dayOf(new Date(Date.now() + n * 86400000));
       const groups = [
         { titre: '📅 Cette semaine', test: d => d && d <= day(7) },
         { titre: '📅 Ce mois-ci', test: d => d && d <= day(31) },
@@ -2159,7 +2375,7 @@ function viewNext() {
             <div class="sub" style="margin-top:5px">${nx.ep.air_date
               ? `<span class="badge warn">${epCode(nx.season, nx.ep.number)}</span> <b style="color:var(--txt)">${compteARebours(nx.ep.air_date)}</b>`
               : `<span class="badge">${epCode(nx.season, nx.ep.number)}</span> date inconnue`}</div>
-            ${nx.ep.air_date ? `<div class="sub" style="margin-top:4px">${new Date(nx.ep.air_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>` : ''}
+            ${nx.ep.air_date ? `<div class="sub" style="margin-top:4px">${asDate(nx.ep.air_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>` : ''}
           </div>
         </div>`;
       let rest = [...waiting], html = `<h2 class="section" style="margin-top:26px">🗓️ Calendrier des sorties <span class="cnt">${waiting.length}</span></h2>`;
@@ -2440,13 +2656,251 @@ function discoverCardG(n) {
   </div>`;
 }
 
-function movieCard(m) {
+/* minutes de films : vraie durée si connue (TMDB), sinon 1 h 50 */
+const dureeFilms = list => list.reduce((a, m) => a + ((state.tmdb[m.uuid] && state.tmdb[m.uuid].runtime) || 110), 0);
+const fmtDuree = min => min >= 60 ? `${Math.floor(min / 60)} h ${pad2(min % 60)}` : `${min} min`;
+
+/* avoir = carte de la liste « À voir » : durée, et date de sortie si le film n'est pas encore sorti */
+function movieCard(m, avoir = false) {
+  const mt = (avoir && state.tmdb[m.uuid]) || {};
+  const bientot = avoir && mt.release && mt.release > todayStr();
+  const sous = !avoir ? (m.year || '')
+    : bientot ? `Sortie ${compteARebours(mt.release)}`
+    : [m.year, mt.runtime ? fmtDuree(mt.runtime) : null].filter(Boolean).join(' · ');
+  const affiche = posterHtml(m, 'movie');
   return `<div class="mcard ${m.is_watched ? 'watched' : ''}" data-action="open-movie" data-uuid="${m.uuid}">
     ${m.is_favorite ? `<span class="mfav">${ICONS.star}</span>` : ''}
-    ${posterHtml(m, 'movie')}
+    ${bientot ? `<div class="pwrap">${affiche}<span class="rchip soon">📅 ${fmtShort(asDate(mt.release))}</span></div>` : affiche}
     <button class="mtoggle" data-action="toggle-movie" data-uuid="${m.uuid}" title="${m.is_watched ? 'Vu' : 'Marquer vu'}">${ICONS.check}</button>
     <div class="mtitle">${esc(m.title)}</div>
-    <div class="myear">${m.year || ''}</div>
+    <div class="myear">${sous}</div>
+  </div>`;
+}
+
+/* ---------------- Détails des films (durée, sortie, saga) ----------------
+   Une passe par session, résultats gardés dans les métadonnées (donc sauvegardés
+   et synchronisés). Nécessite une clé TMDB. Pool séparé : les affiches restent
+   prioritaires pendant l'analyse. */
+const poolFond = makePool(3);
+function appliquerDetailsFilm(mt, d) {
+  mt.runtime = d.runtime || null;
+  mt.release = d.release_date || null;
+  const c = d.belongs_to_collection;
+  mt.collection = c && idSaga(c.id) ? { id: idSaga(c.id), name: String(c.name || '') } : null;
+  if (d.genres) mt.genres = d.genres.map(g => g.id);
+  if (!mt.overview && d.overview) mt.overview = d.overview;
+  mt.detAt = nowISO();
+}
+const filmSansDetails = m => {
+  if (metaNeedsFetch(m, 'movie')) return true;
+  const t = state.tmdb[m.uuid];
+  return !!(t && t.id && t.provider === 'tmdb' && !t.detAt);
+};
+const filmsTentes = new Set(); // une tentative par film et par session (pas de boucle si échec)
+async function backfillFilms(tous, maj) {
+  if (!tmdbKey() || state.filmsMetaBusy) return;
+  const cibles = state.movies.filter(m => (tous || !m.is_watched) && !filmsTentes.has(m.uuid) && filmSansDetails(m));
+  if (!cibles.length) return;
+  cibles.forEach(m => filmsTentes.add(m.uuid));
+  state.filmsMetaBusy = { done: 0, total: cibles.length };
+  maj && maj();
+  await Promise.all(cibles.map(m => poolFond(async () => {
+    try {
+      const mt = await resolveMeta(m, 'movie');
+      if (mt && mt.id && mt.provider === 'tmdb' && !mt.detAt && state.tmdb[m.uuid] === mt) {
+        appliquerDetailsFilm(mt, await tget(`/movie/${mt.id}`));
+        await saveMeta(mt);
+      }
+    } catch (e) {}
+    if (state.filmsMetaBusy) {
+      state.filmsMetaBusy.done++;
+      const el = $('#films-meta-progress'); // mise à jour en place, sans redessiner l'écran
+      if (el) el.textContent = `${state.filmsMetaBusy.done}/${state.filmsMetaBusy.total}`;
+    }
+  })));
+  state.filmsMetaBusy = null;
+  maj && maj();
+}
+const ligneAnalyseFilms = () => state.filmsMetaBusy
+  ? `<p class="loadrow" style="padding:4px 0 12px"><span class="spin"></span> Analyse de tes films… <span id="films-meta-progress">${state.filmsMetaBusy.done}/${state.filmsMetaBusy.total}</span></p>`
+  : '';
+const selectFiltre = (name, opts, val, label) => `<select class="fsel ${String(val) !== String(opts[0][0]) ? 'active' : ''}" data-f="${name}" aria-label="${label}">
+  ${opts.map(([v, l]) => `<option value="${v}" ${String(v) === String(val) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+
+/* ---------------- Sagas de films (collections TMDB) ----------------
+   Le contenu des sagas vient de TMDB et reste sur l'appareil (cache, 30 jours) ;
+   l'appartenance d'un film à une saga est dans ses métadonnées. */
+let sagasCache = {};
+/* « Shrek - Saga », « The Kissing Booth Collection » → « Shrek », « The Kissing Booth » */
+const nomSaga = n => String(n || '').replace(/\s*[-–]?\s*(saga|collection)\s*$/i, '').trim() || 'Saga';
+const idSaga = x => { const n = +x; return Number.isInteger(n) && n > 0 ? n : null; };
+const sagaBtn = c => idSaga(c.id)
+  ? `<button class="btn ghost small" data-action="open-saga" data-id="${idSaga(c.id)}">🎞️ Saga ${esc(nomSaga(c.name))}</button>` : '';
+let sagasEcriture = null;
+function enregistrerSagas() { // regroupe les écritures d'une rafale de chargements
+  clearTimeout(sagasEcriture);
+  sagasEcriture = setTimeout(() => DB.kvSet('sagas', sagasCache).catch(() => {}), 600);
+}
+const sagaFraiche = c => !!c && Date.now() - new Date(c.at).getTime() < 30 * 86400000;
+async function chargerSaga(id) {
+  id = idSaga(id);
+  if (!id) throw new Error('saga inconnue');
+  if (sagaFraiche(sagasCache[id])) return sagasCache[id];
+  const d = await tget(`/collection/${id}`);
+  const img = (p, w) => p ? safeImg(TMDB_IMG + w + p) : null;
+  const saga = {
+    id, name: String(d.name || 'Saga'), overview: d.overview || null,
+    poster: img(d.poster_path, 'w342'),
+    parts: (d.parts || []).filter(p => idSaga(p.id)).map(p => ({
+      id: p.id, title: String(p.title || ''), date: /^\d{4}-\d{2}-\d{2}$/.test(p.release_date || '') ? p.release_date : null,
+      poster: img(p.poster_path, 'w185'),
+    })).sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999')),
+    at: nowISO(),
+  };
+  sagasCache[id] = saga;
+  enregistrerSagas();
+  return saga;
+}
+/* films de la bibliothèque par id TMDB, et sagas auxquelles ils appartiennent */
+function sagasBibliotheque() {
+  const parId = new Map(), ids = new Set();
+  for (const m of state.movies) {
+    const t = state.tmdb[m.uuid];
+    if (!t || t.provider !== 'tmdb' || !t.id) continue;
+    parId.set(t.id, m);
+    if (t.collection && idSaga(t.collection.id)) ids.add(idSaga(t.collection.id));
+  }
+  return { parId, ids };
+}
+/* x films vus sur y sortis, prochain à voir (ordre de sortie), prochain à sortir */
+function bilanSaga(saga, parId) {
+  const auj = todayStr();
+  const vu = p => { const m = parId.get(p.id); return !!(m && m.is_watched); };
+  const sortis = saga.parts.filter(p => p.date && p.date <= auj);
+  return {
+    total: sortis.length,
+    vus: sortis.filter(vu).length,
+    prochain: sortis.find(p => !vu(p)) || null,
+    aVenir: saga.parts.find(p => !p.date || p.date > auj) || null,
+  };
+}
+const sagasTentees = new Set();
+let sagasEnPreparation = false;
+async function preparerSagas() {
+  if (!tmdbKey() || sagasEnPreparation) return;
+  sagasEnPreparation = true;
+  const ici = () => state.tab === 'movies' && state.movieView === 'sagas';
+  const maj = () => { if (ici()) rerenderSansPerturber(); };
+  try {
+    while (state.filmsMetaBusy) await sleep(500); // passe « À voir » en cours : on l'attend
+    await backfillFilms(true, maj); // il faut savoir à quelle saga appartient chaque film
+    const manquantes = [...sagasBibliotheque().ids].filter(id => !sagaFraiche(sagasCache[id]) && !sagasTentees.has(id));
+    if (manquantes.length) {
+      manquantes.forEach(id => sagasTentees.add(id));
+      state.sagasBusy = { done: 0, total: manquantes.length };
+      maj();
+      await Promise.all(manquantes.map(id => poolFond(async () => {
+        try { await chargerSaga(id); } catch (e) {}
+        state.sagasBusy.done++;
+        const el = $('#sagas-progress');
+        if (el) el.textContent = `${state.sagasBusy.done}/${state.sagasBusy.total}`;
+      })));
+      state.sagasBusy = null;
+      maj();
+    }
+  } finally { sagasEnPreparation = false; }
+}
+
+function viewSagas() {
+  if (!tmdbKey()) return `<div class="hint"><span class="em">🎞️</span><p><b>Sagas :</b> cette vue utilise TMDB. Ajoute ta clé dans Profil → Clé API TMDB.</p></div>`;
+  const { parId, ids } = sagasBibliotheque();
+  const cartes = [];
+  for (const id of ids) {
+    const saga = sagasCache[id];
+    if (!saga || saga.parts.length < 2) continue;
+    const b = bilanSaga(saga, parId);
+    if (b.total) cartes.push({ saga, b });
+  }
+  const parNom = (a, b) => nomSaga(a.saga.name).localeCompare(nomSaga(b.saga.name), 'fr', { sensitivity: 'base' });
+  // les plus avancées d'abord : ce sont celles qu'on a envie de finir
+  const aCompleter = cartes.filter(x => x.b.vus < x.b.total)
+    .sort((a, b) => b.b.vus / b.b.total - a.b.vus / a.b.total || parNom(a, b));
+  const completes = cartes.filter(x => x.b.vus === x.b.total).sort(parNom);
+  const carte = ({ saga, b }) => {
+    const pct = Math.round(b.vus / b.total * 100);
+    return `<div class="scard" data-action="open-saga" data-id="${saga.id}">
+      <div class="poster">${saga.poster ? `<img loading="lazy" src="${saga.poster}" alt="">` : esc(initials(nomSaga(saga.name)))}</div>
+      <div class="mid">
+        <div class="title">${esc(nomSaga(saga.name))}</div>
+        <div class="progress ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%"></i></div>
+        <div class="sub" style="margin-top:5px">${b.vus}/${b.total} vus${b.prochain ? ` · Prochain : ${esc(b.prochain.title)}` : ' · ✓ complète'}</div>
+        ${b.aVenir ? `<div class="sub">📅 ${esc(b.aVenir.title)} · ${b.aVenir.date ? compteARebours(b.aVenir.date) : 'annoncé'}</div>` : ''}
+      </div>
+    </div>`;
+  };
+  const occupe = state.filmsMetaBusy || state.sagasBusy;
+  return `
+    ${ligneAnalyseFilms()}
+    ${state.sagasBusy ? `<p class="loadrow" style="padding:4px 0 12px"><span class="spin"></span> Chargement des sagas… <span id="sagas-progress">${state.sagasBusy.done}/${state.sagasBusy.total}</span></p>` : ''}
+    <h2 class="section" style="margin-top:2px">À compléter <span class="cnt">${aCompleter.length}</span></h2>
+    ${aCompleter.length ? `<div class="card-list">${aCompleter.map(carte).join('')}</div>`
+      : occupe ? '' : `<div class="empty">${cartes.length ? 'Toutes tes sagas sont complètes ! 🎉' : 'Aucune saga trouvée dans tes films.'}</div>`}
+    ${completes.length ? `<h2 class="section" style="margin-top:26px">Complètes ✓ <span class="cnt">${completes.length}</span></h2>
+      <div class="card-list">${completes.map(carte).join('')}</div>` : ''}`;
+}
+
+async function openSagaModal(idBrut) {
+  const id = idSaga(idBrut);
+  if (!id) return;
+  if (!$('#modal-root').innerHTML) pushLayer('modal');
+  const cle = 'saga:' + id;
+  modaleCourante = { cle, fn: () => openSagaModal(id) };
+  let saga = sagasCache[id];
+  if (!saga) {
+    $('#modal-root').innerHTML = `<div class="modal-bg" data-action="close-modal"><div class="modal" data-rr="${cle}"><div class="grab"></div><div class="loadrow"><span class="spin"></span> Chargement de la saga…</div></div></div>`;
+    try { saga = await chargerSaga(id); }
+    catch (e) { toast('Saga indisponible : ' + e.message); closeModalViaHistory(); return; }
+    const box = $('#modal-root .modal');
+    if (!box || box.dataset.rr !== cle) return; // fermée ou remplacée entre-temps
+  }
+  const { parId } = sagasBibliotheque();
+  const b = bilanSaga(saga, parId);
+  const auj = todayStr();
+  const ligne = p => {
+    const m = parId.get(p.id);
+    const sorti = !!p.date && p.date <= auj;
+    let etat = '', actions = '';
+    if (m && m.is_watched) etat = '<span class="badge ok">✓ Vu</span>';
+    else if (m) {
+      etat = '<span class="badge acc">À voir</span>';
+      if (sorti) actions = `<button class="checkbtn" data-action="saga-toggle" data-uuid="${m.uuid}" title="Marquer vu" aria-label="Marquer vu">${ICONS.check}</button>`;
+    } else {
+      if (!sorti) etat = `<span class="badge warn">📅 ${p.date ? compteARebours(p.date) : 'annoncé'}</span>`;
+      actions = `<button class="btn ghost small" data-action="saga-add" data-saga="${id}" data-pid="${p.id}" title="Ajouter à « À voir »">${ICONS.plus} À voir</button>
+        ${sorti ? `<button class="checkbtn" data-action="saga-add" data-saga="${id}" data-pid="${p.id}" data-watched="1" title="Déjà vu" aria-label="Déjà vu">${ICONS.check}</button>` : ''}`;
+    }
+    return `<div class="sagarow ${m && m.is_watched ? 'vu' : ''}" ${m ? `data-action="open-movie" data-uuid="${m.uuid}"` : ''}>
+      <div class="poster">${p.poster ? `<img loading="lazy" src="${p.poster}" alt="">` : esc(initials(p.title))}</div>
+      <div class="mid"><div class="t">${esc(p.title)}</div><div class="s">${p.date ? p.date.slice(0, 4) : 'date inconnue'} ${etat}</div></div>
+      <div class="acts">${actions}</div>
+    </div>`;
+  };
+  const pct = b.total ? Math.round(b.vus / b.total * 100) : 0;
+  $('#modal-root').innerHTML = `
+  <div class="modal-bg" data-action="close-modal">
+    <div class="modal" data-rr="${cle}">
+      <div class="grab"></div>
+      <div class="dmodal" style="margin-bottom:10px">
+        <div class="poster" style="width:80px;height:120px">${saga.poster ? `<img src="${saga.poster}" alt="">` : esc(initials(nomSaga(saga.name)))}</div>
+        <div class="dmi">
+          <h3>${esc(nomSaga(saga.name))}</h3>
+          <div class="y">${pl(saga.parts.length, 'film')} · ${b.vus}/${b.total} vus</div>
+          <div class="progress ${pct === 100 ? 'full' : ''}" style="max-width:160px"><i style="width:${pct}%"></i></div>
+        </div>
+      </div>
+      ${saga.overview ? `<p class="overview clamp" style="padding:0 0 12px" data-action="expand-overview">${esc(saga.overview)}</p>` : ''}
+      ${saga.parts.map(ligne).join('')}
+    </div>
   </div>`;
 }
 
@@ -2455,31 +2909,36 @@ function openMovieModal(uuid) {
   const m = state.movies.find(x => x.uuid === uuid);
   if (!m) return;
   if (!$('#modal-root').innerHTML) pushLayer('modal');
+  modaleCourante = { cle: 'film:' + uuid, fn: () => openMovieModal(uuid) };
   const meta = state.tmdb[uuid] || {};
+  const bientot = !m.is_watched && meta.release && meta.release > todayStr();
   $('#modal-root').innerHTML = `
   <div class="modal-bg" data-action="close-modal">
-    <div class="modal">
+    <div class="modal" data-rr="film:${uuid}">
       <div class="grab"></div>
       <div class="dmodal">
         <div class="poster">${meta.poster ? `<img src="${meta.posterBig || meta.poster}" alt="">` : esc(initials(m.title))}</div>
         <div class="dmi">
           <h3>${esc(m.title)}</h3>
-          <div class="y">${m.year || ''} · Film</div>
+          <div class="y">${m.year || ''} · Film${meta.runtime ? ' · ' + fmtDuree(meta.runtime) : ''}</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
             ${m.is_watched
-              ? `<span class="badge ok">✓ Vu${m.watched_at ? ' le ' + fmtDate(m.watched_at) : ''}</span>`
+              ? `<span class="badge ok">✓ Vu${m.watched_at ? ' le ' + fmtDate(m.watched_at) : ' · date inconnue'}</span>`
               : `<span class="badge acc">À voir</span>`}
+            ${bientot ? `<span class="badge warn">📅 Sortie ${compteARebours(meta.release)}</span>` : ''}
             ${m.rewatch_count ? `<span class="badge acc">🔁 vu ×${m.rewatch_count + 1}</span>` : ''}
             ${m.is_favorite ? `<span class="badge warn">★ Favori</span>` : ''}
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn small" data-action="movie-watch" data-uuid="${uuid}">${m.is_watched ? 'Marquer à voir' : 'Marquer vu'}</button>
+            <button class="btn small" data-action="movie-watch" data-uuid="${uuid}">${m.is_watched ? 'Marquer à voir' : `${ICONS.check} Vu`}</button>
+            <button class="btn ghost small" data-action="movie-date" data-uuid="${uuid}">📅 ${m.is_watched ? 'Date' : 'Vu un autre jour'}</button>
             ${m.is_watched ? `<button class="btn ghost small" data-action="movie-rewatch" data-uuid="${uuid}">🔁 Revu</button>` : ''}
             <button class="btn ghost small" data-action="movie-fav" data-uuid="${uuid}">${m.is_favorite ? '★ Favori' : '☆ Favori'}</button>
             <button class="btn danger small" data-action="movie-del" data-uuid="${uuid}">Supprimer</button>
           </div>
         </div>
       </div>
+      <div id="modal-saga">${meta.collection ? sagaBtn(meta.collection) : ''}</div>
       <div id="modal-extra"><div class="loadrow" style="text-align:left;padding:10px 0"><span class="spin"></span></div></div>
       ${meta.overview ? `<p style="margin-top:6px;color:var(--txt2);font-size:13.5px">${esc(meta.overview)}</p>` : ''}
     </div>
@@ -2492,7 +2951,7 @@ function openMovieModal(uuid) {
       else clearExtra();
     }).catch(clearExtra);
   } else if (meta.id) {
-    enrichModal({ type: 'movie', provider: meta.provider, provId: meta.id });
+    enrichModal({ type: 'movie', provider: meta.provider, provId: meta.id, uuid });
   } else {
     clearExtra();
   }
@@ -2502,18 +2961,45 @@ function viewMovies() {
   const seg = `<div class="segbar">
     <button class="${state.movieView === 'avoir' ? 'on' : ''}" data-action="movie-view" data-v="avoir">🎬 À voir</button>
     <button class="${state.movieView === 'grid' ? 'on' : ''}" data-action="movie-view" data-v="grid">Mes films</button>
+    <button class="${state.movieView === 'sagas' ? 'on' : ''}" data-action="movie-view" data-v="sagas">Sagas</button>
   </div>`;
-  return seg + (state.movieView === 'avoir' ? viewMoviesWatchlist() : viewMoviesGrid());
+  const v = state.movieView;
+  return seg + (v === 'avoir' ? viewMoviesWatchlist() : v === 'sagas' ? viewSagas() : viewMoviesGrid());
 }
 
 function viewMoviesWatchlist() {
-  const list = state.movies.filter(m => !m.is_watched)
-    .sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+  const mt = m => state.tmdb[m.uuid] || {};
+  const tous = state.movies.filter(m => !m.is_watched);
+  if (!tous.length) return `<div class="empty">Ta liste est vide — ajoute des films depuis l'onglet Explorer ! 🍿</div>`;
+  // genres réellement présents dans la liste, du plus fréquent au plus rare
+  const compte = {};
+  for (const m of tous) for (const g of mt(m).genres || []) if (GENRE_NAMES[g]) compte[g] = (compte[g] || 0) + 1;
+  const genresDispo = Object.entries(compte).sort((a, b) => b[1] - a[1]);
+  const list = state.avGenre >= 0 ? tous.filter(m => (mt(m).genres || []).includes(state.avGenre)) : [...tous];
+  const sortie = m => mt(m).release || (m.year ? String(m.year) : '');
+  const duree = m => mt(m).runtime || 0;
+  const t = state.avSort;
+  if (t === 'az') list.sort((a, b) => a.title.localeCompare(b.title, 'fr', { sensitivity: 'base' }));
+  else if (t === 'sortie') list.sort((a, b) => sortie(b).localeCompare(sortie(a)));
+  else if (t === 'court') list.sort((a, b) => (duree(a) || 1e9) - (duree(b) || 1e9)); // durée inconnue à la fin
+  else if (t === 'long') list.sort((a, b) => duree(b) - duree(a));
+  else list.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+  // pas encore sortis : à part, du plus proche au plus lointain
+  const auj = todayStr();
+  const aVenir = list.filter(m => (mt(m).release || '') > auj).sort((a, b) => mt(a).release.localeCompare(mt(b).release));
+  const dispo = list.filter(m => !aVenir.includes(m));
   return `
-    <h2 class="section" style="margin-top:2px">À voir <span class="cnt">${list.length}</span></h2>
-    ${list.length
-      ? `<div class="mgrid">${list.map(movieCard).join('')}</div>`
-      : `<div class="empty">Ta liste est vide — ajoute des films depuis l'onglet Explorer ! 🍿</div>`}`;
+    <div class="fbar">
+      ${selectFiltre('avsort', [['recent', 'Ajout récent'], ['az', 'A → Z'], ['sortie', 'Sortie ↓'], ['court', 'Plus courts'], ['long', 'Plus longs']], t, 'Trier')}
+      ${selectFiltre('avgenre', [[-1, 'Tous genres'], ...genresDispo.map(([g, n]) => [g, `${GENRE_NAMES[g]} (${n})`])], state.avGenre, 'Genre')}
+    </div>
+    ${ligneAnalyseFilms()}
+    <h2 class="section" style="margin-top:2px">À voir <span class="cnt">${dispo.length}</span></h2>
+    ${dispo.length
+      ? `<div class="mgrid">${dispo.map(m => movieCard(m, true)).join('')}</div>`
+      : `<div class="empty">${aVenir.length ? 'Rien de disponible pour l’instant.' : 'Aucun film ne correspond.'}</div>`}
+    ${aVenir.length ? `<h2 class="section" style="margin-top:26px">📅 Pas encore sortis <span class="cnt">${aVenir.length}</span></h2>
+      <div class="mgrid">${aVenir.map(m => movieCard(m, true)).join('')}</div>` : ''}`;
 }
 
 const piedFilms = (vus, total) => total > vus ? `<p style="text-align:center;color:var(--txt2);font-size:12.5px;padding:16px">${vus} / ${total} films — fais défiler pour la suite</p>` : '';
@@ -2523,7 +3009,7 @@ function ajouterLotFilms() {
   if (!grille || !pied || !list) { state.movieLimit += 60; render(); return; }
   const deja = grille.children.length;
   state.movieLimit = deja + 60;
-  grille.insertAdjacentHTML('beforeend', list.slice(deja, state.movieLimit).map(movieCard).join(''));
+  grille.insertAdjacentHTML('beforeend', list.slice(deja, state.movieLimit).map(m => movieCard(m)).join(''));
   pied.innerHTML = piedFilms(grille.children.length, list.length);
   loadVisiblePosters();
 }
@@ -2577,7 +3063,7 @@ function viewMoviesGrid() {
       ${sel('mdecade', [['all', 'Toutes années'], ['2020', '2020+'], ['2010', '2010-2019'], ['2000', '2000-2009'], ['old', 'Avant 2000']], state.movieDecade)}
     </div>
     ${shown.length
-      ? `<div class="mgrid" id="movies-grid">${shown.map(movieCard).join('')}</div>
+      ? `<div class="mgrid" id="movies-grid">${shown.map(m => movieCard(m)).join('')}</div>
          <div id="movies-pied">${piedFilms(shown.length, list.length)}</div>`
       : `<div class="empty">Aucun film ici.</div>`}`;
 }
@@ -2586,7 +3072,7 @@ function viewSettings() {
   const p = state.series.reduce((acc, s) => {
     const pr = progress(s); acc.w += pr.watched; acc.t += pr.total; return acc;
   }, { w: 0, t: 0 });
-  let minutes = state.movies.filter(m => m.is_watched).length * 110;
+  let minutes = dureeFilms(state.movies.filter(m => m.is_watched));
   for (const s of state.series) {
     const w = progress(s).watched;
     if (w) minutes += w * ((state.tmdb[s.uuid] && state.tmdb[s.uuid].runtime) || 40);
@@ -2888,7 +3374,7 @@ function renderStats() {
   for (const [d, n] of Object.entries(perDay)) if (!bulk.has(d) && n > recN) { recN = n; recDay = d; }
 
   // temps estimé : durée réelle des épisodes quand elle est connue
-  let minutes = mvWatched.length * 110;
+  let minutes = dureeFilms(mvWatched);
   for (const s of state.series) {
     const w = progress(s).watched;
     if (!w) continue;
@@ -3086,7 +3572,7 @@ function computeWrapped() {
   const eps = yEv.filter(e => e.t === 'ep');
   const mvs = yEv.filter(e => e.t === 'mv');
 
-  let minutes = mvs.length * 110;
+  let minutes = dureeFilms(mvs);
   const perSerie = {};
   for (const e of eps) {
     perSerie[e.uuid] = (perSerie[e.uuid] || 0) + 1;
@@ -3508,13 +3994,14 @@ function renderDetail() {
         </summary>
         ${eps.map(ep => `
           <div class="eprow ${ep.is_watched ? 'watched' : ''} ${isFuture(ep) ? 'future' : ''}"
-               data-action="toggle-ep" data-season="${sea.number}" data-ep="${ep.number}">
+               data-action="open-ep" data-season="${sea.number}" data-ep="${ep.number}">
             <span class="num">${pad2(ep.number)}</span>
             <span class="nm">${esc(ep.name || 'Épisode ' + ep.number)}
               ${isFuture(ep) ? `<span class="d">· ${compteARebours(ep.air_date)}</span>`
                 : ep.watched_at ? `<span class="d">· vu le ${fmtDate(ep.watched_at)}</span>` : ''}
             </span>
-            <span class="epcheck">${ICONS.check}</span>
+            <button class="epcheck" data-action="toggle-ep" data-season="${sea.number}" data-ep="${ep.number}"
+                    aria-label="${ep.is_watched ? 'Marquer non vu' : 'Marquer vu'}">${ICONS.check}</button>
           </div>`).join('')}
       </details>`;
     }).join('')}
@@ -3531,10 +4018,11 @@ function renderDetail() {
       return `<details class="season" data-n="speciaux">
         <summary><span class="arrow">${ICONS.chevron}</span><span class="n">🎁 Spéciaux</span><span class="cnt">${w}/${specials.length}</span></summary>
         ${specials.map(({ sea, ep }) => `
-          <div class="eprow ${ep.is_watched ? 'watched' : ''}" data-action="toggle-ep" data-season="${sea}" data-ep="${ep.number}" data-special="1">
+          <div class="eprow ${ep.is_watched ? 'watched' : ''} ${isFuture(ep) ? 'future' : ''}" data-action="open-ep" data-season="${sea}" data-ep="${ep.number}" data-special="1">
             <span class="num">${pad2(ep.number)}</span>
             <span class="nm">${esc(ep.name || 'Spécial ' + ep.number)}</span>
-            <span class="epcheck">${ICONS.check}</span>
+            <button class="epcheck" data-action="toggle-ep" data-season="${sea}" data-ep="${ep.number}" data-special="1"
+                    aria-label="${ep.is_watched ? 'Marquer non vu' : 'Marquer vu'}">${ICONS.check}</button>
           </div>`).join('')}
       </details>`;
     })()}
@@ -3548,6 +4036,158 @@ function renderDetail() {
   enrichSerieDetail(s);
 }
 let lastDetailAnim = null;
+
+/* ---------------- Fiche d'un épisode + date de visionnage ---------------- */
+let cibleVu = null; // ce que concernent les boutons « Vu maintenant / à sa diffusion / … »
+function choixDateHtml({ diffusion = false, dejaVu = false, pluriel = false } = {}) {
+  return `<div class="vuchoix">
+    <button class="btn ${dejaVu ? 'ghost small' : 'vuprim'}" data-action="vu-quand" data-when="now">${ICONS.check} ${dejaVu ? 'Aujourd’hui' : 'Vu maintenant'}</button>
+    ${diffusion ? `<button class="btn ghost small" data-action="vu-quand" data-when="air">📺 À ${pluriel ? 'leur' : 'sa'} diffusion</button>` : ''}
+    <button class="btn ghost small" data-action="vu-quand" data-when="unknown">Date inconnue</button>
+    <button class="btn ghost small" data-action="vu-pick">📅 Autre date…</button>
+    <input type="date" class="vudate-in" id="vu-date" max="${todayStr()}" data-vu-date="1" tabindex="-1" aria-label="Date de visionnage">
+  </div>`;
+}
+/* Choix de la date pour « Tout vu » (saison, série) et pour un film */
+function openVuModal(cible, titre, sous) {
+  cibleVu = cible;
+  if (!$('#modal-root').innerHTML) pushLayer('modal');
+  modaleCourante = null;
+  const film = cible.type === 'movie';
+  $('#modal-root').innerHTML = `
+  <div class="modal-bg" data-action="close-modal">
+    <div class="modal">
+      <div class="grab"></div>
+      <h3 style="margin-bottom:4px">${esc(titre)}</h3>
+      <p style="color:var(--txt2);font-size:13px;margin-bottom:16px">${esc(sous)}</p>
+      <p class="vulabel">${film ? 'Quand l’as-tu vu ?' : 'Quand les as-tu vus ?'}</p>
+      ${choixDateHtml({ diffusion: !film, pluriel: true })}
+    </div>
+  </div>`;
+}
+async function appliquerVu(quand) {
+  const c = cibleVu;
+  if (!c) return;
+  const jour = /^\d{4}-\d{2}-\d{2}$/.test(quand);
+  if (jour && quand > todayStr()) { toast('Cette date est dans le futur 📅'); return; }
+  const libelle = quand === 'unknown' ? ' (date inconnue)' : quand === 'air' ? ' à la diffusion' : jour ? ` le ${fmtDate(quand)}` : '';
+  if (c.type === 'movie') {
+    const m = state.movies.find(x => x.uuid === c.uuid);
+    if (!m) return;
+    const snap = etatFilm(m);
+    m.is_watched = true;
+    m.watched_at = horodatage(quand, null);
+    await saveMovie(m);
+    if (navigator.vibrate) navigator.vibrate(12);
+    openMovieModal(m.uuid); // retour à la fiche du film, à jour
+    rafraichirEcrans();
+    proposerAnnulation(`« ${m.title} » vu${libelle} ✓`, () => restaurerFilm(snap));
+    return;
+  }
+  const s = state.series.find(x => x.uuid === c.uuid);
+  if (!s) return;
+  const snap = etatSerie(s);
+  const avant = progress(s).watched;
+  let msg;
+  if (c.type === 'ep') {
+    const ep = trouverEpisode(s, c.season, c.ep, c.special);
+    if (!ep || isFuture(ep)) return;
+    marquerVu(ep, quand);
+    msg = `${c.special ? 'Spécial ' + c.ep : epCode(c.season, c.ep)} vu${libelle} ✓`;
+  } else {
+    const eps = episodesAMarquer(s, c.type === 'season' ? c.season : null);
+    eps.forEach(ep => marquerVu(ep, quand));
+    msg = `${pl(eps.length, 'épisode marqué vu', 'épisodes marqués vus')}${libelle} ✓`;
+  }
+  autoStatus(s);
+  await saveSeries(s);
+  closeModalViaHistory();
+  if (navigator.vibrate) navigator.vibrate(12);
+  if (detailUuid === s.uuid) renderDetail(); else rafraichirEcrans();
+  const undo = () => restaurerSerie(snap);
+  if (!feteSiTerminee(s, avant, undo)) proposerAnnulation(msg, undo);
+}
+
+/* Détails d'un épisode chez le fournisseur (image, résumé, durée, note), gardés pour la session */
+const episodesInfos = new Map();
+async function infosEpisode(s, seasonNum, epNum) {
+  const meta = state.tmdb[s.uuid];
+  if (!meta || !meta.id) return null;
+  const cle = `${meta.provider}:${meta.id}:${seasonNum}:${epNum}`;
+  if (episodesInfos.has(cle)) return episodesInfos.get(cle);
+  let d = null;
+  if (meta.provider === 'tmdb' && tmdbKey()) {
+    const chemin = `/tv/${meta.id}/season/${seasonNum}/episode/${epNum}`;
+    const r = await tget(chemin);
+    d = {
+      image: r.still_path ? safeImg(TMDB_IMG + 'w780' + r.still_path) : null,
+      resume: r.overview || null, duree: r.runtime || null,
+      note: r.vote_count >= 3 ? r.vote_average : null, votes: r.vote_count || 0,
+    };
+    if (!d.resume) { // beaucoup d'épisodes n'ont pas encore de résumé en français
+      const en = await tget(chemin, { language: 'en-US' }).catch(() => null);
+      if (en && en.overview) { d.resume = en.overview; d.anglais = true; }
+    }
+  } else if (meta.provider === 'tvmaze') {
+    const r = await jget(`${TVMAZE}/shows/${meta.id}/episodebynumber?season=${seasonNum}&number=${epNum}`);
+    d = {
+      image: safeImg(r.image && (r.image.original || r.image.medium)),
+      resume: stripHtml(r.summary) || null, anglais: !!r.summary, duree: r.runtime || null,
+      note: (r.rating && r.rating.average) || null, votes: 0,
+    };
+  }
+  episodesInfos.set(cle, d);
+  return d;
+}
+
+function openEpisodeModal(uuid, seasonNum, epNum, special) {
+  const s = state.series.find(x => x.uuid === uuid);
+  const ep = s && trouverEpisode(s, seasonNum, epNum, special);
+  if (!ep) return;
+  if (!$('#modal-root').innerHTML) pushLayer('modal');
+  cibleVu = { type: 'ep', uuid, season: seasonNum, ep: epNum, special };
+  const cle = `ep:${uuid}:${seasonNum}:${epNum}:${special ? 1 : 0}`;
+  modaleCourante = { cle, fn: () => openEpisodeModal(uuid, seasonNum, epNum, special) };
+  const futur = isFuture(ep);
+  const code = special ? `Spécial ${epNum}` : epCode(seasonNum, epNum);
+  $('#modal-root').innerHTML = `
+  <div class="modal-bg" data-action="close-modal">
+    <div class="modal" data-rr="${cle}">
+      <div class="grab"></div>
+      <div class="epstill sk" id="ep-still"></div>
+      <div class="epserie">${esc(s.title)}</div>
+      <h3 style="margin:3px 0 0">${code} · ${esc(ep.name || 'Épisode ' + epNum)}</h3>
+      <div class="epinfos" id="ep-infos">
+        ${ep.air_date ? `<span class="badge">📺 ${futur ? `Sortie ${compteARebours(ep.air_date)} · ` : ''}${fmtDate(ep.air_date)}</span>` : ''}
+        ${ep.is_watched ? `<span class="badge ok">✓ Vu ${ep.watched_at ? 'le ' + fmtDate(ep.watched_at) : '· date inconnue'}</span>` : ''}
+      </div>
+      ${futur ? '' : ep.is_watched
+        ? `<p class="vulabel">Changer la date de visionnage</p>
+           ${choixDateHtml({ diffusion: !!ep.air_date, dejaVu: true })}
+           <button class="btn danger small" style="margin-top:12px" data-action="ep-unwatch">Marquer non vu</button>`
+        : choixDateHtml({ diffusion: !!ep.air_date })}
+      <p class="epresume" id="ep-resume"><span class="spin"></span></p>
+    </div>
+  </div>`;
+  const encoreLa = () => { const b = $('#modal-root .modal'); return b && b.dataset.rr === cle; };
+  // un « spécial » rangé dans une saison normale n'a pas de numéro fiable chez le fournisseur
+  const charge = special && seasonNum !== 0 ? Promise.resolve(null) : infosEpisode(s, seasonNum, epNum);
+  charge.then(d => {
+    if (!encoreLa()) return;
+    const still = $('#ep-still');
+    if (d && d.image) { still.classList.remove('sk'); still.style.backgroundImage = `url('${d.image}')`; }
+    else still.remove();
+    if (d && (d.duree || d.note)) $('#ep-infos').insertAdjacentHTML('beforeend',
+      `${d.duree ? `<span class="badge">⏱ ${d.duree} min</span>` : ''}${d.note ? `<span class="badge warn">★ ${d.note.toFixed(1)}</span>` : ''}`);
+    $('#ep-resume').innerHTML = d && d.resume
+      ? `${esc(d.resume)}${d.anglais ? ' <span style="opacity:.6">(résumé en anglais)</span>' : ''}`
+      : '<span style="opacity:.6">Pas de résumé disponible.</span>';
+  }).catch(() => {
+    if (!encoreLa()) return;
+    $('#ep-still').remove();
+    $('#ep-resume').innerHTML = '<span style="opacity:.6">Détails indisponibles (connexion ?).</span>';
+  });
+}
 
 /* ---------------- Filmographie d'un acteur ---------------- */
 async function openPersonModal(pid) {
@@ -3606,6 +4246,7 @@ function openDiscoverModal(n) {
           })()}
         </div>
       </div>
+      <div id="modal-saga"></div>
       <div id="modal-extra"><div class="loadrow" style="text-align:left;padding:10px 0"><span class="spin"></span></div></div>
       ${n.overview ? `<p style="margin-top:6px;color:var(--txt2);font-size:13.5px">${esc(n.overview)}</p>` : ''}
     </div>
@@ -3636,6 +4277,13 @@ async function enrichModal(n) {
     let html = '';
     if (n.provider === 'tmdb' && tmdbKey()) {
       const d = await tget(`/${n.type === 'tv' ? 'tv' : 'movie'}/${n.provId}`, { append_to_response: 'credits,videos', include_video_language: 'fr,en' });
+      if (n.type === 'movie') {
+        // lien vers la saga, et détails mémorisés au passage si le film est dans la bibliothèque
+        const z = $('#modal-saga');
+        if (z && d.belongs_to_collection && !z.innerHTML.trim()) z.innerHTML = sagaBtn(d.belongs_to_collection);
+        const mt = n.uuid && state.tmdb[n.uuid];
+        if (mt && mt.provider === 'tmdb' && mt.id === d.id && !mt.detAt) { appliquerDetailsFilm(mt, d); saveMeta(mt).catch(() => {}); }
+      }
       const parts = [];
       if (d.vote_average) parts.push(`<span class="badge warn">★ ${d.vote_average.toFixed(1)}/10</span> <span style="color:var(--txt2);font-size:12px">(${d.vote_count.toLocaleString('fr-FR')} votes)</span>`);
       const genres = (d.genres || []).map(g => `<span class="badge">${esc(g.name)}</span>`).join(' ');
@@ -3714,6 +4362,7 @@ function renderKeepFocus(id) {
 
 document.body.addEventListener('change', e => {
   if (e.target.dataset.action === 'import-files' && e.target.files.length) handleFiles([...e.target.files]);
+  if (e.target.dataset.vuDate) { if (e.target.value) appliquerVu(e.target.value); return; }
   if (e.target.dataset.r) { // filtres de la roulette
     state.roulette[e.target.dataset.r] = e.target.dataset.r === 'genre' ? +e.target.value : e.target.value;
     if (e.target.dataset.r === 'type' && e.target.value === 'movie') state.roulette.duree = 'all';
@@ -3730,6 +4379,8 @@ document.body.addEventListener('change', e => {
     else if (f === 'ssort') state.seriesSort = v;
     else if (f === 'sgenre') state.seriesGenre = +v;
     else if (f === 'sdecade') state.seriesDecade = v;
+    else if (f === 'avsort') state.avSort = v;
+    else if (f === 'avgenre') state.avGenre = +v;
     else state.dFilters[f] = (f === 'genre' || f === 'note') ? +v : v;
     render();
   }
@@ -3794,7 +4445,11 @@ document.body.addEventListener('click', async e => {
   else if (act === 'menage-seuil') { state.menageMois = +el.dataset.m; renderMenage(); }
   else if (act === 'menage-stop') {
     const s = state.series.find(x => x.uuid === el.dataset.uuid);
-    if (s) { s.status = 'stopped'; await saveSeries(s); toast(`« ${s.title} » arrêtée`); renderMenage(); }
+    if (s) {
+      const snap = etatSerie(s);
+      s.status = 'stopped'; await saveSeries(s); renderMenage();
+      proposerAnnulation(`« ${s.title} » arrêtée`, () => restaurerSerie(snap));
+    }
   }
   else if (act === 'menage-ignore') {
     state.menageIgnore.add(el.dataset.uuid);
@@ -3815,7 +4470,15 @@ document.body.addEventListener('click', async e => {
   }
   else if (act === 'movie-watch') {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
-    if (m) { await toggleMovieWatched(m); openMovieModal(m.uuid); rafraichirEcrans(); }
+    if (m) {
+      const snap = etatFilm(m);
+      await toggleMovieWatched(m); openMovieModal(m.uuid); rafraichirEcrans();
+      proposerAnnulation(m.is_watched ? `« ${m.title} » vu ✓` : `« ${m.title} » remis dans À voir`, () => restaurerFilm(snap));
+    }
+  }
+  else if (act === 'movie-date') {
+    const m = state.movies.find(x => x.uuid === el.dataset.uuid);
+    if (m) openVuModal({ type: 'movie', uuid: m.uuid }, m.is_watched ? 'Changer la date de visionnage' : 'Quand l’as-tu vu ?', m.title);
   }
   else if (act === 'movie-fav') {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
@@ -3824,12 +4487,13 @@ document.body.addEventListener('click', async e => {
   else if (act === 'movie-rewatch') {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
     if (m) {
+      const snap = etatFilm(m);
       m.rewatch_count = (m.rewatch_count || 0) + 1;
       // la date du premier visionnage reste intacte ; chaque revisionnage est daté à part
       m.rewatches = [...(m.rewatches || []), nowISO()];
       await saveMovie(m);
       if (navigator.vibrate) navigator.vibrate(12);
-      toast(`« ${m.title} » revu — ×${m.rewatch_count + 1} au compteur 🔁`);
+      proposerAnnulation(`« ${m.title} » revu — ×${m.rewatch_count + 1} au compteur 🔁`, () => restaurerFilm(snap));
       openMovieModal(m.uuid);
       rafraichirEcrans();
     }
@@ -3837,6 +4501,7 @@ document.body.addEventListener('click', async e => {
   else if (act === 'movie-del') {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
     if (m && confirm(`Supprimer « ${m.title} » de ta collection ?`)) {
+      const meta = state.tmdb[m.uuid];
       state.movies = state.movies.filter(x => x.uuid !== m.uuid);
       delete state.tmdb[m.uuid];
       await DB.del('movies', m.uuid);
@@ -3844,24 +4509,36 @@ document.body.addEventListener('click', async e => {
       await DB.del('tmdb', m.uuid);
       closeModalViaHistory();
       rafraichirEcrans();
+      proposerAnnulation(`« ${m.title} » supprimé`, async () => {
+        if (state.movies.some(x => x.uuid === m.uuid)) return;
+        state.movies.push(m);
+        await saveMovie(m);
+        if (meta) await saveMeta(meta);
+      });
     }
   }
   else if (act === 'mark-next') {
     e.stopPropagation();
     const target = state.series.find(x => x.uuid === el.dataset.uuid);
     if (target) {
+      const snap = etatSerie(target);
       const avant = progress(target).watched;
-      await markNext(target);
+      const nx = nextUnwatched(target);
+      const ep = await markNext(target);
+      if (!ep) return;
       if (navigator.vibrate) navigator.vibrate(12);
       el.dataset.stay ? renderDetail() : render();
-      feteSiTerminee(target, avant);
+      const undo = () => restaurerSerie(snap);
+      if (!feteSiTerminee(target, avant, undo)) proposerAnnulation(`${target.title} · ${epCode(nx.season, ep.number)} vu ✓`, undo);
     }
   }
   else if (act === 'toggle-movie') {
     e.stopPropagation();
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
     if (m) {
+      const snap = etatFilm(m);
       await toggleMovieWatched(m);
+      proposerAnnulation(m.is_watched ? `« ${m.title} » vu ✓` : `« ${m.title} » remis dans À voir`, () => restaurerFilm(snap));
       const card = el.closest('.mcard');
       if (m.is_watched && navigator.vibrate) navigator.vibrate(12);
       // si le film ne correspond plus à la liste affichée, il la quitte
@@ -3884,53 +4561,116 @@ document.body.addEventListener('click', async e => {
     }
   }
   else if (act === 'toggle-ep' && s) {
+    const snap = etatSerie(s);
     const avant = progress(s).watched;
-    await toggleEpisode(s, +el.dataset.season, +el.dataset.ep, el.dataset.special === '1');
+    const special = el.dataset.special === '1';
+    const ep = await toggleEpisode(s, +el.dataset.season, +el.dataset.ep, special);
+    if (!ep) return;
     renderDetail();
-    const row = document.querySelector(`.eprow[data-season="${el.dataset.season}"][data-ep="${el.dataset.ep}"]${el.dataset.special === '1' ? '[data-special="1"]' : ':not([data-special])'}`);
+    const row = document.querySelector(`.eprow[data-season="${el.dataset.season}"][data-ep="${el.dataset.ep}"]${special ? '[data-special="1"]' : ':not([data-special])'}`);
     if (row && row.classList.contains('watched')) {
       row.classList.add('flash');
       row.querySelector('.epcheck').style.animation = 'pop .3s ease';
       if (navigator.vibrate) navigator.vibrate(12);
     }
-    feteSiTerminee(s, avant);
+    const code = special ? `Spécial ${ep.number}` : epCode(+el.dataset.season, ep.number);
+    const undo = () => restaurerSerie(snap);
+    if (!feteSiTerminee(s, avant, undo)) proposerAnnulation(ep.is_watched ? `${code} vu ✓` : `${code} marqué non vu`, undo, 4000);
+  }
+  else if (act === 'open-ep' && s) openEpisodeModal(s.uuid, +el.dataset.season, +el.dataset.ep, el.dataset.special === '1');
+  else if (act === 'vu-quand') appliquerVu(el.dataset.when);
+  else if (act === 'vu-pick') {
+    // sélecteur de date natif (appelé pendant le geste de l'utilisateur, sinon refusé)
+    const i = $('#vu-date');
+    if (i) { try { i.showPicker(); } catch (err) { i.classList.add('visible'); i.focus(); } }
+  }
+  else if (act === 'ep-unwatch' && s && cibleVu && cibleVu.type === 'ep') {
+    const c = cibleVu;
+    const ep = trouverEpisode(s, c.season, c.ep, c.special);
+    if (ep) {
+      const snap = etatSerie(s);
+      marquerNonVu(ep); autoStatus(s); await saveSeries(s);
+      closeModalViaHistory(); renderDetail();
+      proposerAnnulation(`${c.special ? 'Spécial ' + c.ep : epCode(c.season, c.ep)} marqué non vu`, () => restaurerSerie(snap));
+    }
   }
   else if (act === 'mark-all-watched' && s) {
-    const p = progress(s);
-    if (confirm(`Marquer les ${p.total - p.watched} épisodes restants comme vus ?`)) {
-      await markAllWatched(s);
-      if (navigator.vibrate) navigator.vibrate(20);
-      renderDetail();
-      feteSiTerminee(s, p.watched);
-    }
+    const n = episodesAMarquer(s).length;
+    if (!n) { toast('Les épisodes restants ne sont pas encore diffusés 📅'); return; }
+    openVuModal({ type: 'all', uuid: s.uuid }, `Marquer ${pl(n, 'épisode')} comme ${n > 1 ? 'vus' : 'vu'}`, `${s.title} · tous les épisodes déjà diffusés`);
   }
   else if (act === 'mark-season' && s) {
     e.preventDefault(); e.stopPropagation();
-    const avant = progress(s).watched;
-    await markSeason(s, +el.dataset.season, el.dataset.watched === '1');
-    renderDetail();
-    feteSiTerminee(s, avant);
+    const num = +el.dataset.season;
+    if (el.dataset.watched === '1') {
+      const n = episodesAMarquer(s, num).length;
+      if (!n) { toast('Les épisodes restants ne sont pas encore diffusés 📅'); return; }
+      openVuModal({ type: 'season', uuid: s.uuid, season: num }, `Saison ${num} : ${pl(n, 'épisode')} à marquer`, s.title);
+    } else {
+      const snap = etatSerie(s);
+      await markSeason(s, num, false);
+      renderDetail();
+      proposerAnnulation(`Saison ${num} marquée non vue`, () => restaurerSerie(snap));
+    }
   }
   else if (act === 'toggle-fav' && s) { s.is_favorite = !s.is_favorite; await saveSeries(s); renderDetail(); }
   else if (act === 'toggle-stop' && s) {
+    const snap = etatSerie(s);
     if (s.status === 'stopped') { s.status = 'continuing'; autoStatus(s); }
     else s.status = 'stopped';
     await saveSeries(s); renderDetail();
+    proposerAnnulation(s.status === 'stopped' ? `« ${s.title} » arrêtée` : `« ${s.title} » reprise`, () => restaurerSerie(snap));
   }
   else if (act === 'delete-series' && s) {
     if (confirm(`Supprimer « ${s.title} » et tout son historique ?`)) {
+      const meta = state.tmdb[s.uuid];
       state.series = state.series.filter(x => x.uuid !== s.uuid);
       delete state.tmdb[s.uuid];
       await DB.del('series', s.uuid);
       markChanged(); // sinon la synchro ferait revenir la série supprimée
       await DB.del('tmdb', s.uuid);
       closeDetail();
+      proposerAnnulation(`« ${s.title} » supprimée`, async () => {
+        if (state.series.some(x => x.uuid === s.uuid)) return;
+        state.series.push(s);
+        await saveSeries(s);
+        if (meta) await saveMeta(meta);
+      });
+    }
+  }
+  else if (act === 'open-nouveautes') openNouveautes();
+  else if (act === 'nv-open') {
+    const uuid = el.dataset.uuid;
+    // ferme la modale, puis ouvre la fiche une fois le retour effectivement traité
+    addEventListener('popstate', () => setTimeout(() => openSeries(uuid), 0), { once: true });
+    history.back();
+  }
+  else if (act === 'a-commencer-tout') { state.aCommencerTout = true; render(); }
+  else if (act === 'open-saga') openSagaModal(el.dataset.id);
+  else if (act === 'saga-add') {
+    const saga = sagasCache[idSaga(el.dataset.saga)];
+    const p = saga && saga.parts.find(x => x.id === +el.dataset.pid);
+    if (p) {
+      el.disabled = true;
+      await addItem({ type: 'movie', provider: 'tmdb', provId: p.id, title: p.title, year: p.date ? +p.date.slice(0, 4) : null, poster: p.poster }, el.dataset.watched === '1');
+      redessinerModale();
+    }
+  }
+  else if (act === 'saga-toggle') {
+    const m = state.movies.find(x => x.uuid === el.dataset.uuid);
+    if (m) {
+      const snap = etatFilm(m);
+      await toggleMovieWatched(m);
+      if (navigator.vibrate) navigator.vibrate(12);
+      redessinerModale(); rafraichirEcrans();
+      proposerAnnulation(m.is_watched ? `« ${m.title} » vu ✓` : `« ${m.title} » remis dans À voir`, () => restaurerFilm(snap));
     }
   }
   else if (act === 'refresh-one' && s) {
     el.innerHTML = '<span class="spin"></span>';
     try {
       const r = await refreshSeries(s, true);
+      await noterNouveautes((r.nouveaux || []).map(x => ({ uuid: s.uuid, ...x })));
       const bouts = [];
       if (r.added) bouts.push(pl(r.added, 'épisode ajouté', 'épisodes ajoutés'));
       if (r.removed) bouts.push(pl(r.removed, 'fantôme retiré', 'fantômes retirés'));
@@ -4016,6 +4756,7 @@ document.body.addEventListener('click', async e => {
       if (cloud) await deconnecterSynchro(); // sinon le téléphone vide écraserait le cloud
       await DB.clear('series'); await DB.clear('movies'); await DB.clear('tmdb');
       state.series = []; state.movies = []; state.tmdb = {};
+      state.nouveautes = []; await DB.kvSet('nouveautes', []);
       libVersion++;
       toast('Données effacées');
       render();
@@ -4094,12 +4835,13 @@ function confetti(n = 46) {
 }
 
 /* Fête quand une série passe à 100 % */
-function feteSiTerminee(s, avant) {
+function feteSiTerminee(s, avant, annuler) {
   const p = progress(s);
   if (p.total && avant < p.total && p.watched === p.total) {
     confetti();
     if (navigator.vibrate) navigator.vibrate([16, 60, 26]);
-    toast(`🎉 « ${s.title} » terminée — bravo !`, 3600);
+    const msg = `🎉 « ${s.title} » terminée — bravo !`;
+    if (annuler) proposerAnnulation(msg, annuler); else toast(msg, 3600);
     return true;
   }
   return false;
@@ -4115,6 +4857,13 @@ function afterRender() {
     backfillSeriesMeta(() => {
       if (state.tab === 'series' && state.seriesView === 'grid') rerenderSansPerturber();
     });
+  }
+  // Films : durées, dates de sortie et sagas complétées en fond
+  if (state.tab === 'movies' && tmdbKey()) {
+    if (state.movieView === 'avoir') backfillFilms(false, () => {
+      if (state.tab === 'movies' && state.movieView === 'avoir') rerenderSansPerturber();
+    });
+    else if (state.movieView === 'sagas') preparerSagas();
   }
   // cascade uniquement quand on change réellement d'écran (pas à chaque re-rendu)
   const key = [state.tab, state.seriesView, state.movieView, state.seriesFilter,
@@ -4145,6 +4894,9 @@ function afterRender() {
     DB.kvGet('lastSyncVersion'), DB.kvGet('syncErr'),
   ]);
   state.menageIgnore = new Set((await DB.kvGet('menageIgnore')) || []);
+  state.nouveautes = (await DB.kvGet('nouveautes')) || [];
+  state.nouveautesVues = (await DB.kvGet('nouveautesVues')) || null;
+  sagasCache = (await DB.kvGet('sagas')) || {};
   state.series = series || [];
   state.movies = movies || [];
   state.settings = settings || {};
