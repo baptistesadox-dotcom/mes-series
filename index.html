@@ -419,6 +419,11 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
   font-size:10.5px;color:var(--txt2);margin-top:2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85;
 }
+/* « Pour toi » : sur quoi se basent les suggestions, et pourquoi un titre est proposé */
+.ptete{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.ptete p{font-size:12px;color:var(--txt2);min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ptete .btn{flex:none}
+.pourquoi{font-size:12.5px;color:var(--txt2);margin:-2px 0 10px}
 
 /* ---------- Hint banner ---------- */
 .hint{
@@ -1354,6 +1359,224 @@ const GENRES = [
   { label: 'Guerre', mv: 10752, tv: 10768 },
 ];
 
+/* ---------------- « Pour toi » : suggestions personnalisées ----------------
+   1. Chaque titre de la bibliothèque reçoit un poids : série finie ou bien avancée =
+      aimée ; arrêtée ou lâchée après quelques épisodes = à éviter ; liste « À voir » et
+      sagas suivies = envies du moment. (Les dates de visionnage importées en masse de
+      TV Time ne disent rien des goûts : la récence ne joue qu'un rôle secondaire.)
+   2. Le profil de genres est calculé sur TOUTE la bibliothèque.
+   3. 14 titres « sources », variés (jamais 14 titres du même genre) : une seule requête
+      TMDB chacun donne les recommandations, les mots-clés et la langue.
+   4. Score : recommandé par combien de sources aimées + affinité de genres + note fiable
+      (moyenne bayésienne) + langue + fraîcheur, moins ce qui ressemble aux abandons.
+   5. Diversité (3 titres au plus par source) et raison affichée sur chaque titre.
+   « Autres idées » tire d'autres sources au hasard parmi les titres aimés et écarte ce
+   qui a déjà été proposé : la liste change vraiment. */
+const pourToiVus = new Set();   // titres déjà proposés pendant cette session
+let pourToiGeneration = 0;      // 0 = les meilleures sources ; ensuite un tirage varié
+const jaccard = (a, b) => {
+  const A = new Set(a), B = new Set(b);
+  let commun = 0;
+  for (const x of A) if (B.has(x)) commun++;
+  return A.size + B.size - commun ? commun / (A.size + B.size - commun) : 0;
+};
+const ilYaAns = d => d ? (Date.now() - new Date(d).getTime()) / (365.25 * 86400000) : 99;
+
+/* Poids de chaque titre de la bibliothèque (positif = aimé, négatif = à éviter) */
+function poidsBibliotheque(type) {
+  const items = [];
+  if (type === 'tv') {
+    for (const s of state.series) {
+      const m = state.tmdb[s.uuid];
+      if (!m || m.provider !== 'tmdb' || !m.id) continue;
+      const eps = realEpisodes(s).filter(x => !isFuture(x.ep));
+      const vus = eps.filter(x => x.ep.is_watched).length, part = vus / Math.max(1, eps.length);
+      let dernier = '';
+      for (const x of eps) if (x.ep.watched_at && x.ep.watched_at > dernier) dernier = x.ep.watched_at;
+      let base;
+      if (s.status === 'stopped') base = part < 0.5 ? -0.8 : 0.3;   // arrêtée tôt = rejet ; tard = lassitude
+      else if (!vus) base = 0.12;                                    // ajoutée mais pas commencée : simple curiosité
+      else if (part >= 0.8 || vus >= 20) base = 1;
+      else if (part >= 0.4) base = 0.75;
+      else if (vus >= 4) base = 0.5;
+      else base = ilYaAns(dernier) > 0.5 ? -0.3 : 0.2;               // 1 à 3 épisodes puis plus rien : pas accroché
+      if (s.is_favorite) base += 0.6;
+      const recence = 0.5 + 0.5 * Math.pow(0.5, ilYaAns(dernier || s.created_at) / 1.5);
+      items.push({ titre: s.title, id: m.id, genres: m.genres || [], poids: base > 0 ? base * recence : base, liste: false });
+    }
+  } else {
+    const parSaga = {};
+    for (const f of state.movies) {
+      const t = state.tmdb[f.uuid];
+      if (f.is_watched && t && t.collection) parSaga[t.collection.id] = (parSaga[t.collection.id] || 0) + 1;
+    }
+    for (const f of state.movies) {
+      const t = state.tmdb[f.uuid];
+      if (!t || t.provider !== 'tmdb' || !t.id) continue;
+      let base = f.is_watched ? 0.6 : 0.85;                              // « À voir » = envie du moment
+      if (f.is_favorite) base += 0.6;
+      base += Math.min(0.6, 0.3 * (f.rewatch_count || 0));
+      if (t.collection && parSaga[t.collection.id] >= 2) base += 0.25;   // saga suivie
+      if (f.is_watched && ilYaAns(f.watched_at) < 1.5) base += 0.25;     // vu récemment
+      items.push({ titre: f.title, id: t.id, genres: t.genres || [], poids: base, liste: !f.is_watched });
+    }
+  }
+  return items;
+}
+
+/* Sources variées : chaque nouvelle source est pénalisée si ses genres ressemblent à
+   ceux des sources déjà choisies. Avec `hasard`, l'ordre des titres aimés est brassé. */
+function choisirSources(items, n, hasard, deja = []) {
+  const cands = items.filter(x => x.poids > 0)
+    .map(x => ({ ...x, cle: x.poids * (hasard ? 0.55 + Math.random() * 0.9 : 1) }))
+    .sort((a, b) => b.cle - a.cle);
+  const sources = [...deja];
+  while (sources.length < deja.length + n && cands.length) {
+    let meilleur = 0, valeur = -Infinity;
+    for (let i = 0; i < Math.min(cands.length, 80); i++) {
+      const ressemblance = sources.length ? Math.max(...sources.map(s => jaccard(s.genres, cands[i].genres))) : 0;
+      const v = cands[i].cle - 0.55 * ressemblance;
+      if (v > valeur) { valeur = v; meilleur = i; }
+    }
+    sources.push(cands.splice(meilleur, 1)[0]);
+  }
+  return sources;
+}
+
+/* Métadonnées TMDB manquantes des titres qui comptent (séries entamées, films de la
+   liste, vus récemment, favoris) : résolues une fois, puis mémorisées */
+async function preparerMetasPourToi() {
+  const besoin = [
+    ...state.series.filter(s => s.status !== 'stopped' && progress(s).watched > 0).map(s => [s, 'tv']),
+    ...state.movies.filter(f => !f.is_watched || f.is_favorite || f.rewatch_count || ilYaAns(f.watched_at) < 1.5).map(f => [f, 'movie']),
+  ].filter(([it, type]) => metaNeedsFetch(it, type)).slice(0, 60);
+  await Promise.all(besoin.map(([it, type]) => pool(() => resolveMeta(it, type)).catch(() => null)));
+}
+
+async function pourToiType(type) {
+  const items = poidsBibliotheque(type);
+  const hasard = pourToiGeneration > 0;
+  // films : 3 sources tirées de la liste « À voir », le reste de ce qui a été vu
+  const sources = choisirSources(items.filter(x => !x.liste), 14 - (type === 'movie' ? 3 : 0), hasard,
+    type === 'movie' ? choisirSources(items.filter(x => x.liste), 3, hasard) : []);
+  // profil de genres sur toute la bibliothèque
+  const gPos = {}, gNeg = {};
+  let total = 0;
+  for (const it of items) {
+    if (it.poids > 0) total += it.poids;
+    for (const g of it.genres) {
+      if (it.poids > 0) gPos[g] = (gPos[g] || 0) + it.poids;
+      else gNeg[g] = (gNeg[g] || 0) - it.poids;
+    }
+  }
+  const part = g => (gPos[g] || 0) / Math.max(1, total);
+  const partMax = Math.max(0.01, ...Object.keys(gPos).map(part));
+  const rejets = items.filter(x => x.poids < -0.5);
+
+  // une requête par source : recommandations + mots-clés + langue
+  const motsCles = {}, langues = {}, candidats = new Map(), recosRejets = new Set();
+  const ajoute = (x, src, apport, theme) => {
+    let c = candidats.get(x.id);
+    if (!c) { c = { x, n: normTmdb(x, type), apports: [], theme: null }; candidats.set(x.id, c); }
+    if (theme) c.theme = c.theme || theme;
+    else c.apports.push([src, apport]);
+  };
+  await Promise.all(sources.map(src => pool(async () => {
+    try {
+      const d = await tget(`/${type}/${src.id}`, { append_to_response: 'recommendations,keywords' });
+      langues[d.original_language] = (langues[d.original_language] || 0) + src.poids;
+      for (const k of (d.keywords && (d.keywords.results || d.keywords.keywords)) || []) {
+        const mc = motsCles[k.id] = motsCles[k.id] || { nom: k.name, w: 0, sources: [] };
+        mc.w += src.poids;
+        mc.sources.push(src.titre);
+      }
+      ((d.recommendations && d.recommendations.results) || []).forEach((x, rang) => ajoute(x, src, src.poids / (1 + 0.12 * rang)));
+    } catch (e) {}
+  })));
+  // ce que TMDB recommande à partir des séries abandonnées est pénalisé
+  await Promise.all(rejets.slice(0, 4).map(src => pool(async () => {
+    try { for (const x of (await tget(`/${type}/${src.id}/recommendations`)).results || []) recosRejets.add(x.id); } catch (e) {}
+  })));
+  // thèmes communs à plusieurs sources (mots-clés précis, pas « suite » ni « adapté d'un roman »)
+  const GENERIQUES = /^(sequel|prequel|remake|reboot|based on .*|duringcreditsstinger|aftercreditsstinger|woman director|live action remake|3d|imax|new york city|los angeles, california|london, england|television adaptation|female protagonist|male protagonist|spin off|anthology|miniseries|parent child relationship|friendship|family|teenager|high school|love)$/i;
+  const themes = Object.entries(motsCles).filter(([, v]) => v.sources.length >= 2 && !GENERIQUES.test(v.nom))
+    .sort((a, b) => b[1].w - a[1].w).slice(0, 4);
+  await Promise.all(themes.map(([id, v]) => pool(async () => {
+    try {
+      const r = await tget(`/discover/${type}`, { with_keywords: id, sort_by: 'vote_average.desc', 'vote_count.gte': type === 'tv' ? 150 : 600 });
+      for (const x of r.results || []) ajoute(x, null, 0, v);
+    } catch (e) {}
+  })));
+
+  // score
+  const totalLangues = Object.values(langues).reduce((a, b) => a + b, 0) || 1;
+  const somme = c => c.apports.reduce((a, b) => a + b[1], 0);
+  const collabMax = Math.max(0.01, ...[...candidats.values()].map(somme));
+  const themeMax = themes.length ? themes[0][1].w : 1;
+  const NICHE = type === 'tv' ? [10762, 10763, 10764, 10766, 10767] : [10770, 99, 10402]; // jeunesse, télé-réalité, talk-shows, téléfilms…
+  const poidsGenre = id => (id === 18 || id === 35) ? 0.35 : 1;  // drame et comédie sont partout : ils disent peu
+  const anneeCourante = new Date().getFullYear();
+  const liste = [];
+  for (const c of candidats.values()) {
+    const x = c.x, n = c.n;
+    if (!n.poster || inLibrary(n) || state.hidden.has(hkey(n))) continue;
+    const g = x.genre_ids || [];
+    if (g.some(id => NICHE.includes(id) && part(id) < 0.03)) continue;
+    const collab = somme(c) / collabMax;
+    const affinite = g.length ? g.reduce((a, id) => a + poidsGenre(id) * part(id) / partMax, 0) / g.reduce((a, id) => a + poidsGenre(id), 0) : 0;
+    const malus = g.reduce((a, id) => a + (gNeg[id] || 0), 0) / Math.max(1, total) * 3;
+    const votes = x.vote_count || 0, m = type === 'tv' ? 80 : 300;
+    const note = (votes * (x.vote_average || 0) + m * 6.6) / (votes + m);   // moyenne bayésienne : peu de votes = prudence
+    const qualite = Math.max(-1, Math.min(1, (note - 6.6) / 1.4));
+    const langue = (langues[x.original_language] || 0) / totalLangues;
+    let s = collab + 0.5 * affinite + 0.5 * qualite + 0.35 * Math.min(1, langue * 2) + (c.theme ? 0.35 * Math.min(1, c.theme.w / themeMax) : 0);
+    if (!langue) s -= 0.35;
+    if (n.year >= anneeCourante - 3) s += 0.12;
+    else if (n.year && n.year < 2000 && note < 7.8) s -= 0.2;
+    if (votes < (type === 'tv' ? 40 : 150)) s -= 0.6;
+    if (note < 6.3) s -= 0.4;
+    if (recosRejets.has(x.id)) s -= 0.4;
+    if (pourToiVus.has(type + ':' + x.id)) s -= 0.6;
+    s -= malus;
+    c.score = s;
+    c.meilleures = [...c.apports].sort((a, b) => b[1] - a[1]);
+    liste.push(c);
+  }
+  liste.sort((a, b) => b.score - a.score);
+
+  // diversité : 3 titres au plus par source, pénalité pour les titres trop semblables
+  const choisis = [], parSource = new Map(), reserve = liste.slice(0, 150);
+  while (choisis.length < 36 && reserve.length) {
+    let meilleur = -1, valeur = -Infinity;
+    for (let i = 0; i < reserve.length; i++) {
+      const c = reserve[i], src = c.meilleures[0] ? c.meilleures[0][0] : null;
+      if (src && (parSource.get(src) || 0) >= 3) continue;
+      const ressemblance = choisis.length ? Math.max(...choisis.map(o =>
+        jaccard(o.x.genre_ids || [], c.x.genre_ids || []) * 0.6 + (src && o.meilleures[0] && o.meilleures[0][0] === src ? 0.4 : 0))) : 0;
+      const v = c.score - 0.3 * ressemblance;
+      if (v > valeur) { valeur = v; meilleur = i; }
+    }
+    if (meilleur < 0) break;
+    const c = reserve.splice(meilleur, 1)[0];
+    const src = c.meilleures[0] ? c.meilleures[0][0] : null;
+    if (src) parSource.set(src, (parSource.get(src) || 0) + 1);
+    const noms = c.meilleures.slice(0, 2).map(t => t[0].titre);
+    if (src && src.liste) {
+      c.n.why = `Comme ${noms[0]}`;
+      c.n.pourquoi = `Proche de « ${noms[0]} », qui est dans ta liste À voir`;
+    } else if (noms.length) {
+      c.n.why = `Comme ${noms.join(' · ')}`;
+      c.n.pourquoi = `Parce que tu as aimé ${noms.map(t => `« ${t} »`).join(' et ')}`;
+    } else {
+      const proches = c.theme.sources.slice(0, 2);
+      c.n.why = `Comme ${proches[0]}`;
+      c.n.pourquoi = `Dans la veine de ${proches.map(t => `« ${t} »`).join(' et ')}`;
+    }
+    choisis.push(c);
+  }
+  return { titres: choisis.map(c => c.n), refs: sources.filter(s => !s.liste).slice(0, 5).map(s => s.titre) };
+}
+
 /* Chargement à la demande des sections de Découvrir (cache en mémoire) */
 async function loadSection(key) {
   if (!tmdbKey() || state.discoverData[key] || state.discoverBusy[key]) return;
@@ -1392,88 +1615,9 @@ async function loadSection(key) {
         tv: tv ? (tv.results || []).map(x => normTmdb(x, 'tv')) : [],
       };
     } else if (key === 'foryou') {
-      /* Recommandations intelligentes :
-         1. sources = tes séries/films favoris et les plus récemment regardés
-         2. profil de genres pondéré (favoris comptent double)
-         3. candidats = recommandations TMDB de chaque source, agrégées
-         4. score = récurrence + affinité de genres + note publique + popularité */
-      const srcS = state.series
-        .filter(s => { const m = state.tmdb[s.uuid]; return m && m.provider === 'tmdb' && m.id && s.status !== 'stopped'; })
-        .sort((a, b) => ((b.is_favorite ? 1 : 0) - (a.is_favorite ? 1 : 0)) || lastActivity(b).localeCompare(lastActivity(a)))
-        .slice(0, 8);
-      const srcM = state.movies
-        .filter(m => { const t = state.tmdb[m.uuid]; return m.is_watched && t && t.provider === 'tmdb' && t.id; })
-        .sort((a, b) => ((b.is_favorite ? 1 : 0) - (a.is_favorite ? 1 : 0)) || (b.watched_at || '').localeCompare(a.watched_at || ''))
-        .slice(0, 6);
-
-      // profil de genres (récupère et mémorise les genres manquants)
-      const profile = {};
-      for (const it of [...srcS, ...srcM]) {
-        const meta = state.tmdb[it.uuid];
-        if (!meta.genres) {
-          try {
-            const d = await tget(`/${Array.isArray(it.seasons) ? 'tv' : 'movie'}/${meta.id}`);
-            meta.genres = (d.genres || []).map(g => g.id);
-            await saveMeta(meta);
-          } catch (e) { meta.genres = []; }
-        }
-        for (const g of meta.genres) profile[g] = (profile[g] || 0) + (it.is_favorite ? 2 : 1);
-      }
-      const maxProfile = Math.max(1, ...Object.values(profile));
-
-      // profil négatif : les genres des séries que tu as abandonnées
-      const negProfile = {};
-      for (const s of state.series.filter(x => x.status === 'stopped')) {
-        const m = state.tmdb[s.uuid];
-        if (m && m.genres) for (const g of m.genres) negProfile[g] = (negProfile[g] || 0) + 1;
-      }
-      const maxNeg = Math.max(1, ...Object.values(negProfile));
-
-      // agrégation des candidats : recommandations (poids 1) + similaires (poids 0.5)
-      const cand = new Map();
-      const collect = (r, type, srcTitle, w) => {
-        for (const x of r.results || []) {
-          const k = type + ':' + x.id;
-          let c = cand.get(k);
-          if (!c) {
-            c = { n: normTmdb(x, type), sources: [], srcW: 0, pop: x.popularity || 0, votes: x.vote_count || 0 };
-            cand.set(k, c);
-          }
-          c.srcW += w;
-          if (w >= 1 && !c.sources.includes(srcTitle)) c.sources.push(srcTitle);
-        }
-      };
-      await Promise.all([
-        ...srcS.map(s => pool(() => tget(`/tv/${state.tmdb[s.uuid].id}/recommendations`).then(r => collect(r, 'tv', s.title, 1)).catch(() => {}))),
-        ...srcS.slice(0, 4).map(s => pool(() => tget(`/tv/${state.tmdb[s.uuid].id}/similar`).then(r => collect(r, 'tv', s.title, 0.5)).catch(() => {}))),
-        ...srcM.map(m => pool(() => tget(`/movie/${state.tmdb[m.uuid].id}/recommendations`).then(r => collect(r, 'movie', m.title, 1)).catch(() => {}))),
-        ...srcM.slice(0, 3).map(m => pool(() => tget(`/movie/${state.tmdb[m.uuid].id}/similar`).then(r => collect(r, 'movie', m.title, 0.5)).catch(() => {}))),
-      ]);
-
-      // score final : récurrence + affinité de genres − genres abandonnés + note + popularité
-      const scored = [...cand.values()].filter(c => !state.hidden.has(hkey(c.n))).map(c => {
-        const gAffinity = (c.n.genreIds || []).reduce((a, g) => a + (profile[g] || 0), 0) / maxProfile;
-        const gNeg = (c.n.genreIds || []).reduce((a, g) => a + (negProfile[g] || 0), 0) / maxNeg;
-        const rScore = (c.votes >= 100 && c.n.rating) ? Math.max(0, c.n.rating - 6) : 0;
-        c.score = c.srcW * 2.2 + gAffinity * 1.6 - gNeg * 0.9 + rScore * 0.9 + Math.log10(c.pop + 1) * 0.4;
-        if (c.sources.length) c.n.why = c.sources.slice(0, 2).join(', ') + (c.sources.length > 2 ? ` +${c.sources.length - 2}` : '');
-        else c.n.why = 'titres similaires';
-        return c;
-      }).sort((a, b) => b.score - a.score);
-
-      // diversité : pas plus de 6 titres du même genre dominant en tête
-      const diversify = list => {
-        const per = {}, out = [], rest = [];
-        for (const c of list) {
-          const g = (c.n.genreIds || [])[0] || 0;
-          if ((per[g] || 0) < 6) { per[g] = (per[g] || 0) + 1; out.push(c); } else rest.push(c);
-        }
-        return [...out, ...rest];
-      };
-      data = {
-        tv: diversify(scored.filter(c => c.n.type === 'tv')).map(c => c.n).slice(0, 30),
-        mv: diversify(scored.filter(c => c.n.type === 'movie')).map(c => c.n).slice(0, 30),
-      };
+      await preparerMetasPourToi();
+      const [tv, mv] = await Promise.all([pourToiType('tv'), pourToiType('movie')]);
+      data = { tv: tv.titres, mv: mv.titres, refsTv: tv.refs, refsMv: mv.refs };
     }
     state.discoverData[key] = data;
   } catch (e) {
@@ -2521,9 +2665,15 @@ function viewDiscover() {
   if (state.exploreSource === 'foryou') {
     const d = state.discoverData.foryou;
     if (!d) { loadSection('foryou'); grid = `<div class="loadrow"><span class="spin"></span> Analyse de tes goûts…</div>`; }
-    else {
+    else if (d.error) {
+      grid = `<div class="empty">Suggestions indisponibles pour le moment (${esc(d.error)}).<br><br><button class="btn ghost small" data-action="regen-foryou">Réessayer</button></div>`;
+    } else {
       const items = prep(state.exploreType === 'tv' ? d.tv : d.mv);
-      grid = `<div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="btn ghost small" data-action="regen-foryou">↻ Régénérer</button></div>`
+      const refs = (state.exploreType === 'tv' ? d.refsTv : d.refsMv) || [];
+      grid = `<div class="ptete">
+          <p>${refs.length ? `D'après ${refs.map(esc).join(', ')}…` : 'D’après ta bibliothèque'}</p>
+          <button class="btn ghost small" data-action="regen-foryou">↻ Autres idées</button>
+        </div>`
         + (items.length ? `<div class="mgrid">${items.map(discoverCardG).join('')}</div>` : `<div class="empty">Rien avec ces filtres.</div>`);
     }
   } else {
@@ -2652,7 +2802,7 @@ function discoverCardG(n) {
     ${n.why && !lib ? `<button class="hideb" data-action="hide-item" data-key="${key}" title="Pas intéressé">✕</button>` : ''}
     <div class="mtitle">${esc(n.title)}</div>
     <div class="myear">${n.year || ''} · ${n.type === 'tv' ? 'Série' : 'Film'}</div>
-    ${n.why ? `<div class="why">via ${esc(n.why)}</div>` : ''}
+    ${n.why ? `<div class="why">${esc(n.why)}</div>` : ''}
   </div>`;
 }
 
@@ -4232,6 +4382,7 @@ function openDiscoverModal(n) {
         <div class="dmi">
           <h3>${esc(n.title)}</h3>
           <div class="y">${n.year || ''} · ${n.type === 'tv' ? 'Série' : 'Film'}${n.rating ? ` · <span style="color:var(--warn)">★ ${n.rating.toFixed(1)}</span>` : ''}</div>
+          ${n.pourquoi ? `<div class="pourquoi">${esc(n.pourquoi)}</div>` : ''}
           ${(() => {
             if (lib) return `<span class="badge ok">✓ Déjà dans ta bibliothèque</span>`;
             const k = esc(JSON.stringify(n)).replace(/"/g, '&quot;');
@@ -4425,7 +4576,14 @@ document.body.addEventListener('click', async e => {
     toast(`« ${n.title} » ne sera plus suggéré`);
     render();
   }
-  else if (act === 'regen-foryou') { delete state.discoverData.foryou; render(); }
+  else if (act === 'regen-foryou') {
+    // ce qui vient d'être proposé passe au second plan, et d'autres titres aimés servent de sources
+    const d = state.discoverData.foryou;
+    if (d && !d.error) for (const n of (state.exploreType === 'tv' ? d.tv : d.mv) || []) pourToiVus.add(n.type + ':' + n.provId);
+    if (d && !d.error) pourToiGeneration++;
+    delete state.discoverData.foryou;
+    render();
+  }
   else if (act === 'clear-hidden') {
     state.hidden.clear();
     await DB.kvSet('hidden', []);
