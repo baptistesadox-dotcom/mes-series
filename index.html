@@ -51,12 +51,18 @@ svg{display:block}
 /* ---------- Écran de lancement ---------- */
 /* même fond et même logo que l'écran d'ouverture d'Android : la transition est invisible,
    puis le logo s'agrandit et s'efface quand l'appli est prête */
-#lancement{position:fixed;inset:0;z-index:300;background:#0E0D0D;display:flex;align-items:center;justify-content:center;transition:opacity .5s ease .1s}
-#lancement .logo{animation:logoRespire 1.2s ease-in-out infinite alternate}
-@keyframes logoRespire{to{transform:scale(1.05)}}
+#lancement{position:fixed;inset:0;z-index:300;background:#0E0D0D;display:flex;align-items:center;justify-content:center;transition:opacity .55s ease .1s}
+#lancement .logo{overflow:visible}
+/* le halo pulse, le triangle s'enfonce puis rebondit comme un bouton « lecture », un reflet balaie le logo */
+#lancement .l-halo{transform-origin:50px 50px;animation:lHalo 1.8s ease-in-out both}
+#lancement .l-tri{transform-origin:52px 50px;animation:lTri .85s ease-in-out .25s both}
+#lancement .l-reflet{animation:lReflet .95s cubic-bezier(.4,0,.2,1) .8s both}
+@keyframes lHalo{0%{opacity:.7;transform:scale(.9)}45%{opacity:1;transform:scale(1.32)}100%{opacity:.85;transform:scale(1.08)}}
+@keyframes lTri{0%{transform:scale(1)}30%{transform:scale(.8)}68%{transform:scale(1.16)}100%{transform:scale(1)}}
+@keyframes lReflet{from{transform:translateX(0)}to{transform:translateX(150px)}}
 #lancement.fini{opacity:0;pointer-events:none}
-#lancement.fini .logo{animation:logoSort .55s cubic-bezier(.4,0,.2,1) forwards}
-@keyframes logoSort{to{transform:scale(1.4);opacity:0}}
+#lancement.fini .logo{animation:logoSort .6s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes logoSort{to{transform:scale(1.45);opacity:0}}
 
 /* ---------- Header ---------- */
 header.app{
@@ -692,12 +698,15 @@ html[data-vt="retour"]::view-transition-new(root){animation:vtEntreRetour .42s v
 <div id="lancement" aria-hidden="true">
   <svg class="logo" viewBox="0 0 100 100" width="150" height="150">
     <defs>
-      <radialGradient id="lance-halo"><stop offset="0" stop-color="#DC2626" stop-opacity=".5"/><stop offset="1" stop-color="#DC2626" stop-opacity="0"/></radialGradient>
+      <radialGradient id="lance-halo"><stop offset="0" stop-color="#DC2626" stop-opacity=".55"/><stop offset="1" stop-color="#DC2626" stop-opacity="0"/></radialGradient>
       <linearGradient id="lance-tri" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F05252"/><stop offset="1" stop-color="#B91C1C"/></linearGradient>
+      <linearGradient id="lance-reflet" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/><stop offset=".5" stop-color="#FFFFFF" stop-opacity=".3"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+      <clipPath id="lance-clip"><rect x="10" y="10" width="80" height="80" rx="19"/></clipPath>
     </defs>
-    <circle cx="50" cy="50" r="38" fill="url(#lance-halo)"/>
+    <circle class="l-halo" cx="50" cy="50" r="38" fill="url(#lance-halo)"/>
     <rect x="12.25" y="12.25" width="75.5" height="75.5" rx="17" fill="none" stroke="#F5F2F0" stroke-width="4.5"/>
-    <polygon points="40.9,35 67.9,50 40.9,65" fill="url(#lance-tri)" stroke="url(#lance-tri)" stroke-width="3" stroke-linejoin="round"/>
+    <polygon class="l-tri" points="40.9,35 67.9,50 40.9,65" fill="url(#lance-tri)" stroke="url(#lance-tri)" stroke-width="3" stroke-linejoin="round"/>
+    <g clip-path="url(#lance-clip)"><rect class="l-reflet" x="-40" y="-10" width="30" height="120" fill="url(#lance-reflet)"/></g>
   </svg>
 </div>
 
@@ -5713,14 +5722,28 @@ function afterRender() {
 }
 
 /* ---------------- Démarrage ---------------- */
-/* Fin de l'écran de lancement (une seule fois) ; filet de sécurité si le démarrage échoue */
+/* Fin de l'écran de lancement (une seule fois). Il reste affiché au moins 1,8 s depuis
+   l'ouverture, le temps de voir l'animation du logo, même si l'appli est prête avant.
+   Filet de sécurité : il s'efface de toute façon si le démarrage échoue. */
+const DUREE_MIN_LANCEMENT = mouvementReduit() ? 400 : 1800;
 function fermerLancement() {
   const l = $('#lancement');
-  if (!l || l.classList.contains('fini')) return;
+  if (!l || l.classList.contains('fini') || l.dataset.attente) return;
+  const reste = DUREE_MIN_LANCEMENT - performance.now(); // performance.now() = temps écoulé depuis l'ouverture
+  if (reste > 0) {
+    l.dataset.attente = '1';
+    setTimeout(() => { delete l.dataset.attente; fermerLancement(); }, reste);
+    return;
+  }
   l.classList.add('fini');
-  setTimeout(() => l.remove(), 700);
+  // l'Accueil apparaît en cascade au moment où le logo s'efface (et non, invisible, derrière lui)
+  const sel = '.rcard, .hsec, .lcard, .mcard, .scard, .pcard, .panel, .hero';
+  $('#view').querySelectorAll(sel).forEach(el => { el.style.animation = 'none'; });
+  void $('#view').offsetWidth;
+  cascade($('#view'), sel);
+  setTimeout(() => l.remove(), 750);
 }
-setTimeout(fermerLancement, 5000);
+setTimeout(fermerLancement, 6000);
 
 (async function init() {
   await DB.open();
