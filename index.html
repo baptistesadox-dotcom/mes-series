@@ -20,6 +20,12 @@
   --card-border:1px solid #313138;
   --card-shadow:none;
   --frame:1px solid #3d3d45;
+  /* courbes de mouvement : « ressort » dépasse un peu sa cible puis s'y pose */
+  --doux:cubic-bezier(.2,.8,.2,1);
+  --ressort:cubic-bezier(.2,.9,.3,1.12);
+}
+@supports (transition-timing-function: linear(0, 1)){
+  :root{--ressort:linear(0, .08 5%, .28 10%, .52 15%, .73 20%, .88 25%, .98 30%, 1.04 35%, 1.065 40%, 1.07 45%, 1.06 50%, 1.04 55%, 1.02 60%, .997 70%, .995 80%, 1 90%, 1)}
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{height:100%}
@@ -67,10 +73,17 @@ nav.tabs{
 nav.tabs button{
   flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
   padding:6px 0 4px;color:var(--txt2);font-size:10.5px;font-weight:500;
-  border-radius:12px;border:1px solid transparent;transition:color .15s;
+  border-radius:12px;border:1px solid transparent;transition:color .2s;
+  position:relative;z-index:1;
 }
 nav.tabs button svg{width:22px;height:22px}
-nav.tabs button.on{color:var(--txt);border-color:#4a4a52;background:#111114}
+nav.tabs button.on{color:var(--txt)}
+/* pastille de l'onglet actif : elle glisse d'un onglet à l'autre */
+nav.tabs .tabpill{
+  position:absolute;left:0;top:0;width:0;height:0;border-radius:12px;pointer-events:none;
+  background:#111114;border:1px solid #4a4a52;
+  transition:transform .55s var(--ressort),width .55s var(--ressort);
+}
 nav.tabs button.on .dot{width:4px;height:4px;border-radius:2px;background:var(--grad)}
 nav.tabs .dot{width:4px;height:4px;border-radius:2px;background:transparent}
 
@@ -116,7 +129,7 @@ main{padding:12px 14px 24px;max-width:760px;margin:0 auto}
   content:'';position:absolute;inset:0;border-radius:inherit;
   border:1px solid rgba(255,255,255,.06);pointer-events:none;
 }
-.poster img{width:100%;height:100%;object-fit:cover;animation:fadein .3s ease}
+.poster img{width:100%;height:100%;object-fit:cover}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 
 /* ---------- Series cards ---------- */
@@ -440,9 +453,11 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
   position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(-50%);
   background:var(--bg3);border:1px solid rgba(255,255,255,.1);color:var(--txt);
   padding:11px 18px;border-radius:14px;z-index:100;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.5);
-  opacity:0;pointer-events:none;transition:opacity .2s;width:max-content;max-width:88vw;text-align:center;
+  opacity:0;pointer-events:none;width:max-content;max-width:88vw;text-align:center;
+  transform:translateX(-50%) translateY(16px) scale(.94);
+  transition:opacity .2s,transform .55s var(--ressort);
 }
-#toast.show{opacity:1}
+#toast.show{opacity:1;transform:translateX(-50%)}
 /* toast avec bouton (« Annuler », « Voir ») : cliquable seulement quand il est affiché */
 #toast.actionable{display:flex;align-items:center;gap:14px;text-align:left;padding:8px 8px 8px 16px}
 #toast.show.actionable{pointer-events:auto}
@@ -474,10 +489,12 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 #btn-refresh.tourne svg{animation:sp 1s linear infinite}
 
 /* ---------- Animations ---------- */
-@keyframes riseIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes riseIn{from{opacity:0;transform:translateY(18px) scale(.97);filter:blur(4px)}to{opacity:1;transform:none;filter:none}}
 @keyframes viewIn{from{opacity:0}to{opacity:1}}
 @keyframes bgIn{from{opacity:0}to{opacity:1}}
-@keyframes sheetUp{from{transform:translateY(34px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes bgOut{to{opacity:0}}
+@keyframes sheetUp{from{transform:translateY(105%)}to{transform:none}}
+@keyframes sheetDown{to{transform:translateY(105%)}}
 @keyframes navPop{0%{transform:scale(.82)}58%{transform:scale(1.16)}100%{transform:scale(1)}}
 @keyframes rowFlash{0%{background:rgba(74,222,128,.18)}100%{background:transparent}}
 @keyframes confettiFall{
@@ -485,25 +502,110 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
   100%{opacity:0;transform:translate3d(var(--dx),var(--dy),0) rotate(var(--rot))}
 }
 #view{animation:viewIn .22s ease}
-.modal-bg{animation:bgIn .2s ease}
-.modal{animation:sheetUp .3s cubic-bezier(.22,.9,.28,1)}
+/* feuilles du bas : montée avec rebond, descente à la fermeture */
+.modal-bg{animation:bgIn .25s ease}
+.modal{animation:sheetUp .6s var(--ressort);box-shadow:0 60px 0 0 var(--bg2)} /* l'ombre comble le rebond */
+.modal-bg.sortie{animation:bgOut .24s ease forwards;pointer-events:none}
+.modal-bg.sortie .modal{animation:sheetDown .24s cubic-bezier(.4,0,1,1) forwards}
 nav.tabs button .nico{display:block}
 nav.tabs button.on .nico{animation:navPop .42s cubic-bezier(.2,1.3,.35,1)}
 .eprow.flash{animation:rowFlash .7s ease-out}
-/* barres qui se remplissent */
-.progress i{transition:width .6s cubic-bezier(.22,.9,.28,1)}
-.sprog i{transition:width .6s cubic-bezier(.22,.9,.28,1)}
+/* boutons : enfoncés au toucher, rebond au relâcher */
+.btn,.checkbtn,.mtoggle,.qadd,.iconbtn,.chip,.epcheck,.hideb,.segbar button,.toast-btn{
+  transition:transform .45s var(--ressort),background-color .15s,color .15s,border-color .15s;
+}
+.btn:active{transform:scale(.95);opacity:.92}
+.checkbtn:active,.mtoggle:active,.qadd:active,.epcheck:active,.iconbtn:active,.hideb:active{transform:scale(.84)}
+.chip:active,.segbar button:active{transform:scale(.94)}
+/* barres qui se remplissent (et s'illuminent quand elles progressent) */
+.progress i{transition:width .7s var(--ressort)}
+.sprog i{transition:width .7s var(--ressort)}
 .grow .gb i{transition:width .8s cubic-bezier(.22,.9,.28,1)}
 .seg{transition:height .7s cubic-bezier(.22,.9,.28,1)}
+@keyframes lueur{0%{filter:brightness(2.4) saturate(1.4)}100%{filter:none}}
+.progress i.monte,.sprog i.monte{animation:lueur 1.1s ease-out}
+/* coche qui se dessine */
+@keyframes trace{from{stroke-dashoffset:-24}to{stroke-dashoffset:0}}
+.trace svg polyline{stroke-dasharray:24;animation:trace .45s cubic-bezier(.3,.7,.3,1) both}
+/* éclat de particules autour d'une coche */
+.eclat{position:fixed;width:0;height:0;z-index:150;pointer-events:none}
+.eclat i{position:absolute;left:-3.5px;top:-3.5px;width:7px;height:7px;border-radius:50%;animation:eclatP .65s cubic-bezier(.15,.75,.3,1) forwards}
+.eclat b{position:absolute;left:-21px;top:-21px;width:42px;height:42px;border-radius:50%;border:2px solid #4ade80;animation:eclatO .55s ease-out forwards}
+@keyframes eclatP{0%{transform:translate(0,0) scale(1.1);opacity:1}100%{transform:translate(var(--x),var(--y)) scale(.2);opacity:0}}
+@keyframes eclatO{0%{transform:scale(.35);opacity:.9}100%{transform:scale(2);opacity:0}}
+/* images : apparition douce la première fois (pas à chaque rafraîchissement) */
+img{transition:opacity .5s ease,transform .7s var(--doux),filter .5s ease}
+img:not(.ok){opacity:0;transform:scale(1.04);filter:blur(6px)}
+img.direct{transition:none}
+/* bandeau d'Explorer : lent zoom de cinéma */
+.hero-img{position:absolute;inset:0;background:center 25%/cover no-repeat;animation:kenburns 18s ease-in-out infinite alternate}
+@keyframes kenburns{from{transform:scale(1.02)}to{transform:scale(1.14) translate(-2%,-1.5%)}}
+/* fiche série : l'image de fond glisse plus lentement que la page */
+@supports (animation-timeline: scroll()){
+  .overlay .backdrop{animation:parallaxe linear both;animation-timeline:scroll();animation-range:0 300px}
+  .overlay .detbar{animation:barreOpaque linear both;animation-timeline:scroll();animation-range:60px 240px}
+}
+@keyframes parallaxe{to{transform:translateY(110px) scale(1.15);opacity:.35}}
+@keyframes barreOpaque{to{background-color:rgba(0,0,0,.9)}}
+/* série terminée : le grand moment */
+.celebre{
+  position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 42%,rgba(74,222,128,.22),rgba(0,0,0,.88) 68%);
+  animation:bgIn .35s ease both;
+}
+.celebre.sortie{animation:bgOut .3s ease forwards}
+.cel-carte{display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;padding:0 30px;animation:celPop .8s var(--ressort) both}
+.cel-affiche{position:relative;width:150px;aspect-ratio:2/3}
+.cel-affiche::before{
+  content:'';position:absolute;inset:-14px;border-radius:26px;
+  background:conic-gradient(from 0deg,#4ade80,#fbbf24,#f2f2f4,#4ade80);
+  filter:blur(18px);opacity:.75;animation:sp 3.5s linear infinite;
+}
+.cel-affiche .poster{position:relative;width:100%;height:100%;border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+.cel-carte b{font-size:28px;font-weight:800;letter-spacing:-.02em}
+.cel-carte span{font-size:15px;color:var(--txt)}
+.cel-carte small{font-size:13px;color:var(--txt2)}
+@keyframes celPop{0%{opacity:0;transform:scale(.6) translateY(30px)}100%{opacity:1;transform:none}}
 /* confettis */
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:200;overflow:hidden}
 #confetti i{
   position:absolute;width:8px;height:12px;border-radius:2px;
   animation:confettiFall 1.5s cubic-bezier(.2,.6,.4,1) forwards;
 }
+
+/* ---------- Transitions entre écrans (navigateurs compatibles) ---------- */
+/* onglets : la page glisse dans le sens de l'onglet, en-tête et barre restent en place */
+html[data-vt="avant"] header.app,html[data-vt="arriere"] header.app{view-transition-name:entete}
+html[data-vt="avant"] nav.tabs,html[data-vt="arriere"] nav.tabs{view-transition-name:barre}
+::view-transition-old(barre){animation:none;opacity:0}
+::view-transition-new(barre){animation:none}
+html[data-vt="avant"]::view-transition-old(root){animation:vtSortG .3s var(--doux) both}
+html[data-vt="avant"]::view-transition-new(root){animation:vtEntreD .45s var(--doux) both}
+html[data-vt="arriere"]::view-transition-old(root){animation:vtSortD .3s var(--doux) both}
+html[data-vt="arriere"]::view-transition-new(root){animation:vtEntreG .45s var(--doux) both}
+@keyframes vtSortG{to{opacity:0;transform:translateX(-12%)}}
+@keyframes vtEntreD{from{opacity:0;transform:translateX(16%)}}
+@keyframes vtSortD{to{opacity:0;transform:translateX(12%)}}
+@keyframes vtEntreG{from{opacity:0;transform:translateX(-16%)}}
+/* fiche : l'affiche s'envole de la liste jusqu'à sa place (et revient au retour) */
+html[data-vt="fiche"]::view-transition-old(root){animation:vtRecule .45s var(--doux) both}
+html[data-vt="fiche"]::view-transition-new(root){animation:vtAvance .45s var(--doux) both}
+html[data-vt="retour"]::view-transition-old(root){animation:vtSortRetour .35s var(--doux) both}
+html[data-vt="retour"]::view-transition-new(root){animation:vtEntreRetour .42s var(--doux) both}
+@keyframes vtRecule{to{opacity:0;transform:scale(.94)}}
+@keyframes vtAvance{from{opacity:0;transform:scale(1.03)}}
+@keyframes vtSortRetour{to{opacity:0;transform:scale(1.03)}}
+@keyframes vtEntreRetour{from{opacity:0;transform:scale(.96)}}
+::view-transition-group(affiche){animation-duration:.6s;animation-timing-function:var(--ressort)}
+::view-transition-old(affiche),::view-transition-new(affiche){animation-duration:.6s;height:100%}
+::view-transition-new(fond){animation:vtFondIn .75s var(--doux) both}
+::view-transition-old(fond){animation:bgOut .3s ease both}
+@keyframes vtFondIn{from{opacity:0;transform:scale(1.15)}}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}
-  .sk{animation:none!important}
+  .sk,.hero-img,.overlay .backdrop,.overlay .detbar{animation:none!important}
+  img:not(.ok){filter:none;transform:none}
   .spin,#btn-refresh.tourne svg{animation-duration:1.6s!important}
 }
 </style>
@@ -1176,7 +1278,7 @@ function nouveautesActuelles() {
 }
 function openNouveautes() {
   const items = nouveautesActuelles();
-  if (!$('#modal-root').innerHTML) pushLayer('modal');
+  if (!modaleOuverte()) pushLayer('modal');
   modaleCourante = null;
   state.nouveautesVues = nowISO();
   DB.kvSet('nouveautesVues', state.nouveautesVues).catch(() => {});
@@ -2225,7 +2327,7 @@ function proposerAnnulation(msg, annuler, ms = 5000) {
    annulation ou un ajout, seulement si c'est toujours elle qui est affichée */
 let modaleCourante = null;
 function redessinerModale() {
-  const box = $('#modal-root .modal');
+  const box = $('#modal-root .modal-bg:not(.sortie) .modal');
   if (box && modaleCourante && box.dataset.rr === modaleCourante.cle) modaleCourante.fn();
 }
 async function toggleMovieWatched(m) {
@@ -2241,26 +2343,55 @@ const TABS = { series: 'Séries', discover: 'Explorer', movies: 'Films', setting
    dans l'historique du navigateur. Retour = fermer la couche du
    dessus, jamais quitter l'app par surprise. ---- */
 function pushLayer(layer) { history.pushState({ layer }, ''); }
-function closeModalViaHistory() { if ($('#modal-root').innerHTML) history.back(); }
+/* une feuille en train de descendre (animation de fermeture) ne compte plus comme ouverte */
+function modaleOuverte() { return !!$('#modal-root .modal-bg:not(.sortie)'); }
+function fermerModale() {
+  const root = $('#modal-root'), bg = root.querySelector('.modal-bg:not(.sortie)');
+  if (!bg || mouvementReduit()) { root.innerHTML = ''; return; }
+  bg.classList.add('sortie');
+  setTimeout(() => { if (bg.isConnected) bg.remove(); }, 250);
+}
+function closeModalViaHistory() { if (modaleOuverte()) history.back(); }
 window.addEventListener('popstate', () => {
-  if ($('#modal-root').innerHTML) { $('#modal-root').innerHTML = ''; return; }
-  if (detailUuid) {
+  if (modaleOuverte()) { fermerModale(); return; }
+  if (detailUuid) { fermerFiche(); return; }
+  if (overlayMode) { overlayMode = null; overlayCle = null; $('#overlay-root').innerHTML = ''; render(); return; }
+  if (state.tab !== 'series') changerOnglet('series');
+});
+
+/* Fermeture d'une fiche série : son affiche retourne se poser sur sa carte dans la liste */
+function fermerFiche() {
+  const uuid = detailUuid;
+  const fermer = () => {
     detailUuid = null;
     if (overlayMode) renderOverlay();
     else { $('#overlay-root').innerHTML = ''; render(); }
-    return;
-  }
-  if (overlayMode) { overlayMode = null; overlayCle = null; $('#overlay-root').innerHTML = ''; render(); return; }
-  if (state.tab !== 'series') { state.tab = 'series'; render(); }
-});
+  };
+  const affiche = $('#overlay-root .dethead .poster'), fond = $('#overlay-root .backdrop');
+  if (!affiche || overlayMode || !document.startViewTransition || mouvementReduit()) { fermer(); return; }
+  affiche.style.viewTransitionName = 'affiche';
+  if (fond) fond.style.viewTransitionName = 'fond';
+  let carte = null;
+  transition('retour', () => {
+    fermer();
+    carte = [...document.querySelectorAll(`#view [data-poster="${uuid}"]`)].find(estVisible) || null;
+    if (carte) carte.style.viewTransitionName = 'affiche';
+  }).fini.then(() => { if (carte) carte.style.viewTransitionName = ''; });
+}
 
+const ORDRE_ONGLETS = ['series', 'movies', 'discover', 'settings'];
+/* Changement d'onglet : la page glisse dans le sens de l'onglet choisi */
+function changerOnglet(tab) {
+  if (tab === state.tab) { render(); return Promise.resolve(); }
+  const sens = ORDRE_ONGLETS.indexOf(tab) > ORDRE_ONGLETS.indexOf(state.tab) ? 'avant' : 'arriere';
+  return transition(sens, () => { state.tab = tab; render(); }).pret;
+}
 function setTab(tab) {
   // revenir sur Séries par la barre : on dépile l'entrée d'historique posée en partant,
   // sinon un appui sur « retour » ne ferait plus rien
-  if (tab === 'series' && state.tab !== 'series' && history.state && history.state.layer === 'tab') { history.back(); return; }
+  if (tab === 'series' && state.tab !== 'series' && history.state && history.state.layer === 'tab') { history.back(); return Promise.resolve(); }
   if (tab !== state.tab && state.tab === 'series') pushLayer('tab');
-  state.tab = tab;
-  render();
+  return changerOnglet(tab);
 }
 
 /* rafraîchit l'onglet ET l'écran plein page ouvert (Journal, Ménage…) s'il y en a un */
@@ -2269,11 +2400,17 @@ function rafraichirEcrans() { render(); if (overlayMode && !detailUuid) renderOv
 let lastRenderedTab = null;
 function render() {
   // conserve la position de défilement si on reste sur le même onglet
-  const keepScroll = lastRenderedTab === state.tab ? window.scrollY : 0;
+  const memeOnglet = lastRenderedTab === state.tab;
+  const keepScroll = memeOnglet ? window.scrollY : 0;
+  // même écran redessiné (une coche…) : on retient où sont les cartes pour les faire glisser
+  const avant = memeOnglet && cleVue() === lastViewKey ? positionsCartes() : null;
   lastRenderedTab = state.tab;
   renderView();
   window.scrollTo(0, keepScroll);
+  animerDeplacements(avant);
 }
+const cleVue = () => [state.tab, state.seriesView, state.movieView, state.seriesFilter,
+  state.movieFilter, state.exploreType, state.exploreSource].join('|');
 
 function renderView() {
   const title = $('#apptitle');
@@ -2281,6 +2418,7 @@ function renderView() {
   title.classList.toggle('brand', state.tab === 'series');
   document.querySelectorAll('nav.tabs button').forEach(b =>
     b.classList.toggle('on', b.dataset.tab === state.tab));
+  placerPilule();
   $('#btn-dice').classList.toggle('hidden', !(state.tab === 'series' || state.tab === 'movies'));
   $('#btn-add').classList.toggle('hidden', !(state.tab === 'series' || state.tab === 'movies'));
   $('#btn-refresh').classList.toggle('hidden', !(state.tab === 'series' && state.seriesView === 'suivre'));
@@ -2331,12 +2469,12 @@ function seriesCard(s) {
       sub = `À jour · ${p.watched}/${p.total}`;
     }
   }
-  return `<div class="mcard" data-action="open-series" data-uuid="${s.uuid}">
+  return `<div class="mcard" data-action="open-series" data-uuid="${s.uuid}" data-flip="g-${s.uuid}">
     <div class="pwrap">
       ${s.is_favorite ? `<span class="mfav">${ICONS.star}</span>` : ''}
       ${posterHtml(s, 'tv')}
       ${chip}
-      <span class="sprog ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%"></i></span>
+      <span class="sprog ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%" data-k="g-${s.uuid}"></i></span>
     </div>
     <div class="mtitle">${esc(s.title)}</div>
     <div class="myear">${sub}</div>
@@ -2468,7 +2606,7 @@ function viewNext() {
   const sectionACommencer = aCommencer.length ? `
     <h2 class="section" style="margin-top:26px">✨ À commencer <span class="cnt">${aCommencer.length}</span></h2>
     <div class="card-list">${aCommencer.slice(0, state.aCommencerTout ? Infinity : AC_MAX).map(({ s, nx }) => `
-      <div class="scard" data-action="open-series" data-uuid="${s.uuid}">
+      <div class="scard" data-action="open-series" data-uuid="${s.uuid}" data-flip="n-${s.uuid}">
         ${posterHtml(s, 'tv')}
         <div class="mid">
           <div class="title">${esc(s.title)}</div>
@@ -2486,12 +2624,12 @@ function viewNext() {
       const p = progress(s);
       const pct = p.total ? Math.round(p.watched / p.total * 100) : 0;
       return `
-      <div class="scard" data-action="open-series" data-uuid="${s.uuid}">
+      <div class="scard" data-action="open-series" data-uuid="${s.uuid}" data-flip="n-${s.uuid}">
         ${posterHtml(s, 'tv')}
         <div class="mid">
           <div class="title">${esc(s.title)}</div>
           <div class="sub" style="margin-top:5px"><span class="badge acc">${epCode(nx.season, nx.ep.number)}</span> ${esc(nx.ep.name || '')}</div>
-          <div class="progress ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%"></i></div>
+          <div class="progress ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%" data-k="n-${s.uuid}"></i></div>
           <div class="sub" style="margin-top:5px">${p.watched}/${p.total} épisodes · ${pct}% · ${pl(episodesRestants(s), 'restant')}</div>
         </div>
         <button class="checkbtn" data-action="mark-next" data-uuid="${s.uuid}" title="Marquer vu">${ICONS.check}</button>
@@ -2636,7 +2774,8 @@ function viewDiscover() {
     if (cands.length) {
       hero = `<div class="heros" id="heros">${cands.map(h => {
         const hk = esc(JSON.stringify(h)).replace(/"/g, '&quot;');
-        return `<div class="hero" style="background-image:url('${h.backdrop}')" data-action="discover-detail" data-key="${hk}">
+        return `<div class="hero" data-action="discover-detail" data-key="${hk}">
+          <div class="hero-img" style="background-image:url('${h.backdrop}')"></div>
           <span class="htag">🔥 À la une</span>
           <div class="ov">
             <h3>${esc(h.title)}</h3>
@@ -2818,7 +2957,7 @@ function movieCard(m, avoir = false) {
     : bientot ? `Sortie ${compteARebours(mt.release)}`
     : [m.year, mt.runtime ? fmtDuree(mt.runtime) : null].filter(Boolean).join(' · ');
   const affiche = posterHtml(m, 'movie');
-  return `<div class="mcard ${m.is_watched ? 'watched' : ''}" data-action="open-movie" data-uuid="${m.uuid}">
+  return `<div class="mcard ${m.is_watched ? 'watched' : ''}" data-action="open-movie" data-uuid="${m.uuid}" data-flip="f-${m.uuid}">
     ${m.is_favorite ? `<span class="mfav">${ICONS.star}</span>` : ''}
     ${bientot ? `<div class="pwrap">${affiche}<span class="rchip soon">📅 ${fmtShort(asDate(mt.release))}</span></div>` : affiche}
     <button class="mtoggle" data-action="toggle-movie" data-uuid="${m.uuid}" title="${m.is_watched ? 'Vu' : 'Marquer vu'}">${ICONS.check}</button>
@@ -3002,7 +3141,7 @@ function viewSagas() {
 async function openSagaModal(idBrut) {
   const id = idSaga(idBrut);
   if (!id) return;
-  if (!$('#modal-root').innerHTML) pushLayer('modal');
+  if (!modaleOuverte()) pushLayer('modal');
   const cle = 'saga:' + id;
   modaleCourante = { cle, fn: () => openSagaModal(id) };
   let saga = sagasCache[id];
@@ -3010,7 +3149,7 @@ async function openSagaModal(idBrut) {
     $('#modal-root').innerHTML = `<div class="modal-bg" data-action="close-modal"><div class="modal" data-rr="${cle}"><div class="grab"></div><div class="loadrow"><span class="spin"></span> Chargement de la saga…</div></div></div>`;
     try { saga = await chargerSaga(id); }
     catch (e) { toast('Saga indisponible : ' + e.message); closeModalViaHistory(); return; }
-    const box = $('#modal-root .modal');
+    const box = $('#modal-root .modal-bg:not(.sortie) .modal');
     if (!box || box.dataset.rr !== cle) return; // fermée ou remplacée entre-temps
   }
   const { parId } = sagasBibliotheque();
@@ -3058,7 +3197,7 @@ async function openSagaModal(idBrut) {
 function openMovieModal(uuid) {
   const m = state.movies.find(x => x.uuid === uuid);
   if (!m) return;
-  if (!$('#modal-root').innerHTML) pushLayer('modal');
+  if (!modaleOuverte()) pushLayer('modal');
   modaleCourante = { cle: 'film:' + uuid, fn: () => openMovieModal(uuid) };
   const meta = state.tmdb[uuid] || {};
   const bientot = !m.is_watched && meta.release && meta.release > todayStr();
@@ -3097,7 +3236,9 @@ function openMovieModal(uuid) {
   if (metaNeedsFetch(m, 'movie')) {
     // référencé via IMDb sans clé, ou pas encore résolu → met à niveau puis réaffiche
     pool(() => resolveMeta(m, 'movie')).then(mt => {
-      if (mt && mt.id && $('#modal-root .dmodal')) openMovieModal(uuid);
+      // seulement si c'est toujours la fiche de CE film, encore ouverte (pas en train de se fermer)
+      const box = $('#modal-root .modal-bg:not(.sortie) .modal');
+      if (mt && mt.id && box && box.dataset.rr === 'film:' + uuid) openMovieModal(uuid);
       else clearExtra();
     }).catch(clearExtra);
   } else if (meta.id) {
@@ -3995,7 +4136,7 @@ function rouletteResultHtml() {
 }
 
 function openRoulette() {
-  if (!$('#modal-root').innerHTML) pushLayer('modal');
+  if (!modaleOuverte()) pushLayer('modal');
   // genres complétés une fois par session ; on ne redessine que si c'est toujours la roulette qui est ouverte
   if (!genresCompletes) { genresCompletes = true; backfillGenres(() => { if ($('#roulette-res')) openRoulette(); }); }
   const f = state.roulette;
@@ -4075,11 +4216,31 @@ async function enrichSerieDetail(s) {
   } catch (e) {}
 }
 
-function openSeries(uuid) {
-  if (!detailUuid) { pushLayer('detail'); memoriserEcran(); }
-  lastDetailAnim = null; // rejoue la cascade d'ouverture
-  detailUuid = uuid;
-  renderDetail();
+/* `depuis` = la carte touchée : son affiche s'envole jusqu'à sa place dans la fiche */
+let ouvertureAnimee = false;
+function openSeries(uuid, depuis) {
+  const ouvrir = () => {
+    if (!detailUuid) { pushLayer('detail'); memoriserEcran(); }
+    lastDetailAnim = null; // rejoue la cascade d'ouverture
+    detailUuid = uuid;
+    renderDetail();
+  };
+  const source = !detailUuid && depuis && depuis.querySelector ? depuis.querySelector('.poster') : null;
+  if (source && document.startViewTransition && !mouvementReduit()) {
+    source.style.viewTransitionName = 'affiche';
+    transition('fiche', () => {
+      source.style.viewTransitionName = '';
+      ouvertureAnimee = true;
+      try { ouvrir(); } finally { ouvertureAnimee = false; }
+      const ov = $('#overlay-root .overlay');
+      if (ov) ov.style.animation = 'none'; // la transition remplace le glissement habituel
+      const affiche = $('#overlay-root .dethead .poster'), fond = $('#overlay-root .backdrop');
+      if (affiche) affiche.style.viewTransitionName = 'affiche';
+      if (fond) fond.style.viewTransitionName = 'fond';
+    }).fini.then(() => {
+      for (const el of document.querySelectorAll('#overlay-root .dethead .poster, #overlay-root .backdrop')) el.style.viewTransitionName = '';
+    });
+  } else ouvrir();
   const s = state.series.find(x => x.uuid === uuid);
   if (s && metaNeedsFetch(s, 'tv')) {
     pool(() => resolveMeta(s, 'tv')).then(() => { if (detailUuid === uuid) renderDetail(); }).catch(() => {});
@@ -4117,7 +4278,7 @@ function renderDetail() {
         </div>
         <div class="meta">${p.watched} / ${p.total} épisodes vus (${pct}%)</div>
         ${(() => { const nep = nextEpValide(meta); return nep ? `<div class="meta">📅 ${epCode(nep.season, nep.episode)} ${nep.date ? `${compteARebours(nep.date)} <span style="opacity:.7">(${fmtDate(nep.date)})</span>` : 'date à venir'}</div>` : ''; })()}
-        <div class="progress ${pct === 100 ? 'full' : ''}" style="margin-top:10px;max-width:160px"><i style="width:0" data-w="${pct}%"></i></div>
+        <div class="progress ${pct === 100 ? 'full' : ''}" style="margin-top:10px;max-width:160px"><i style="width:0" data-w="${pct}%" data-k="d-${s.uuid}"></i></div>
       </div>
     </div>
     ${meta.overview ? `<p class="overview clamp" data-action="expand-overview">${esc(meta.overview)}</p>` : ''}
@@ -4181,7 +4342,8 @@ function renderDetail() {
   animateBars($('#overlay-root'));
   if (detailUuid !== lastDetailAnim) { // cascade à l'ouverture, pas à chaque coche
     lastDetailAnim = detailUuid;
-    cascade($('#overlay-root'), '.dethead, #serie-extra, .detactions, details.season');
+    // ouverture animée : l'en-tête (avec l'affiche qui s'envole) n'a pas besoin de cascade
+    cascade($('#overlay-root'), ouvertureAnimee ? '#serie-extra, .detactions, details.season' : '.dethead, #serie-extra, .detactions, details.season');
   }
   enrichSerieDetail(s);
 }
@@ -4201,7 +4363,7 @@ function choixDateHtml({ diffusion = false, dejaVu = false, pluriel = false } = 
 /* Choix de la date pour « Tout vu » (saison, série) et pour un film */
 function openVuModal(cible, titre, sous) {
   cibleVu = cible;
-  if (!$('#modal-root').innerHTML) pushLayer('modal');
+  if (!modaleOuverte()) pushLayer('modal');
   modaleCourante = null;
   const film = cible.type === 'movie';
   $('#modal-root').innerHTML = `
@@ -4254,6 +4416,10 @@ async function appliquerVu(quand) {
   closeModalViaHistory();
   if (navigator.vibrate) navigator.vibrate(12);
   if (detailUuid === s.uuid) renderDetail(); else rafraichirEcrans();
+  if (c.type === 'ep') { // la coche de l'épisode se dessine dans la fiche
+    const coche = document.querySelector(`.eprow[data-season="${c.season}"][data-ep="${c.ep}"]${c.special ? '[data-special="1"]' : ':not([data-special])'} .epcheck`);
+    if (coche) { tracer(coche); eclat(coche); }
+  }
   const undo = () => restaurerSerie(snap);
   if (!feteSiTerminee(s, avant, undo)) proposerAnnulation(msg, undo);
 }
@@ -4294,7 +4460,7 @@ function openEpisodeModal(uuid, seasonNum, epNum, special) {
   const s = state.series.find(x => x.uuid === uuid);
   const ep = s && trouverEpisode(s, seasonNum, epNum, special);
   if (!ep) return;
-  if (!$('#modal-root').innerHTML) pushLayer('modal');
+  if (!modaleOuverte()) pushLayer('modal');
   cibleVu = { type: 'ep', uuid, season: seasonNum, ep: epNum, special };
   const cle = `ep:${uuid}:${seasonNum}:${epNum}:${special ? 1 : 0}`;
   modaleCourante = { cle, fn: () => openEpisodeModal(uuid, seasonNum, epNum, special) };
@@ -4341,7 +4507,7 @@ function openEpisodeModal(uuid, seasonNum, epNum, special) {
 
 /* ---------------- Filmographie d'un acteur ---------------- */
 async function openPersonModal(pid) {
-  if (!$('#modal-root').innerHTML) pushLayer('modal');
+  if (!modaleOuverte()) pushLayer('modal');
   $('#modal-root').innerHTML = `<div class="modal-bg" data-action="close-modal"><div class="modal"><div class="grab"></div><div class="loadrow"><span class="spin"></span> Chargement de la filmographie…</div></div></div>`;
   try {
     const d = await tget(`/person/${pid}`, { append_to_response: 'combined_credits' });
@@ -4371,7 +4537,7 @@ async function openPersonModal(pid) {
 
 /* ---------------- Modale Découvrir ---------------- */
 function openDiscoverModal(n) {
-  if (!$('#modal-root').innerHTML) pushLayer('modal');
+  if (!modaleOuverte()) pushLayer('modal');
   const lib = inLibrary(n);
   $('#modal-root').innerHTML = `
   <div class="modal-bg" data-action="close-modal">
@@ -4475,8 +4641,8 @@ $('#btn-refresh').innerHTML = ICONS.refresh;
 $('#btn-dice').innerHTML = ICONS.dice;
 $('#btn-dice').addEventListener('click', () => { state.roulettePick = null; openRoulette(); });
 $('#btn-add').addEventListener('click', () => {
-  setTab('discover');
-  setTimeout(() => { const i = $('#discover-search'); if (i) i.focus(); }, 60);
+  // le champ n'existe qu'une fois la transition vers Explorer faite
+  setTab('discover').then(() => { const i = $('#discover-search'); if (i) i.focus(); });
 });
 $('#btn-refresh').addEventListener('click', () => refreshAll(false));
 
@@ -4548,7 +4714,7 @@ document.body.addEventListener('click', async e => {
   else if (act === 'series-filter') { state.seriesFilter = el.dataset.f; state.seriesSearch = ''; render(); }
   else if (act === 'movie-filter') { state.movieFilter = el.dataset.f; state.movieSearch = ''; state.movieLimit = 60; render(); }
   else if (act === 'series-reset-filters') { state.seriesSort = 'recent'; state.seriesGenre = -1; state.seriesDecade = 'all'; render(); }
-  else if (act === 'open-series') openSeries(el.dataset.uuid);
+  else if (act === 'open-series') openSeries(el.dataset.uuid, el);
   else if (act === 'close-detail') closeDetail();
   else if (act === 'close-modal') { if (e.target === el) closeModalViaHistory(); }
   else if (act === 'expand-overview') el.classList.toggle('clamp');
@@ -4566,7 +4732,7 @@ document.body.addEventListener('click', async e => {
   else if (act === 'open-person') openPersonModal(el.dataset.pid);
   else if (act === 'add-discover') { closeModalViaHistory(); addItem(JSON.parse(el.dataset.key)); }
   else if (act === 'add-discover-watched') { closeModalViaHistory(); addItem(JSON.parse(el.dataset.key), true); }
-  else if (act === 'quick-add') addItem(JSON.parse(el.dataset.key));
+  else if (act === 'quick-add') { eclat(el, '#e8e8ec'); addItem(JSON.parse(el.dataset.key)); }
   else if (act === 'hide-item') {
     const n = JSON.parse(el.dataset.key);
     state.hidden.add(hkey(n));
@@ -4630,7 +4796,10 @@ document.body.addEventListener('click', async e => {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
     if (m) {
       const snap = etatFilm(m);
-      await toggleMovieWatched(m); openMovieModal(m.uuid); rafraichirEcrans();
+      const zone = el.getBoundingClientRect();
+      await toggleMovieWatched(m);
+      if (m.is_watched) eclat(zone);
+      openMovieModal(m.uuid); rafraichirEcrans();
       proposerAnnulation(m.is_watched ? `« ${m.title} » vu ✓` : `« ${m.title} » remis dans À voir`, () => restaurerFilm(snap));
     }
   }
@@ -4682,10 +4851,12 @@ document.body.addEventListener('click', async e => {
       const snap = etatSerie(target);
       const avant = progress(target).watched;
       const nx = nextUnwatched(target);
+      const zone = el.getBoundingClientRect(); // le bouton disparaît au rafraîchissement : on garde sa place
       const ep = await markNext(target);
       if (!ep) return;
       if (navigator.vibrate) navigator.vibrate(12);
       el.dataset.stay ? renderDetail() : render();
+      eclat(zone);
       const undo = () => restaurerSerie(snap);
       if (!feteSiTerminee(target, avant, undo)) proposerAnnulation(`${target.title} · ${epCode(nx.season, ep.number)} vu ✓`, undo);
     }
@@ -4698,6 +4869,7 @@ document.body.addEventListener('click', async e => {
       await toggleMovieWatched(m);
       proposerAnnulation(m.is_watched ? `« ${m.title} » vu ✓` : `« ${m.title} » remis dans À voir`, () => restaurerFilm(snap));
       const card = el.closest('.mcard');
+      if (m.is_watched) { tracer(el); eclat(el); }
       if (m.is_watched && navigator.vibrate) navigator.vibrate(12);
       // si le film ne correspond plus à la liste affichée, il la quitte
       // en fondu (le défilement est conservé par render())
@@ -4727,8 +4899,11 @@ document.body.addEventListener('click', async e => {
     renderDetail();
     const row = document.querySelector(`.eprow[data-season="${el.dataset.season}"][data-ep="${el.dataset.ep}"]${special ? '[data-special="1"]' : ':not([data-special])'}`);
     if (row && row.classList.contains('watched')) {
+      const coche = row.querySelector('.epcheck');
       row.classList.add('flash');
-      row.querySelector('.epcheck').style.animation = 'pop .3s ease';
+      coche.style.animation = 'pop .3s ease';
+      tracer(coche);
+      eclat(coche);
       if (navigator.vibrate) navigator.vibrate(12);
     }
     const code = special ? `Spécial ${ep.number}` : epCode(+el.dataset.season, ep.number);
@@ -4818,9 +4993,11 @@ document.body.addEventListener('click', async e => {
     const m = state.movies.find(x => x.uuid === el.dataset.uuid);
     if (m) {
       const snap = etatFilm(m);
+      const zone = el.getBoundingClientRect();
       await toggleMovieWatched(m);
       if (navigator.vibrate) navigator.vibrate(12);
       redessinerModale(); rafraichirEcrans();
+      if (m.is_watched) eclat(zone);
       proposerAnnulation(m.is_watched ? `« ${m.title} » vu ✓` : `« ${m.title} » remis dans À voir`, () => restaurerFilm(snap));
     }
   }
@@ -4931,15 +5108,135 @@ async function deconnecterSynchro() {
 }
 
 /* ---------------- Animations ---------------- */
-/* Barres (largeurs/hauteurs) rendues à zéro puis portées à leur valeur */
+function mouvementReduit() { return matchMedia('(prefers-reduced-motion: reduce)').matches; }
+
+/* Transition animée entre deux états de l'écran (View Transitions, Chrome Android) :
+   l'ancien écran est figé, `maj` construit le nouveau, le navigateur anime de l'un à
+   l'autre. `type` choisit l'animation (glissement d'onglet, ouverture de fiche…).
+   Sans prise en charge : mise à jour immédiate, comme avant. */
+let vtJeton = 0;
+function transition(type, maj) {
+  if (!document.startViewTransition || mouvementReduit() || document.visibilityState !== 'visible') {
+    maj();
+    return { pret: Promise.resolve(), fini: Promise.resolve() };
+  }
+  const html = document.documentElement, jeton = ++vtJeton;
+  html.dataset.vt = type;
+  const t = document.startViewTransition(maj);
+  t.ready.catch(() => {}); // transition interrompue (nouvelle transition, page masquée) : rien à signaler
+  const nettoie = () => { if (vtJeton === jeton) delete html.dataset.vt; };
+  t.finished.then(nettoie, nettoie);
+  return { pret: t.updateCallbackDone.catch(e => console.error(e)), fini: t.finished.catch(() => {}) };
+}
+const estVisible = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight; };
+
+/* Pastille de l'onglet actif : elle glisse jusqu'au nouvel onglet */
+function placerPilule() {
+  const nav = $('nav.tabs'), on = nav && nav.querySelector('button.on');
+  if (!nav) return;
+  let p = nav.querySelector('.tabpill');
+  const neuve = !p;
+  if (neuve) { p = document.createElement('span'); p.className = 'tabpill'; nav.prepend(p); }
+  if (!on) { p.style.width = '0'; return; }
+  if (neuve) p.style.transition = 'none';
+  p.style.width = on.offsetWidth + 'px';
+  p.style.height = on.offsetHeight + 'px';
+  p.style.transform = `translate(${on.offsetLeft}px,${on.offsetTop}px)`;
+  if (neuve) { p.offsetWidth; p.style.transition = ''; }
+}
+addEventListener('resize', placerPilule);
+
+/* Images : fondu à la première apparition seulement. Une image déjà chargée (simple
+   rafraîchissement de l'écran) s'affiche aussitôt, sans clignoter. */
+function preparerImage(img) {
+  if (img.classList.contains('ok')) return;
+  if (img.complete && img.naturalWidth) { img.classList.add('ok', 'direct'); return; }
+  const ok = () => img.classList.add('ok');
+  img.addEventListener('load', ok, { once: true });
+  img.addEventListener('error', ok, { once: true });
+}
+new MutationObserver(lots => {
+  for (const lot of lots) for (const n of lot.addedNodes) {
+    if (n.nodeType !== 1) continue;
+    if (n.tagName === 'IMG') preparerImage(n);
+    else if (n.querySelector) n.querySelectorAll('img').forEach(preparerImage);
+  }
+}).observe(document.body, { childList: true, subtree: true });
+
+/* Barres (largeurs/hauteurs) portées à leur valeur. Une barre déjà affichée (repérée
+   par data-k) repart de sa valeur précédente et s'illumine si elle a progressé. */
+const largeursBarres = new Map();
 function animateBars(root) {
   const cibles = (root || document).querySelectorAll('[data-w],[data-h]');
   if (!cibles.length) return;
+  const reprises = [...cibles].filter(el => el.dataset.k && el.dataset.w && largeursBarres.has(el.dataset.k));
+  if (reprises.length) {
+    for (const el of reprises) {
+      el.style.transition = 'none';
+      el.style.width = largeursBarres.get(el.dataset.k);
+      if (largeursBarres.get(el.dataset.k) !== el.dataset.w) el.classList.add('monte');
+    }
+    reprises[0].offsetWidth; // une seule mise en page pour toutes les barres
+    for (const el of reprises) el.style.transition = '';
+  }
   // délai court plutôt que rAF : fiable même quand la page n'est pas composée
   setTimeout(() => cibles.forEach(el => {
-    if (el.dataset.w) { el.style.width = el.dataset.w; delete el.dataset.w; }
+    if (el.dataset.w) { el.style.width = el.dataset.w; if (el.dataset.k) largeursBarres.set(el.dataset.k, el.dataset.w); delete el.dataset.w; }
     if (el.dataset.h) { el.style.height = el.dataset.h; delete el.dataset.h; }
   }), 40);
+}
+
+/* Cartes qui changent de place après un rafraîchissement (série cochée qui remonte en
+   tête, série commencée qui passe dans « À regarder ») : elles glissent jusqu'à leur
+   nouvelle position au lieu de sauter (technique FLIP). */
+function positionsCartes() {
+  const pos = new Map();
+  document.querySelectorAll('#view [data-flip]').forEach(el => pos.set(el.dataset.flip, el.getBoundingClientRect()));
+  return pos;
+}
+function animerDeplacements(avant) {
+  if (!avant || !avant.size || mouvementReduit()) return;
+  document.querySelectorAll('#view [data-flip]').forEach(el => {
+    const b = el.getBoundingClientRect();
+    if (b.bottom < -200 || b.top > innerHeight + 200) return;
+    const a = avant.get(el.dataset.flip);
+    if (!a) { // nouvelle carte : elle apparaît en douceur
+      el.animate([{ opacity: 0, transform: 'scale(.92)' }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      return;
+    }
+    const dx = a.left - b.left, dy = a.top - b.top;
+    if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return;
+    el.animate([{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }], { duration: 560, easing: 'cubic-bezier(.2,.9,.25,1.05)' });
+  });
+}
+
+/* Éclat de particules et onde autour d'une coche (élément ou rectangle mémorisé) */
+function eclat(cible, couleur = '#4ade80') {
+  if (!cible || mouvementReduit()) return;
+  const r = cible.getBoundingClientRect ? cible.getBoundingClientRect() : cible;
+  if (!r.width) return;
+  const box = document.createElement('div');
+  box.className = 'eclat';
+  box.style.left = (r.left + r.width / 2) + 'px';
+  box.style.top = (r.top + r.height / 2) + 'px';
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('i');
+    const angle = (i / 14) * Math.PI * 2 + Math.random() * .4, dist = 28 + Math.random() * 26;
+    p.style.setProperty('--x', Math.cos(angle) * dist + 'px');
+    p.style.setProperty('--y', Math.sin(angle) * dist + 'px');
+    p.style.background = i % 3 ? couleur : '#ffffff';
+    box.appendChild(p);
+  }
+  box.appendChild(document.createElement('b'));
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 750);
+}
+/* Coche qui se dessine sur un bouton qui vient de passer à « vu » */
+function tracer(el) {
+  if (!el || mouvementReduit()) return;
+  el.classList.remove('trace');
+  el.offsetWidth;
+  el.classList.add('trace');
 }
 
 /* Compteurs qui grimpent jusqu'à leur valeur */
@@ -4968,7 +5265,7 @@ function animateCounts(root) {
 function cascade(root, sel) {
   const els = [...root.querySelectorAll(sel)].slice(0, 24);
   els.forEach((el, i) => {
-    el.style.animation = `riseIn .38s cubic-bezier(.22,.9,.28,1) ${i * 26}ms backwards`;
+    el.style.animation = `riseIn .6s var(--ressort) ${i * 32}ms backwards`;
   });
 }
 
@@ -4992,11 +5289,38 @@ function confetti(n = 46) {
   setTimeout(() => { box.innerHTML = ''; }, 2200);
 }
 
+/* Le grand moment : l'affiche de la série terminée s'affiche en plein écran, auréolée,
+   avec une pluie de confettis. Un toucher ou 2,8 s et c'est fini. */
+function celebrer(s) {
+  confetti(70);
+  if (mouvementReduit()) return;
+  const meta = state.tmdb[s.uuid] || {}, p = progress(s);
+  const heures = Math.round(p.total * (meta.runtime || 40) / 60);
+  const box = document.createElement('div');
+  box.className = 'celebre';
+  box.innerHTML = `<div class="cel-carte">
+    <div class="cel-affiche">${posterHtml(s, 'tv', true)}</div>
+    <b>Série terminée !</b>
+    <span>${esc(s.title)}</span>
+    <small>${pl(p.total, 'épisode')} · environ ${pl(heures, 'heure')} devant l'écran</small>
+  </div>`;
+  let fini = false;
+  const fermer = () => {
+    if (fini) return;
+    fini = true;
+    box.classList.add('sortie');
+    setTimeout(() => box.remove(), 320);
+  };
+  box.addEventListener('click', fermer);
+  document.body.appendChild(box);
+  setTimeout(fermer, 2800);
+}
+
 /* Fête quand une série passe à 100 % */
 function feteSiTerminee(s, avant, annuler) {
   const p = progress(s);
   if (p.total && avant < p.total && p.watched === p.total) {
-    confetti();
+    celebrer(s);
     if (navigator.vibrate) navigator.vibrate([16, 60, 26]);
     const msg = `🎉 « ${s.title} » terminée — bravo !`;
     if (annuler) proposerAnnulation(msg, annuler); else toast(msg, 3600);
@@ -5024,8 +5348,7 @@ function afterRender() {
     else if (state.movieView === 'sagas') preparerSagas();
   }
   // cascade uniquement quand on change réellement d'écran (pas à chaque re-rendu)
-  const key = [state.tab, state.seriesView, state.movieView, state.seriesFilter,
-    state.movieFilter, state.exploreType, state.exploreSource].join('|');
+  const key = cleVue();
   if (key !== lastViewKey) {
     lastViewKey = key;
     cascade($('#view'), '.mcard, .scard, .pcard, .panel, .hero');
