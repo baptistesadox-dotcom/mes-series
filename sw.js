@@ -7,11 +7,11 @@
    Attention : GitHub Pages sert les fichiers avec Cache-Control: max-age=600. Un simple
    fetch() peut donc répondre depuis le cache HTTP du navigateur et servir une version
    vieille de dix minutes. Pour les fichiers de l'app on contourne ce cache explicitement. */
-const VERSION = 'v6';
+const VERSION = 'v7';
 const SHELL_CACHE = 'shell-' + VERSION;
 const IMG_CACHE = 'affiches-v1';   // indépendant de VERSION : les affiches survivent aux mises à jour
 const IMG_MAX = 800;               // nombre maximal d'affiches gardées
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './manrope.woff2'];
 const HOTES_IMAGES = ['image.tmdb.org', 'static.tvmaze.com', 'm.media-amazon.com'];
 const HOTES_API = ['api.themoviedb.org', 'api.tvmaze.com', 'v2.sg.media-imdb.com', 'api.github.com', 'gist.githubusercontent.com'];
 
