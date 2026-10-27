@@ -48,6 +48,16 @@ img{display:block}
 a{color:var(--txt);text-decoration:underline;text-underline-offset:2px}
 svg{display:block}
 
+/* ---------- Écran de lancement ---------- */
+/* même fond et même logo que l'écran d'ouverture d'Android : la transition est invisible,
+   puis le logo s'agrandit et s'efface quand l'appli est prête */
+#lancement{position:fixed;inset:0;z-index:300;background:#0E0D0D;display:flex;align-items:center;justify-content:center;transition:opacity .5s ease .1s}
+#lancement .logo{animation:logoRespire 1.2s ease-in-out infinite alternate}
+@keyframes logoRespire{to{transform:scale(1.05)}}
+#lancement.fini{opacity:0;pointer-events:none}
+#lancement.fini .logo{animation:logoSort .55s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes logoSort{to{transform:scale(1.4);opacity:0}}
+
 /* ---------- Header ---------- */
 header.app{
   position:sticky;top:0;z-index:20;
@@ -678,8 +688,21 @@ html[data-vt="retour"]::view-transition-new(root){animation:vtEntreRetour .42s v
 </head>
 <body>
 
+<!-- écran de lancement : le logo, le temps que l'appli ouvre la bibliothèque -->
+<div id="lancement" aria-hidden="true">
+  <svg class="logo" viewBox="0 0 100 100" width="150" height="150">
+    <defs>
+      <radialGradient id="lance-halo"><stop offset="0" stop-color="#DC2626" stop-opacity=".5"/><stop offset="1" stop-color="#DC2626" stop-opacity="0"/></radialGradient>
+      <linearGradient id="lance-tri" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F05252"/><stop offset="1" stop-color="#B91C1C"/></linearGradient>
+    </defs>
+    <circle cx="50" cy="50" r="38" fill="url(#lance-halo)"/>
+    <rect x="12.25" y="12.25" width="75.5" height="75.5" rx="17" fill="none" stroke="#F5F2F0" stroke-width="4.5"/>
+    <polygon points="40.9,35 67.9,50 40.9,65" fill="url(#lance-tri)" stroke="url(#lance-tri)" stroke-width="3" stroke-linejoin="round"/>
+  </svg>
+</div>
+
 <header class="app">
-  <h1 id="apptitle" class="brand">Mes Séries</h1>
+  <h1 id="apptitle">Accueil</h1>
   <button class="iconbtn hidden" id="btn-add" title="Ajouter"></button>
   <button class="iconbtn hidden" id="btn-refresh" title="Actualiser"></button>
   <button class="iconbtn avatar" id="btn-profil" title="Mon profil" aria-label="Mon profil"></button>
@@ -2484,8 +2507,7 @@ const cleVue = () => [state.tab, state.seriesView, state.movieView, state.series
 
 function renderView() {
   const title = $('#apptitle');
-  title.textContent = state.tab === 'home' ? 'Mes Séries' : TABS[state.tab];
-  title.classList.toggle('brand', state.tab === 'home');
+  title.textContent = TABS[state.tab];
   document.querySelectorAll('nav.tabs button').forEach(b =>
     b.classList.toggle('on', b.dataset.tab === state.tab));
   placerPilule();
@@ -5691,6 +5713,15 @@ function afterRender() {
 }
 
 /* ---------------- Démarrage ---------------- */
+/* Fin de l'écran de lancement (une seule fois) ; filet de sécurité si le démarrage échoue */
+function fermerLancement() {
+  const l = $('#lancement');
+  if (!l || l.classList.contains('fini')) return;
+  l.classList.add('fini');
+  setTimeout(() => l.remove(), 700);
+}
+setTimeout(fermerLancement, 5000);
+
 (async function init() {
   await DB.open();
   const [series, movies, tmdb, settings, lastRefresh, hidden, lastExport, changedAt, lastSync, lastSyncVersion, syncErr] = await Promise.all([
@@ -5720,6 +5751,7 @@ function afterRender() {
     else DB.del('tmdb', t.uuid).catch(() => {});
   }
   render();
+  fermerLancement();
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
   // stockage persistant : empêche Android de purger les données
   if (navigator.storage && navigator.storage.persist) {

@@ -7,7 +7,7 @@
    Attention : GitHub Pages sert les fichiers avec Cache-Control: max-age=600. Un simple
    fetch() peut donc répondre depuis le cache HTTP du navigateur et servir une version
    vieille de dix minutes. Pour les fichiers de l'app on contourne ce cache explicitement. */
-const VERSION = 'v7';
+const VERSION = 'v8';
 const SHELL_CACHE = 'shell-' + VERSION;
 const IMG_CACHE = 'affiches-v1';   // indépendant de VERSION : les affiches survivent aux mises à jour
 const IMG_MAX = 800;               // nombre maximal d'affiches gardées
