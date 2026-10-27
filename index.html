@@ -197,14 +197,14 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 .mcard .mtitle{font-size:12.5px;font-weight:550;margin-top:7px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .mcard .myear{font-size:11px;color:var(--txt2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mcard .mtoggle{
-  position:absolute;top:7px;right:7px;width:31px;height:31px;border-radius:11px;
-  background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;
-  color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.12);
+  position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:50%;
+  background:rgba(14,13,13,.55);display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.92);border:1px solid rgba(255,255,255,.28);
 }
 .mcard .mtoggle svg{width:15px;height:15px}
 .mcard.watched .mtoggle{background:var(--acc);color:#FFFFFF;border-color:transparent}
 .mcard .mfav{
-  position:absolute;top:7px;left:7px;color:var(--warn);
+  position:absolute;top:7px;left:7px;z-index:2;color:var(--warn);
   filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));width:16px;height:16px;
 }
 /* cartes séries en grille : progression sur l'affiche + restants */
@@ -243,14 +243,17 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 .pcard .inlib svg{width:13px;height:13px}
 /* bouton d'ajout rapide sur les vignettes Découvrir */
 .qadd{
-  position:absolute;top:6px;right:6px;width:27px;height:27px;border-radius:10px;
-  background:rgba(0,0,0,.72);color:var(--txt);
-  border:1px solid rgba(255,255,255,.38);
+  position:absolute;top:6px;right:6px;width:30px;height:30px;border-radius:50%;
+  background:rgba(14,13,13,.55);color:var(--txt);
+  border:1px solid rgba(255,255,255,.3);
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 2px 8px rgba(0,0,0,.4);
 }
 .qadd svg{width:15px;height:15px}
 .qadd:active{background:var(--grad);color:var(--onacc)}
+/* dans la grille d'Explorer, le bouton est posé en bas de l'affiche */
+.poster .qadd{top:auto;bottom:6px;z-index:2}
+.qadd.fait{background:var(--acc);color:#FFFFFF;border-color:transparent}
 
 /* ---------- Detail ---------- */
 .overlay{
@@ -321,8 +324,9 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 /* ---------- Nouveautés ---------- */
 .nxhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
 .nxhead p{font-size:12.5px;color:var(--txt2)}
-.nvlink{flex:none;font-size:12px;font-weight:700;padding:6px 11px;border-radius:999px;border:var(--card-border);background:var(--bg2);color:var(--txt2)}
-.nvlink.on{background:var(--acc);color:#FFFFFF;border-color:transparent}
+.nvlink{flex:none;display:flex;align-items:center;gap:7px;height:30px;padding:0 12px;border-radius:15px;font-size:12.5px;font-weight:800;border:var(--card-border);background:var(--bg2);color:var(--txt2)}
+.nvlink.on{background:rgba(220,38,38,.16);border-color:rgba(248,113,113,.28);color:#FCA5A5}
+.nvlink i{width:7px;height:7px;border-radius:50%;background:#EF4444;box-shadow:0 0 8px #EF4444}
 .nvgroup{margin-bottom:14px}
 .nvep{display:flex;align-items:center;gap:8px;padding:6px 4px 6px 12px;font-size:13.5px}
 .nvep .nm{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -411,6 +415,59 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 .pcard{cursor:pointer}
 .pcard .why{font-size:10.5px;color:var(--txt2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pcard .poster.sk{width:108px;height:162px}
+.pcard .why.pq{color:var(--acc2);font-weight:600}
+
+/* ---------- Séries › À suivre ---------- */
+/* chaque épisode avec l'image de sa série, son code et la progression */
+.elist{display:flex;flex-direction:column;gap:12px}
+.erow{display:flex;align-items:center;gap:13px;cursor:pointer}
+.erow-img{position:relative;flex:none;width:128px;height:72px;border-radius:12px;overflow:hidden;background:var(--bg3) center/cover no-repeat;display:flex;align-items:center;justify-content:center;color:#6B5E5E;font-weight:800}
+.erow-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.6))}
+.erow-img b{position:absolute;left:7px;bottom:9px;z-index:1;font-size:11px;font-weight:800;background:var(--acc);color:#FFFFFF;padding:3px 7px;border-radius:5px}
+.erow-img .progress{position:absolute;left:0;right:0;bottom:0;z-index:1;height:3px;margin:0;border-radius:0;background:rgba(255,255,255,.2)}
+.erow-img .progress i{border-radius:0;background:#EF4444}
+.erow-img .progress.full i{background:var(--gold)}
+.erow-txt{flex:1;min-width:0}
+.erow-t{font-size:15px;font-weight:750;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.erow-n{font-size:13px;color:#D6D0CC;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.erow-m{font-size:12px;color:var(--txt2);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.erow .checkbtn{width:42px;height:42px;background:transparent;border:1.5px solid rgba(255,255,255,.18)}
+.erow .checkbtn svg{width:19px;height:19px}
+/* calendrier des sorties en agenda : un jour par ligne, rangé par mois */
+.agenda-mois{display:flex;align-items:center;gap:10px;margin:18px 0 10px;font-size:11.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--txt2)}
+.agenda-mois::after{content:'';flex:1;height:1px;background:#2A2424}
+.ajour{display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer}
+.adate{flex:none;width:44px;text-align:center}
+.adate span{display:block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--acc2)}
+.adate b{display:block;font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.acarte{flex:1;min-width:0;display:flex;align-items:center;gap:11px;padding:8px;border-radius:14px;background:var(--bg2);border:var(--card-border)}
+.acarte .erow-t{font-size:14px}
+.amini{flex:none;width:88px;height:50px;border-radius:9px;background:var(--bg3) center/cover no-repeat}
+.adans{font-size:12px;font-weight:800;color:var(--warn);margin-top:3px}
+
+/* ---------- Films › À voir ---------- */
+/* « Ce soir ? » : un film de la liste tiré au hasard */
+.cesoir{position:relative;height:224px;border-radius:20px;overflow:hidden;margin-bottom:16px;display:flex;flex-direction:column;justify-content:flex-end;padding:18px;cursor:pointer;background:var(--bg3)}
+.cesoir-img{position:absolute;inset:0;background:center 35%/cover no-repeat}
+.cesoir::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(14,13,13,.95) 0%,rgba(14,13,13,.8) 40%,rgba(14,13,13,.1) 78%),linear-gradient(0deg,rgba(14,13,13,.6),rgba(14,13,13,0) 45%)}
+.cesoir-txt{position:relative;z-index:2}
+.cesoir h3{margin-top:8px;max-width:72%;font-size:30px;font-weight:800;letter-spacing:-.025em;line-height:1.05;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cesoir h3.long{font-size:24px}
+.cesoir-m{font-size:13px;color:#D6D0CC;margin-top:5px}
+.cesoir-btns{display:flex;gap:10px;margin-top:14px}
+.cesoir-btns .btn{height:44px;padding:0 20px;font-size:15px}
+.cesoir-btns .verre{height:44px;padding:0 15px;font-size:14px}
+.cesoir-btns svg{width:18px;height:18px}
+.cesoir.maj .cesoir-txt{animation:rouleIn .6s var(--ressort) both}
+.cesoir.maj .cesoir-img{animation:viewIn .5s ease both}
+/* films pas encore sortis : en grand, avec leur date */
+.bfilm{flex:none;width:280px;cursor:pointer}
+.bfilm.seul{width:auto}
+.bfilm-img{position:relative;height:160px;border-radius:16px;overflow:hidden;background:var(--bg3) center 30%/cover no-repeat;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;padding:14px 16px}
+.bfilm-img::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,13,13,0) 30%,rgba(14,13,13,.9))}
+.bfilm-img > *{position:relative}
+.bfilm-t{font-size:17px;font-weight:800;letter-spacing:-.01em;margin-top:8px;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bfilm-s{font-size:12.5px;color:#D6D0CC;margin-top:2px}
 
 /* ---------- Settings ---------- */
 .panel{background:var(--bg2);border-radius:var(--radius);padding:16px;margin-bottom:13px;border:var(--card-border);box-shadow:var(--card-shadow)}
@@ -427,33 +484,84 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 .stat .v{font-size:24px;font-weight:800;letter-spacing:-.02em;color:var(--txt)}
 .stat .l{font-size:12px;color:var(--txt2)}
 
-/* ---------- Découvrir : bannière, pastilles, squelettes ---------- */
-.heros{
-  display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;
-  margin:0 -14px 10px;padding:0 14px;scrollbar-width:none;
+/* ---------- Explorer : vitrine, rangées, onglets, filtres ---------- */
+/* la vitrine : une grande image bord à bord, le n°1 de la semaine puis les suivants en glissant */
+.vitrine-wrap{position:relative;margin:-12px -14px 0;height:clamp(440px,64vh,580px)}
+.vitrine{display:flex;height:100%;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.vitrine::-webkit-scrollbar{display:none}
+.vslide{position:relative;flex:0 0 100%;height:100%;overflow:hidden;scroll-snap-align:start;cursor:pointer;background:var(--bg2)}
+.vslide.sk{border:none;border-radius:0}
+.vimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 25%}
+.vslide.vue .vimg.ok{animation:kenburns 18s ease-in-out infinite alternate}
+.vslide::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(14,13,13,.65) 0,rgba(14,13,13,0) 24%,rgba(14,13,13,0) 38%,rgba(14,13,13,.8) 68%,var(--bg) 100%)}
+.vbas{position:absolute;left:20px;right:20px;bottom:36px;z-index:1}
+.vtag{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#FCA5A5}
+.vtag i{width:7px;height:7px;border-radius:50%;background:#EF4444;box-shadow:0 0 8px #EF4444}
+.vtitre{margin-top:8px;font-size:40px;font-weight:800;letter-spacing:-.035em;line-height:1.02;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vtitre.long{font-size:30px}
+.vmeta{font-size:13.5px;font-weight:600;color:#E7E2DF;margin-top:8px}
+.vresume{font-size:13.5px;line-height:1.45;color:#C9C2BE;margin-top:7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vbtns{display:flex;gap:10px;margin-top:16px}
+.vbtns .btn{flex:1;height:48px;font-size:15.5px;border-radius:13px}
+.verre{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:48px;padding:0 18px;border-radius:13px;font-size:15px;font-weight:700;color:var(--txt);background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(14px)}
+.verre svg,.vbtns .btn svg{width:19px;height:19px}
+.vtirets{position:absolute;left:0;right:0;bottom:14px;display:flex;justify-content:center;gap:6px;pointer-events:none}
+.vtirets span{width:6px;height:4px;border-radius:2px;background:rgba(255,255,255,.22);transition:width .3s,background-color .3s}
+.vtirets span.on{width:24px;background:var(--acc)}
+/* recherche en verre posée sur l'image */
+.vcherche{position:absolute;left:16px;right:16px;top:14px;z-index:2;display:flex;align-items:center;gap:10px;height:46px;padding:0 16px;border-radius:23px;color:rgba(245,242,240,.8);background:rgba(20,18,18,.42);backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
+.vcherche svg{width:18px;height:18px;flex:none}
+.vcherche input{flex:1;min-width:0;background:none;border:none;outline:none;color:var(--txt);font-size:14.5px}
+.vcherche input::placeholder{color:rgba(245,242,240,.75)}
+/* l'image passe sous l'en-tête, qui redevient opaque quand on fait défiler */
+@supports (animation-timeline: scroll()){
+  html.sous-entete header.app{background-color:transparent;backdrop-filter:none;animation:enteteOpaque linear both;animation-timeline:scroll();animation-range:100px 320px}
+  html.sous-entete header.app h1{text-shadow:0 2px 12px rgba(0,0,0,.55)}
+  html.sous-entete .vitrine-wrap{margin-top:calc(-76px - env(safe-area-inset-top))}
+  html.sous-entete .vcherche{top:calc(76px + env(safe-area-inset-top))}
 }
-.heros::-webkit-scrollbar{display:none}
-.hdots{display:flex;justify-content:center;gap:6px;margin-bottom:14px}
-.hdot{width:6px;height:6px;border-radius:3px;background:var(--line);transition:all .25s}
-.hdot.on{background:var(--acc);width:18px}
-.hero{
-  position:relative;border-radius:18px;overflow:hidden;
-  flex:0 0 100%;scroll-snap-align:center;
-  aspect-ratio:16/9;background:var(--bg2) center 25%/cover no-repeat;
-  border:var(--card-border);box-shadow:var(--card-shadow);cursor:pointer;
-}
-.hero .ov{
-  position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;
-  padding:14px;background:linear-gradient(transparent 25%,rgba(0,0,0,.94));
-}
-.hero h3{font-size:21px;font-weight:800;letter-spacing:-.02em;text-shadow:0 2px 8px rgba(0,0,0,.6)}
-.hero .hm{font-size:12.5px;color:#D6D0CC;margin:3px 0 10px}
-.hero .hb{display:flex;gap:8px}
-.htag{
-  position:absolute;top:10px;left:10px;font-size:11px;font-weight:800;z-index:1;
-  background:var(--acc);color:#FFFFFF;
-  padding:4px 10px;border-radius:6px;
-}
+@keyframes enteteOpaque{to{background-color:rgba(14,13,13,.9);backdrop-filter:blur(14px)}}
+.vitrine-wrap + .segbar{margin-top:18px}
+/* Top 10 : les grands chiffres derrière les affiches */
+.t10row{padding-bottom:12px}
+.t10{flex:none;display:flex;align-items:flex-end;cursor:pointer;position:relative}
+.t10-num{font-size:128px;font-weight:800;line-height:.8;letter-spacing:-.07em;color:var(--bg);-webkit-text-stroke:2px rgba(245,242,240,.4);margin-right:-20px;user-select:none}
+.t10 .poster{width:104px;height:156px;box-shadow:-8px 0 18px rgba(0,0,0,.55)}
+.t10 .inlib{position:absolute;top:6px;right:6px;z-index:1;width:24px;height:24px;border-radius:50%;background:var(--acc);color:#FFFFFF;display:flex;align-items:center;justify-content:center}
+.t10 .inlib svg{width:13px;height:13px}
+.psous{font-size:12px;color:var(--txt2);margin:-6px 0 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lcard-puce.rouge{background:var(--acc);color:#FFFFFF}
+/* tuiles de genre : un toucher filtre la liste complète */
+.gtuiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gtuile{position:relative;height:86px;border-radius:14px;overflow:hidden;display:flex;align-items:flex-end;padding:11px 13px;text-align:left;font-size:15.5px;font-weight:800;letter-spacing:-.01em;background:linear-gradient(135deg,#3A1515,var(--bg2)) center/cover no-repeat}
+.gtuile::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,13,13,.8),rgba(14,13,13,.08))}
+.gtuile span{position:relative}
+/* onglets soulignés et bouton Filtres */
+.onglets{display:flex;align-items:center;gap:14px;margin-bottom:12px;border-bottom:1px solid #2A2424}
+.onglets button{position:relative;height:42px;flex:none;font-size:14px;font-weight:700;color:var(--txt2)}
+.onglets button.on{color:var(--txt)}
+.onglets button.on::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:3px 3px 0 0;background:var(--acc)}
+.onglets .bfiltres{margin-left:auto;display:flex;align-items:center;gap:6px;height:34px;padding:0 11px;border-radius:17px;background:var(--bg2);border:1px solid #2C2525;color:var(--txt);font-size:13px}
+.bfiltres svg{width:15px;height:15px}
+.bfiltres i{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--acc);color:#FFFFFF;font-style:normal;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.factifs{display:flex;gap:8px;overflow-x:auto;padding:0 2px 12px;scrollbar-width:none}
+.factifs::-webkit-scrollbar{display:none}
+/* panneau des filtres */
+.fp-tete{display:flex;align-items:baseline;justify-content:space-between}
+.fp-tete h3{margin:0;font-size:20px;font-weight:800}
+.fpanneau h4{margin:18px 0 9px;font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--txt2)}
+.fp-puces{display:flex;flex-wrap:wrap;gap:8px}
+.fp-puce{height:36px;padding:0 14px;border-radius:18px;background:var(--bg3);border:1px solid var(--line);font-size:13.5px;font-weight:700;color:#D6D0CC}
+.fp-puce.on{background:var(--txt);color:var(--bg);border-color:transparent}
+.fpanneau .segbar{margin-bottom:0}
+.fp-annees{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:14px;font-weight:700;color:var(--txt2)}
+.fp-annees input{width:92px;height:42px;border-radius:12px;background:var(--bg3);border:1px solid var(--line);color:var(--txt);font:inherit;font-size:16px;font-weight:800;text-align:center;outline:none}
+.fp-annees input:focus{border-color:rgba(248,113,113,.6)}
+.fp-voir{width:100%;height:52px;margin-top:22px;font-size:16px}
+/* pastilles posées sur les affiches : note, durée, date de sortie */
+.pchip{position:absolute;left:6px;bottom:6px;z-index:1;font-size:10.5px;font-weight:800;padding:3px 7px;border-radius:6px;background:rgba(14,13,13,.68);border:1px solid rgba(255,255,255,.12);color:var(--txt)}
+.pchip.note{top:6px;bottom:auto;color:var(--ok)}
+.pchip.date{color:#FCA5A5}
 .rchip{
   position:absolute;bottom:6px;left:6px;font-size:10.5px;font-weight:700;
   background:rgba(0,0,0,.78);color:var(--warn);
@@ -493,34 +601,30 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 .grow .gv{width:46px;font-size:11.5px;color:var(--txt2);flex:none}
 
 /* ---------- Segments (À suivre / Mes séries) ---------- */
+/* boutons de vue (À suivre / Mes séries…) en verre, de la même famille que la barre du bas */
 .segbar{
-  display:flex;background:var(--bg2);border:var(--card-border);
-  border-radius:14px;padding:4px;margin-bottom:14px;gap:4px;
+  display:flex;height:46px;padding:4px;gap:2px;margin-bottom:16px;border-radius:23px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);
 }
-.segbar button{
-  flex:1;padding:9px 0;border-radius:10px;color:var(--txt2);
-  font-weight:700;font-size:13.5px;transition:color .15s;
-  border:1px solid transparent;
-}
-.segbar button.on{background:var(--txt);color:var(--bg);border-color:transparent;box-shadow:none}
+.segbar button{flex:1;border-radius:19px;color:var(--txt2);font-weight:700;font-size:14px}
+.segbar button.on{background:rgba(255,255,255,.12);color:var(--txt);box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 2px 10px rgba(0,0,0,.3)}
 
-/* ---------- Filtres Découvrir ---------- */
-.fbar{display:flex;gap:7px;overflow-x:auto;padding:0 2px 12px;scrollbar-width:none}
+/* ---------- Filtres ---------- */
+.fbar{display:flex;align-items:center;gap:8px;overflow-x:auto;padding:0 2px 12px;scrollbar-width:none}
 .fbar::-webkit-scrollbar{display:none}
+/* menus de tri et de filtre en pastilles, avec leur flèche */
 .fsel{
-  background:var(--bg2);border:var(--card-border);color:var(--txt2);
-  border-radius:10px;padding:7px 9px;font-size:12.5px;outline:none;flex:none;
+  height:34px;padding:0 30px 0 14px;border-radius:17px;flex:none;outline:none;
+  background:var(--bg2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23A8A29E' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 11px center/14px;
+  border:1px solid #2C2525;color:var(--txt);font-size:13px;font-weight:700;
   -webkit-appearance:none;appearance:none;
 }
-.fsel.active{border-color:rgba(248,113,113,.45);color:var(--txt)}
+.fsel.active{border-color:rgba(248,113,113,.45);background-color:rgba(220,38,38,.1)}
+.ftotal{margin-left:auto;flex:none;padding-left:6px;font-size:12px;font-weight:600;color:var(--txt2)}
 .mcard .why{
   font-size:10.5px;color:var(--txt2);margin-top:2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85;
 }
-/* « Pour toi » : sur quoi se basent les suggestions, et pourquoi un titre est proposé */
-.ptete{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
-.ptete p{font-size:12px;color:var(--txt2);min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.ptete .btn{flex:none}
 .pourquoi{font-size:12.5px;color:var(--txt2);margin:-2px 0 10px}
 
 /* ---------- Hint banner ---------- */
@@ -622,8 +726,7 @@ nav.tabs button.on .nico{animation:navPop .42s cubic-bezier(.2,1.3,.35,1)}
 img{transition:opacity .5s ease,transform .7s var(--doux),filter .5s ease}
 img:not(.ok){opacity:0;transform:scale(1.04);filter:blur(6px)}
 img.direct{transition:none}
-/* bandeau d'Explorer : lent zoom de cinéma */
-.hero-img{position:absolute;inset:0;background:center 25%/cover no-repeat;animation:kenburns 18s ease-in-out infinite alternate}
+/* vitrine d'Explorer : lent zoom de cinéma sur l'image affichée */
 @keyframes kenburns{from{transform:scale(1.02)}to{transform:scale(1.14) translate(-2%,-1.5%)}}
 /* fiche série : l'image de fond glisse plus lentement que la page */
 @supports (animation-timeline: scroll()){
@@ -692,7 +795,8 @@ html[data-vt="retour"]::view-transition-new(root){animation:vtEntreRetour .42s v
 
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}
-  .sk,.hero-img,.overlay .backdrop,.overlay .detbar{animation:none!important}
+  .sk,.vimg,.overlay .backdrop,.overlay .detbar{animation:none!important}
+  html.sous-entete header.app{animation:none!important;background-color:rgba(14,13,13,.9)!important;backdrop-filter:blur(14px)!important}
   img:not(.ok){filter:none;transform:none}
   .spin,#btn-refresh.tourne svg{animation-duration:1.6s!important}
 }
@@ -758,6 +862,7 @@ const ICONS = {
   film: I('<rect x="2.5" y="3.5" width="19" height="17" rx="2.5"/><line x1="7.5" y1="3.5" x2="7.5" y2="20.5"/><line x1="16.5" y1="3.5" x2="16.5" y2="20.5"/><line x1="2.5" y1="12" x2="7.5" y2="12"/><line x1="16.5" y1="12" x2="21.5" y2="12"/><line x1="2.5" y1="7.7" x2="7.5" y2="7.7"/><line x1="2.5" y1="16.3" x2="7.5" y2="16.3"/><line x1="16.5" y1="7.7" x2="21.5" y2="7.7"/><line x1="16.5" y1="16.3" x2="21.5" y2="16.3"/>'),
   gear: I('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'),
   search: I('<circle cx="11" cy="11" r="7.5"/><line x1="21" y1="21" x2="16.5" y2="16.5"/>'),
+  filtres: I('<line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="17" x2="20" y2="17"/><circle cx="9" cy="7" r="2.4" fill="currentColor"/><circle cx="15" cy="17" r="2.4" fill="currentColor"/>'),
   plus: I('<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>'),
   check: I('<polyline points="20 6 9 17 4 12"/>'),
   back: I('<polyline points="15 18 9 12 15 6"/>'),
@@ -766,7 +871,6 @@ const ICONS = {
   star: I('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>', true),
   user: I('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
   dice: I('<rect x="3" y="3" width="18" height="18" rx="4.5"/><circle cx="8.6" cy="8.6" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.4" cy="8.6" r="1.35" fill="currentColor" stroke="none"/><circle cx="8.6" cy="15.4" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.4" cy="15.4" r="1.35" fill="currentColor" stroke="none"/>'),
-  fire: I('<path d="M12 2c1 4-4 6-4 10a4 4 0 0 0 8 0c0-1.5-.5-2.5-1-3.5 2 .5 4 2.5 4 5.5a7 7 0 1 1-14 0c0-5 5-7 7-12z"/>'),
   home: I('<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),
   info: I('<circle cx="12" cy="12" r="9.5"/><line x1="12" y1="11" x2="12" y2="16.5"/><line x1="12" y1="7.6" x2="12" y2="7.7"/>'),
   calendar: I('<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>'),
@@ -790,7 +894,7 @@ const state = {
   dFilters: { type: 'all', genre: -1, note: 0, annee: 'all' },
   movieSort: 'recent', movieGenre: -1, movieDecade: 'all', movieLimit: 60,
   avSort: 'recent', avGenre: -1, filmsMetaBusy: null, sagasBusy: null,
-  nouveautes: [], nouveautesVues: null, aCommencerTout: false,
+  nouveautes: [], nouveautesVues: null,
   hidden: new Set(),
   refreshing: false, lastRefresh: null,
 };
@@ -2532,6 +2636,7 @@ function renderView() {
   const v = $('#view');
   if (!state.series.length && !state.movies.length && state.tab !== 'settings' && state.tab !== 'discover') {
     v.innerHTML = viewOnboarding();
+    document.documentElement.classList.remove('sous-entete');
     return;
   }
   if (state.tab === 'home') v.innerHTML = viewHome();
@@ -2539,6 +2644,8 @@ function renderView() {
   else if (state.tab === 'discover') v.innerHTML = viewDiscover();
   else if (state.tab === 'movies') v.innerHTML = viewMovies();
   else v.innerHTML = viewSettings();
+  // Explorer : la grande image passe sous l'en-tête
+  document.documentElement.classList.toggle('sous-entete', !!v.querySelector('.vitrine-wrap'));
   afterRender();
 }
 
@@ -2591,7 +2698,7 @@ function seriesCard(s) {
 
 function viewSeries() {
   const seg = `<div class="segbar">
-    <button class="${state.seriesView === 'suivre' ? 'on' : ''}" data-action="series-view" data-v="suivre">▶ À suivre</button>
+    <button class="${state.seriesView === 'suivre' ? 'on' : ''}" data-action="series-view" data-v="suivre">À suivre</button>
     <button class="${state.seriesView === 'grid' ? 'on' : ''}" data-action="series-view" data-v="grid">Mes séries</button>
   </div>`;
   if (state.seriesView === 'suivre') return seg + viewNext();
@@ -2706,83 +2813,94 @@ function donneesSuivi() {
   return { watchable, waiting, aCommencer };
 }
 
+/* « aujourd'hui à 8 h 35 », « hier à 21 h 10 », « le 25 oct. à 9 h 02 » */
+function quandRelatif(iso) {
+  const d = new Date(iso), jour = dayOf(d);
+  const h = `${d.getHours()} h ${pad2(d.getMinutes())}`;
+  if (jour === todayStr()) return `aujourd'hui à ${h}`;
+  if (jour === dayOf(new Date(Date.now() - 86400000))) return `hier à ${h}`;
+  return `le ${fmtShort(d)} à ${h}`;
+}
+const majuscule = t => t ? t.charAt(0).toUpperCase() + t.slice(1) : '';
+
+/* Épisode à regarder : l'image de la série avec le code de l'épisode et la progression */
+function ligneEpisode({ s, nx }) {
+  const p = progress(s), pct = p.total ? Math.round(p.watched / p.total * 100) : 0, fond = fondSerie(s);
+  const code = epCode(nx.season, nx.ep.number);
+  return `<div class="erow" data-action="open-series" data-uuid="${s.uuid}" data-flip="n-${s.uuid}">
+    <div class="erow-img" data-morph="${s.uuid}"${fond ? ` style="background-image:url('${fond}')"` : ''}>${fond ? '' : esc(initials(s.title))}
+      <b>${code}</b>
+      <div class="progress ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%" data-k="n-${s.uuid}"></i></div>
+    </div>
+    <div class="erow-txt">
+      <div class="erow-t">${esc(s.title)}</div>
+      ${nx.ep.name ? `<div class="erow-n">${esc(nx.ep.name)}</div>` : ''}
+      <div class="erow-m">${pl(episodesRestants(s), 'restant')} · ${p.watched}/${p.total}</div>
+    </div>
+    <button class="checkbtn" data-action="mark-next" data-uuid="${s.uuid}" title="Marquer ${code} vu" aria-label="Marquer ${code} vu">${ICONS.check}</button>
+  </div>`;
+}
+
+/* Sortie du calendrier ; le jour n'est écrit qu'une fois quand plusieurs séries sortent le même jour */
+function ligneAgenda({ s, nx }, jour) {
+  const fond = fondSerie(s), n = nx.ep.number;
+  const generique = !nx.ep.name || /^(é|e)pisode \d+$/i.test(nx.ep.name);
+  const quoi = n === 1 ? (nx.season > 1 ? `Début de saison ${nx.season}` : 'Premier épisode') : (generique ? `Épisode ${n}` : nx.ep.name);
+  return `<div class="ajour" data-action="open-series" data-uuid="${s.uuid}">
+    <div class="adate">${jour ? `<span>${jour.toLocaleDateString('fr-FR', { weekday: 'short' })}</span><b>${jour.getDate()}</b>` : ''}</div>
+    <div class="acarte">
+      <div class="amini" data-morph="${s.uuid}"${fond ? ` style="background-image:url('${fond}')"` : ''}></div>
+      <div class="erow-txt">
+        <div class="erow-t">${esc(s.title)}</div>
+        <div class="erow-m">${epCode(nx.season, n)} · ${esc(quoi)}</div>
+        ${nx.ep.air_date ? `<div class="adans">${majuscule(compteARebours(nx.ep.air_date))}</div>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
 function viewNext() {
   const { watchable, waiting, aCommencer } = donneesSuivi();
-  const lastR = state.lastRefresh
-    ? `Dernière actualisation : ${fmtDate(state.lastRefresh)}`
+  const etat = state.lastRefresh
+    ? `Actualisé ${quandRelatif(state.lastRefresh)}`
     : `Appuie sur ⟳ en haut pour chercher les nouveaux épisodes.`;
   const nv = nouveautesActuelles();
   const nonVues = nv.filter(x => x.trouve > (state.nouveautesVues || '')).length;
   const lienNv = nv.length
-    ? `<button class="nvlink ${nonVues ? 'on' : ''}" data-action="open-nouveautes">🆕 ${nonVues ? pl(nonVues, 'nouvel épisode', 'nouveaux épisodes') : 'Nouveautés'}</button>`
+    ? `<button class="nvlink ${nonVues ? 'on' : ''}" data-action="open-nouveautes">${nonVues ? `<i></i>${pl(nonVues, 'nouvel épisode', 'nouveaux épisodes')}` : 'Nouveautés'}</button>`
     : '';
   const nbSaisons = s => sortedSeasons(s).filter(x => !x.is_specials && x.number !== 0).length;
-  const AC_MAX = 4;
-  const sectionACommencer = aCommencer.length ? `
-    <h2 class="section" id="a-commencer" style="margin-top:26px">✨ À commencer <span class="cnt">${aCommencer.length}</span></h2>
-    <div class="card-list">${aCommencer.slice(0, state.aCommencerTout ? Infinity : AC_MAX).map(({ s, nx }) => `
-      <div class="scard" data-action="open-series" data-uuid="${s.uuid}" data-flip="n-${s.uuid}">
-        ${posterHtml(s, 'tv')}
-        <div class="mid">
-          <div class="title">${esc(s.title)}</div>
-          <div class="sub" style="margin-top:5px"><span class="badge">${epCode(nx.season, nx.ep.number)}</span> ${esc(nx.ep.name || '')}</div>
-          <div class="sub" style="margin-top:4px">${pl(nbSaisons(s), 'saison')} · ${pl(episodesRestants(s), 'épisode')} disponible${episodesRestants(s) > 1 ? 's' : ''}</div>
-        </div>
-        <button class="checkbtn" data-action="mark-next" data-uuid="${s.uuid}" title="Marquer ${epCode(nx.season, nx.ep.number)} vu">${ICONS.check}</button>
-      </div>`).join('')}</div>
-    ${aCommencer.length > AC_MAX && !state.aCommencerTout
-      ? `<button class="btn ghost small" style="margin-top:10px;width:100%;justify-content:center" data-action="a-commencer-tout">Voir les ${aCommencer.length}</button>` : ''}` : '';
+
+  // calendrier des sorties en agenda, rangé par mois (l'année n'est écrite que si ce n'est pas celle en cours)
+  const agenda = (() => {
+    if (!waiting.length) return '';
+    const annee = todayStr().slice(0, 4);
+    let html = teteSection(`Calendrier des sorties <span class="cnt">${waiting.length}</span>`, '', 'calendrier');
+    let mois = null, jour = null;
+    for (const w of waiting.filter(x => x.nx.ep.air_date)) {
+      const date = w.nx.ep.air_date, d = asDate(date);
+      if (date.slice(0, 7) !== mois) {
+        mois = date.slice(0, 7);
+        html += `<div class="agenda-mois">${d.toLocaleDateString('fr-FR', { month: 'long' })}${mois.slice(0, 4) !== annee ? ' ' + mois.slice(0, 4) : ''}</div>`;
+      }
+      html += ligneAgenda(w, date !== jour ? d : null);
+      jour = date;
+    }
+    const sansDate = waiting.filter(x => !x.nx.ep.air_date);
+    if (sansDate.length) html += `<div class="agenda-mois">Date pas encore annoncée</div>` + sansDate.map(w => ligneAgenda(w, null)).join('');
+    return html;
+  })();
+
   return `
-    <div class="nxhead"><p>${lastR}</p>${lienNv}</div>
-    <h2 class="section">À regarder <span class="cnt">${watchable.length}</span></h2>
-    ${watchable.length ? `<div class="card-list">${watchable.map(({ s, nx }) => {
-      const p = progress(s);
-      const pct = p.total ? Math.round(p.watched / p.total * 100) : 0;
-      return `
-      <div class="scard" data-action="open-series" data-uuid="${s.uuid}" data-flip="n-${s.uuid}">
-        ${posterHtml(s, 'tv')}
-        <div class="mid">
-          <div class="title">${esc(s.title)}</div>
-          <div class="sub" style="margin-top:5px"><span class="badge acc">${epCode(nx.season, nx.ep.number)}</span> ${esc(nx.ep.name || '')}</div>
-          <div class="progress ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%" data-k="n-${s.uuid}"></i></div>
-          <div class="sub" style="margin-top:5px">${p.watched}/${p.total} épisodes · ${pct}% · ${pl(episodesRestants(s), 'restant')}</div>
-        </div>
-        <button class="checkbtn" data-action="mark-next" data-uuid="${s.uuid}" title="Marquer vu">${ICONS.check}</button>
-      </div>`;
-    }).join('')}</div>`
+    <div class="nxhead"><p>${etat}</p>${lienNv}</div>
+    ${teteSection(`À regarder <span class="cnt">${watchable.length}</span>`)}
+    ${watchable.length ? `<div class="elist">${watchable.map(ligneEpisode).join('')}</div>`
       : aCommencer.length
         ? `<div class="empty" style="padding:24px 20px">Tu es à jour dans tes séries en cours 🎉</div>`
         : `<div class="empty">Rien à regarder — tout est vu ! 🎉</div>`}
-    ${sectionACommencer}
-    ${(() => {
-      if (!waiting.length) return '';
-      // calendrier des sorties : groupé par échéance
-      const day = n => dayOf(new Date(Date.now() + n * 86400000));
-      const groups = [
-        { titre: '📅 Cette semaine', test: d => d && d <= day(7) },
-        { titre: '📅 Ce mois-ci', test: d => d && d <= day(31) },
-        { titre: '📅 Plus tard', test: d => !!d },
-        { titre: 'Sans date annoncée', test: () => true },
-      ];
-      const carte = ({ s, nx }) => `
-        <div class="scard" data-action="open-series" data-uuid="${s.uuid}">
-          ${posterHtml(s, 'tv')}
-          <div class="mid">
-            <div class="title">${esc(s.title)}</div>
-            <div class="sub" style="margin-top:5px">${nx.ep.air_date
-              ? `<span class="badge warn">${epCode(nx.season, nx.ep.number)}</span> <b style="color:var(--txt)">${compteARebours(nx.ep.air_date)}</b>`
-              : `<span class="badge">${epCode(nx.season, nx.ep.number)}</span> date inconnue`}</div>
-            ${nx.ep.air_date ? `<div class="sub" style="margin-top:4px">${asDate(nx.ep.air_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>` : ''}
-          </div>
-        </div>`;
-      let rest = [...waiting], html = `<h2 class="section" id="calendrier" style="margin-top:26px">🗓️ Calendrier des sorties <span class="cnt">${waiting.length}</span></h2>`;
-      for (const g of groups) {
-        const hits = rest.filter(x => g.test(x.nx.ep.air_date));
-        rest = rest.filter(x => !hits.includes(x));
-        if (hits.length) html += `<p style="font-size:12.5px;font-weight:700;color:var(--txt2);margin:14px 0 8px">${g.titre}</p><div class="card-list">${hits.map(carte).join('')}</div>`;
-      }
-      return html;
-    })()}`;
+    ${aCommencer.length ? teteSection(`À commencer <span class="cnt">${aCommencer.length}</span>`, '', 'a-commencer')
+      + `<div class="hrow">${aCommencer.map(({ s }) => carteAffiche('open-series', s, 'tv', pl(nbSaisons(s), 'saison'))).join('')}</div>` : ''}
+    ${agenda}`;
 }
 
 /* ---------------- Accueil ----------------
@@ -2791,7 +2909,7 @@ function viewNext() {
 let carrouselUuid = null, carrouselAnim = null; // série affichée dans « Reprendre », retrouvée après un rafraîchissement
 const fondSerie = s => { const m = state.tmdb[s.uuid] || {}; return m.backdrop || m.posterBig || m.poster || null; };
 const dateCourte = d => { const t = asDate(d).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }); return t.charAt(0).toUpperCase() + t.slice(1); };
-const teteSection = (titre, lien = '') => `<div class="hsec"><h2 class="section">${titre}</h2>${lien}</div>`;
+const teteSection = (titre, lien = '', id = '') => `<div class="hsec"${id ? ` id="${id}"` : ''}><h2 class="section">${titre}</h2>${lien}</div>`;
 const lienAller = (texte, attrs) => `<button class="lien" data-action="aller" ${attrs}>${texte}</button>`;
 
 function carteReprendre({ s, nx }) {
@@ -2888,7 +3006,7 @@ function viewHome() {
     for (const [titre, liste, type] of [['Séries pour toi', d && d.tv, 'tv'], ['Films pour toi', d && d.mv, 'movie']]) {
       const items = fresh(liste).slice(0, 15);
       if (d && (d.error || !items.length)) continue;
-      parts.push(teteSection(titre, lienAller('Plus', `data-tab="discover" data-src="foryou" data-type="${type}"`)));
+      parts.push(teteSection(titre, lienAller('Plus', `data-tab="discover" data-type="${type}" data-ancre="pour-toi"`)));
       parts.push(d ? `<div class="hrow">${items.map(discoverCardH).join('')}</div>` : squelette);
     }
   }
@@ -2942,7 +3060,7 @@ function initAccueil() {
 /* pastille sur l'affiche : date à venir sinon note */
 function posterChip(n) {
   if (n.date && n.date > todayStr()) return `<span class="rchip soon">📅 ${fmtShort(n.date)}</span>`;
-  if (n.rating) return `<span class="rchip">★ ${n.rating.toFixed(1)}</span>`;
+  if (n.rating) return `<span class="rchip">${noteFr(n.rating)}</span>`;
   return '';
 }
 
@@ -2954,7 +3072,7 @@ function discoverCardH(n) {
     ${lib ? `<span class="inlib">${ICONS.check}</span>`
           : `<button class="qadd" data-action="quick-add" data-key="${key}" title="Ajouter">${ICONS.plus}</button>`}
     <div class="mtitle">${esc(n.title)}</div>
-    ${n.why ? `<div class="why">${esc(n.why)}</div>` : ''}
+    ${n.why ? `<div class="why pq">${esc(n.why)}</div>` : ''}
   </div>`;
 }
 
@@ -2973,6 +3091,7 @@ function applyDFilters(arr) {
       if (f.annee === '2010' && (n.year < 2010 || n.year > 2019)) return false;
       if (f.annee === '2000' && (n.year < 2000 || n.year > 2009)) return false;
       if (f.annee === 'old' && n.year >= 2000) return false;
+      if (f.annee === 'perso' && (n.year < f.de || n.year > f.a)) return false;
     }
     if (f.genre >= 0) {
       // un genre se compare avec l'identifiant propre au type (films et séries n'ont pas les mêmes)
@@ -2985,17 +3104,44 @@ function applyDFilters(arr) {
 }
 const prep = arr => applyDFilters(fresh(arr));
 
-function filterBar(showGenre) {
-  const f = state.dFilters;
-  const sel = (name, opts, val, label) => `<select class="fsel ${String(val) !== String(opts[0][0]) ? 'active' : ''}" data-f="${name}" aria-label="${label}">
-    ${opts.map(([v, l]) => `<option value="${v}" ${String(v) === String(val) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
-  // pour les séries, seuls les genres qui existent côté séries sont proposés (pas de « Romance » TV chez TMDB)
-  const genres = GENRES.map((g, i) => [i, g]).filter(([, g]) => state.exploreType !== 'tv' || g.tv);
-  return `<div class="fbar">
-    ${showGenre ? sel('genre', [[-1, 'Tous genres'], ...genres.map(([i, g]) => [i, g.label])], f.genre, 'Genre') : ''}
-    ${sel('note', [[0, 'Toutes notes'], [7, '★ 7+'], [7.5, '★ 7,5+'], [8, '★ 8+']], f.note, 'Note minimale')}
-    ${sel('annee', [['all', 'Toutes années'], ['2020', '2020+'], ['2010', '2010-2019'], ['2000', '2000-2009'], ['old', 'Avant 2000']], f.annee, 'Années')}
-  </div>`;
+/* Panneau des filtres de la liste complète d'Explorer : genre, note, années (ou une période au choix).
+   Les choix restent en brouillon jusqu'à « Voir les… » ; fermer le panneau les abandonne. */
+let filtresBrouillon = null;
+const ANNEE_MAX = new Date().getFullYear() + 3;
+const nomGenre = (g, tv) => tv ? (GENRE_NAMES[g.tv] || g.label) : g.label;
+const libelleAnnees = f => f.annee === 'perso' ? `${f.de} – ${f.a}`
+  : ({ '2020': '2020 et après', '2010': '2010 – 2019', '2000': '2000 – 2009', old: 'Avant 2000' }[f.annee] || '');
+function filtresActifs() {
+  const f = state.dFilters, g = GENRES[f.genre], actifs = [];
+  if (g) actifs.push({ champ: 'genre', label: nomGenre(g, state.exploreType === 'tv') });
+  if (f.note) actifs.push({ champ: 'note', label: `★ ${String(f.note).replace('.', ',')}+` });
+  if (f.annee !== 'all') actifs.push({ champ: 'annee', label: libelleAnnees(f) });
+  return actifs;
+}
+function openFiltres() {
+  filtresBrouillon = { ...state.dFilters };
+  if (!modaleOuverte()) pushLayer('modal');
+  $('#modal-root').innerHTML = `<div class="modal-bg" data-action="close-modal"><div class="modal fpanneau"><div class="grab"></div><div id="fp-corps">${corpsFiltres()}</div></div></div>`;
+}
+function corpsFiltres() {
+  const f = filtresBrouillon, tv = state.exploreType === 'tv';
+  const puce = (champ, val, on, label) => `<button class="fp-puce${on ? ' on' : ''}" data-action="filtre-choix" data-champ="${champ}" data-val="${val}">${label}</button>`;
+  // en séries, TMDB n'a qu'un genre « SF & Fantastique » et pas de Romance : un bouton par genre réel
+  const genres = GENRES.map((g, i) => [i, g]).filter(([i, g]) => !tv || (g.tv && GENRES.findIndex(x => x.tv === g.tv) === i));
+  const annees = [['all', 'Toutes'], ['2020', '2020 et après'], ['2010', '2010 – 2019'], ['2000', '2000 – 2009'], ['old', 'Avant 2000'], ['perso', 'Personnalisé']];
+  return `
+    <div class="fp-tete"><h3>Filtres</h3><button class="lien" data-action="filtre-effacer">Tout effacer</button></div>
+    <h4>Genre</h4>
+    <div class="fp-puces">${puce('genre', -1, f.genre < 0, 'Tous')}${genres.map(([i, g]) => puce('genre', i, f.genre === i, esc(nomGenre(g, tv)))).join('')}</div>
+    <h4>Note minimale</h4>
+    <div class="segbar">${[[0, 'Toutes'], [7, '★ 7+'], [7.5, '★ 7,5+'], [8, '★ 8+']].map(([v, l]) =>
+      `<button class="${f.note === v ? 'on' : ''}" data-action="filtre-choix" data-champ="note" data-val="${v}">${l}</button>`).join('')}</div>
+    <h4>Années</h4>
+    <div class="fp-puces">${annees.map(([v, l]) => puce('annee', v, f.annee === v, l)).join('')}</div>
+    ${f.annee === 'perso' ? `<div class="fp-annees">De
+      <input id="fp-de" type="number" inputmode="numeric" min="1900" max="${ANNEE_MAX}" value="${esc(String(f.de || ''))}" aria-label="Première année">
+      à <input id="fp-a" type="number" inputmode="numeric" min="1900" max="${ANNEE_MAX}" value="${esc(String(f.a || ''))}" aria-label="Dernière année"></div>` : ''}
+    <button class="btn fp-voir" data-action="filtre-appliquer">Voir les ${tv ? 'séries' : 'films'}</button>`;
 }
 
 function rowsTvMv(data, tvTitle, mvTitle) {
@@ -3006,8 +3152,15 @@ function rowsTvMv(data, tvTitle, mvTitle) {
     ${mv.length ? `<h2 class="section">${mvTitle}</h2><div class="hrow">${mv.map(discoverCardH).join('')}</div>` : ''}`;
 }
 
+const cleItem = n => esc(JSON.stringify(n)).replace(/"/g, '&quot;');
+const noteFr = r => '★ ' + r.toFixed(1).replace('.', ',');
+/* même image TMDB dans une autre taille (w300 pour une vignette, w1280 pour la vitrine) */
+const tailleTmdb = (url, taille) => url ? url.replace(/\/t\/p\/w\d+\//, `/t/p/${taille}/`) : url;
+const genresCourts = n => (n.genreIds || []).map(g => GENRE_NAMES[g]).filter(Boolean).slice(0, 2);
+
 function viewDiscover() {
   const q = state.discoverSearch;
+  const champ = `${ICONS.search}<input id="discover-search" placeholder="Rechercher une série, un film…" value="${esc(q)}" aria-label="Chercher une série ou un film" autocomplete="off">`;
   let body = '';
   if (q.length >= 2) {
     if (state.discoverLoading) body = `<div class="loadrow"><span class="spin"></span> Recherche…</div>`;
@@ -3015,92 +3168,127 @@ function viewDiscover() {
       const tv = state.discoverResults.filter(n => n.type === 'tv');
       const mv = state.discoverResults.filter(n => n.type === 'movie');
       body = `
-        ${tv.length ? `<h2 class="section">Séries <span class="cnt">${tv.length}</span></h2><div class="mgrid">${tv.map(discoverCardG).join('')}</div>` : ''}
-        ${mv.length ? `<h2 class="section">Films <span class="cnt">${mv.length}</span></h2><div class="mgrid">${mv.map(discoverCardG).join('')}</div>` : ''}
+        ${tv.length ? teteSection(`Séries <span class="cnt">${tv.length}</span>`) + `<div class="mgrid">${tv.map(discoverCardG).join('')}</div>` : ''}
+        ${mv.length ? teteSection(`Films <span class="cnt">${mv.length}</span>`) + `<div class="mgrid">${mv.map(discoverCardG).join('')}</div>` : ''}
         ${!tv.length && !mv.length ? `<div class="empty">Aucun résultat pour « ${esc(q)} ».</div>` : ''}`;
     }
-    return `<div class="searchbar">${ICONS.search}<input id="discover-search" placeholder="Chercher une série ou un film à ajouter…" value="${esc(q)}"></div>${body}`;
+    return `<div class="searchbar">${champ}</div>${body}`;
   }
-
-  const fire = ICONS.fire.replace('<svg', '<svg style="width:17px;height:17px;color:var(--warn)"');
-  const skelCard = '<div class="pcard"><div class="poster sk" style="width:108px;height:162px"></div><div class="sk" style="height:11px;margin-top:8px;border-radius:6px"></div></div>';
-  const spin = `<div class="hrow" style="margin-top:14px">${skelCard.repeat(4)}</div><div class="hrow" style="margin-top:10px">${skelCard.repeat(4)}</div>`;
 
   if (!tmdbKey()) {
     // sans clé : uniquement les séries en streaming + astuce
-    if (!state.trending) { loadTrending(); body = spin; }
+    const skelCard = '<div class="pcard"><div class="poster sk" style="width:108px;height:162px"></div><div class="sk" style="height:11px;margin-top:8px;border-radius:6px"></div></div>';
+    if (!state.trending) { loadTrending(); body = `<div class="hrow" style="margin-top:14px">${skelCard.repeat(4)}</div>`; }
     else body = `
-      <h2 class="section">${fire} En ce moment en streaming</h2>
+      ${teteSection('En ce moment en streaming')}
       <div class="hrow">${fresh(state.trending.tv).map(discoverCardH).join('')}</div>
       <div class="hint" style="margin-top:16px"><span class="em">💡</span><p><b>Astuce :</b> avec une clé TMDB gratuite (onglet Profil), tu débloques les tendances, les tops, les genres et les recommandations personnalisées.</p></div>`;
-    return `<div class="searchbar">${ICONS.search}<input id="discover-search" placeholder="Chercher une série ou un film à ajouter…" value="${esc(q)}"></div>${body}`;
+    return `<div class="searchbar">${champ}</div>${body}`;
   }
 
-  // ----- bandeau tendances (carrousel swipable) -----
-  let hero = '', heroIds = new Set();
-  if (!state.trending) { loadTrending(); }
-  else {
-    const cands = herosExplorer();
-    if (cands.length) {
-      hero = `<div class="heros" id="heros">${cands.map(h => {
-        const hk = esc(JSON.stringify(h)).replace(/"/g, '&quot;');
-        return `<div class="hero" data-action="discover-detail" data-key="${hk}">
-          <div class="hero-img" style="background-image:url('${h.backdrop}')"></div>
-          <span class="htag">🔥 À la une</span>
-          <div class="ov">
-            <h3>${esc(h.title)}</h3>
-            <div class="hm">${h.year || ''} · ${h.type === 'tv' ? 'Série' : 'Film'}${h.rating ? ` · ★ ${h.rating.toFixed(1)}` : ''}</div>
-            <div class="hb"><button class="btn small" data-action="quick-add" data-key="${hk}">${ICONS.plus} Ajouter</button></div>
-          </div>
-        </div>`;
-      }).join('')}</div>
-      ${cands.length > 1 ? `<div class="hdots">${cands.map((_, i) => `<span class="hdot ${i === 0 ? 'on' : ''}"></span>`).join('')}</div>` : ''}`;
-      heroIds = new Set(cands.map(h => h.type + ':' + h.provId));
-    }
-  }
+  const tv = state.exploreType === 'tv';
+  if (!['pop', 'top', 'soon'].includes(state.exploreSource)) state.exploreSource = 'pop';
+  if (!state.trending) loadTrending();
+  const tendances = state.trending ? (tv ? state.trending.tv : state.trending.mv) : [];
 
-  // ----- boutons Séries / Films + sources -----
-  const seg = `<div class="segbar">
-    <button class="${state.exploreType === 'tv' ? 'on' : ''}" data-action="explore-type" data-v="tv">📺 Séries</button>
-    <button class="${state.exploreType === 'movie' ? 'on' : ''}" data-action="explore-type" data-v="movie">🎬 Films</button>
+  // ----- vitrine : le n°1 de la semaine en grand, les suivants en glissant -----
+  const une = herosExplorer();
+  const rang = n => (state.trending[n.type === 'tv' ? 'tv' : 'mv'] || []).findIndex(x => x.provId === n.provId) + 1;
+  const diapo = (n, i) => {
+    const k = cleItem(n), r = rang(n);
+    const meta = [n.year, n.rating ? noteFr(n.rating) : null, ...genresCourts(n)].filter(Boolean).join(' · ');
+    return `<div class="vslide${i ? '' : ' vue'}" data-action="discover-detail" data-key="${k}">
+      <img class="vimg" src="${tailleTmdb(n.backdrop, 'w1280')}" alt=""${i ? ' loading="lazy"' : ''}>
+      <div class="vbas">
+        <span class="vtag"><i></i>${r ? `N°${r} des ${n.type === 'tv' ? 'séries' : 'films'} cette semaine` : 'À la une'}</span>
+        <div class="vtitre${n.title.length > 24 ? ' long' : ''}">${esc(n.title)}</div>
+        ${meta ? `<div class="vmeta">${meta}</div>` : ''}
+        ${n.overview ? `<div class="vresume">${esc(n.overview)}</div>` : ''}
+        <div class="vbtns">
+          <button class="btn" data-action="quick-add" data-key="${k}">${ICONS.plus} Ajouter</button>
+          <button class="verre" data-action="discover-detail" data-key="${k}">${ICONS.info} Détails</button>
+        </div>
+      </div>
+    </div>`;
+  };
+  const vitrine = `<div class="vitrine-wrap">
+    <div class="vitrine" id="vitrine">${une.length ? une.map(diapo).join('') : '<div class="vslide sk"></div>'}</div>
+    <div class="vcherche">${champ}</div>
+    ${une.length > 1 ? `<div class="vtirets">${une.map((_, i) => `<span${i ? '' : ' class="on"'}></span>`).join('')}</div>` : ''}
   </div>`;
-  const SOURCES = [['pop', 'Populaires'], ['top', 'Top'], ['soon', 'À venir'], ['foryou', 'Pour toi']];
-  const srcChips = `<div class="chips">${SOURCES.map(([k, l]) =>
-    `<button class="chip ${state.exploreSource === k ? 'on' : ''}" data-action="explore-source" data-k="${k}">${l}</button>`).join('')}</div>`;
 
-  // ----- grille infinie (3 par ligne, chargement au défilement) -----
-  let grid = '';
-  const skelGrid = `<div class="mgrid" style="margin-top:12px">${'<div class="mcard"><div class="poster sk" style="width:100%;aspect-ratio:2/3"></div></div>'.repeat(6)}</div>`;
-  if (state.exploreSource === 'foryou') {
-    const d = state.discoverData.foryou;
-    if (!d) { loadSection('foryou'); grid = `<div class="loadrow"><span class="spin"></span> Analyse de tes goûts…</div>`; }
-    else if (d.error) {
-      grid = `<div class="empty">Suggestions indisponibles pour le moment (${esc(d.error)}).<br><br><button class="btn ghost small" data-action="regen-foryou">Réessayer</button></div>`;
-    } else {
-      const items = prep(state.exploreType === 'tv' ? d.tv : d.mv);
-      const refs = (state.exploreType === 'tv' ? d.refsTv : d.refsMv) || [];
-      grid = `<div class="ptete">
-          <p>${refs.length ? `D'après ${refs.map(esc).join(', ')}…` : 'D’après ta bibliothèque'}</p>
-          <button class="btn ghost small" data-action="regen-foryou">↻ Autres idées</button>
-        </div>`
-        + (items.length ? `<div class="mgrid">${items.map(discoverCardG).join('')}</div>` : `<div class="empty">Rien avec ces filtres.</div>`);
-    }
-  } else {
-    const feed = state.exploreFeed;
-    if (feed.key !== exploreKey()) loadExplorePage();
-    const items = itemsExplorer();
-    grid = `<div class="mgrid" id="explore-grid">${items.map(discoverCardG).join('')}</div><div id="explore-pied">${piedExplore(items.length)}</div>`;
-    relancerSiPeu(items.length);
-  }
+  const seg = `<div class="segbar">
+    <button class="${tv ? 'on' : ''}" data-action="explore-type" data-v="tv">Séries</button>
+    <button class="${tv ? '' : 'on'}" data-action="explore-type" data-v="movie">Films</button>
+  </div>`;
 
-  return `<div class="searchbar">${ICONS.search}<input id="discover-search" placeholder="Chercher une série ou un film à ajouter…" value="${esc(q)}" aria-label="Chercher une série ou un film"></div>${filterBar(true)}${hero}${seg}${srcChips}${grid}`;
+  // ----- Top 10 de la semaine, avec les grands chiffres -----
+  const top10 = tendances.length ? teteSection('Top 10 cette semaine') + `<div class="hrow t10row">${tendances.slice(0, 10).map((n, i) => `
+    <div class="t10" data-action="discover-detail" data-key="${cleItem(n)}">
+      <span class="t10-num">${i + 1}</span>
+      <div class="poster">${n.poster ? `<img loading="lazy" src="${n.poster}" alt="">` : esc(initials(n.title))}</div>
+      ${inLibrary(n) ? `<span class="inlib">${ICONS.check}</span>` : ''}
+    </div>`).join('')}</div>` : '';
+
+  // ----- Pour toi -----
+  const d = state.discoverData.foryou;
+  if (!d) loadSection('foryou');
+  const suggestions = d && !d.error ? fresh(tv ? d.tv : d.mv) : [];
+  const refs = d && !d.error ? (tv ? d.refsTv : d.refsMv) || [] : [];
+  const pourToi = teteSection('Pour toi', d && !d.error ? '<button class="lien" data-action="regen-foryou">↻ Autres idées</button>' : '', 'pour-toi')
+    + (!d ? `<div class="hrow">${'<div class="pcard"><div class="poster sk"></div></div>'.repeat(4)}</div>`
+      : d.error ? `<div class="empty" style="padding:16px 10px">Suggestions indisponibles pour le moment.<br><button class="btn ghost small" style="margin-top:10px" data-action="regen-foryou">Réessayer</button></div>`
+      : suggestions.length ? `${refs.length ? `<p class="psous">D'après ${refs.map(esc).join(', ')}</p>` : ''}<div class="hrow">${suggestions.map(discoverCardH).join('')}</div>`
+      : `<div class="empty" style="padding:16px 10px">Plus de suggestion pour l'instant : touche « Autres idées ».</div>`);
+
+  // ----- bientôt au cinéma / à l'écran -----
+  const up = state.discoverData.upcoming;
+  if (!up) loadSection('upcoming');
+  const auj = todayStr();
+  const prochains = up && !up.error ? fresh(tv ? up.tv : up.mv).filter(n => n.date && n.date >= auj && n.backdrop)
+    .sort((a, b) => a.date.localeCompare(b.date)).slice(0, 12) : [];
+  const bientot = prochains.length ? teteSection(tv ? 'Bientôt à l’écran' : 'Bientôt au cinéma') + `<div class="hrow">${prochains.map(n => `
+    <div class="lcard" data-action="discover-detail" data-key="${cleItem(n)}">
+      <div class="lcard-img" style="background-image:url('${n.backdrop}')"><span class="lcard-puce rouge">${dateCourte(n.date)}</span></div>
+      <div class="lcard-t">${esc(n.title)}</div>
+      <div class="lcard-s">${[majuscule(compteARebours(n.date)), genresCourts(n).map((g, i) => i ? g.toLowerCase() : g).join(', ')].filter(Boolean).join(' · ')}</div>
+    </div>`).join('')}</div>` : '';
+
+  // ----- tuiles de genre, illustrées par un titre du moment de ce genre -----
+  const deja = new Set();
+  const sources = [...tendances, ...state.exploreFeed.items.filter(n => n.type === (tv ? 'tv' : 'movie')), ...(up && !up.error ? (tv ? up.tv : up.mv) : [])];
+  const imageGenre = gid => {
+    const n = sources.find(x => x.backdrop && !deja.has(x.provId) && (x.genreIds || []).includes(gid));
+    if (!n) return null;
+    deja.add(n.provId);
+    return tailleTmdb(n.backdrop, 'w300');
+  };
+  const tuiles = teteSection('Par genre') + `<div class="gtuiles">${(tv ? [3, 7, 6, 2, 1, 5] : [3, 5, 7, 6, 1, 0]).map(i => {
+    const g = GENRES[i], img = imageGenre(tv ? g.tv : g.mv);
+    return `<button class="gtuile" data-action="explore-genre" data-g="${i}"${img ? ` style="background-image:url('${img}')"` : ''}><span>${esc(nomGenre(g, tv))}</span></button>`;
+  }).join('')}</div>`;
+
+  // ----- tout parcourir : classement, filtres, grille infinie (chargement au défilement) -----
+  const actifs = filtresActifs();
+  const SOURCES = [['pop', 'Populaires'], ['top', tv ? 'Mieux notées' : 'Mieux notés'], ['soon', 'À venir']];
+  const parcourir = teteSection('Tout parcourir', '', 'tout-parcourir')
+    + `<div class="onglets">${SOURCES.map(([k, l]) => `<button class="${state.exploreSource === k ? 'on' : ''}" data-action="explore-source" data-k="${k}">${l}</button>`).join('')}
+      <button class="bfiltres" data-action="open-filtres">${ICONS.filtres} Filtres${actifs.length ? `<i>${actifs.length}</i>` : ''}</button></div>`
+    + (actifs.length ? `<div class="factifs">${actifs.map(a => `<button class="chip on" data-action="filtre-retirer" data-champ="${a.champ}" aria-label="Retirer le filtre ${esc(a.label)}">${esc(a.label)} ✕</button>`).join('')}</div>` : '');
+  const feed = state.exploreFeed;
+  if (feed.key !== exploreKey()) loadExplorePage();
+  const items = itemsExplorer();
+  relancerSiPeu(items.length);
+
+  return vitrine + seg + top10 + pourToi + bientot + tuiles + parcourir
+    + `<div class="mgrid" id="explore-grid">${items.map(discoverCardG).join('')}</div><div id="explore-pied">${piedExplore(items.length)}</div>`;
 }
 
-/* Titres du carrousel « À la une » (séries et films alternés) */
+/* Titres de la vitrine (séries et films alternés) ; les filtres ne concernent que la liste complète */
 function herosExplorer() {
   if (!state.trending) return [];
-  const heroTv = prep(state.trending.tv).filter(n => n.backdrop).slice(0, 4);
-  const heroMv = prep(state.trending.mv).filter(n => n.backdrop).slice(0, 4);
+  const heroTv = fresh(state.trending.tv).filter(n => n.backdrop).slice(0, 4);
+  const heroMv = fresh(state.trending.mv).filter(n => n.backdrop).slice(0, 4);
   const cands = [];
   for (let i = 0; i < 4; i++) {
     if (heroTv[i]) cands.push(heroTv[i]);
@@ -3135,7 +3323,7 @@ function relancerSiPeu(nb) {
 /* ----- flux infini Explorer : /discover TMDB paginé, filtres serveur ----- */
 function exploreKey() {
   const f = state.dFilters;
-  return `${state.exploreSource}|${state.exploreType}|${f.genre}|${f.note}|${f.annee}`;
+  return `${state.exploreSource}|${state.exploreType}|${f.genre}|${f.note}|${f.annee}${f.annee === 'perso' ? `:${f.de}-${f.a}` : ''}`;
 }
 function exploreParams(page) {
   const f = state.dFilters;
@@ -3151,10 +3339,11 @@ function exploreParams(page) {
   if (f.note) { p['vote_average.gte'] = f.note; if (state.exploreSource === 'pop') p['vote_count.gte'] = 100; }
   if (f.annee !== 'all') {
     const k = tv ? 'first_air_date' : 'primary_release_date';
-    if (f.annee === '2020') p[k + '.gte'] = '2020-01-01';
-    else if (f.annee === '2010') { p[k + '.gte'] = '2010-01-01'; p[k + '.lte'] = '2019-12-31'; }
-    else if (f.annee === '2000') { p[k + '.gte'] = '2000-01-01'; p[k + '.lte'] = '2009-12-31'; }
-    else if (f.annee === 'old') p[k + '.lte'] = '1999-12-31';
+    const [de, a] = f.annee === 'perso' ? [f.de, f.a]
+      : { '2020': [2020, null], '2010': [2010, 2019], '2000': [2000, 2009], old: [null, 1999] }[f.annee] || [];
+    // « À venir » part d'aujourd'hui : la période choisie ne doit pas le faire remonter dans le passé
+    if (de) p[k + '.gte'] = p[k + '.gte'] && p[k + '.gte'] > `${de}-01-01` ? p[k + '.gte'] : `${de}-01-01`;
+    if (a) p[k + '.lte'] = `${a}-12-31`;
   }
   return p;
 }
@@ -3201,17 +3390,19 @@ async function loadExplorePage() {
   }
 }
 
+/* Carte de la grille d'Explorer : note (ou date de sortie) en haut de l'affiche, bouton + en bas */
 function discoverCardG(n) {
   const lib = inLibrary(n);
-  const key = esc(JSON.stringify(n)).replace(/"/g, '&quot;');
+  const key = cleItem(n);
+  const puce = n.date && n.date > todayStr() ? `<span class="pchip note date">${fmtShort(n.date)}</span>`
+    : n.rating ? `<span class="pchip note">${noteFr(n.rating)}</span>` : '';
+  const genre = genresCourts(n)[0];
   return `<div class="mcard" data-action="discover-detail" data-key="${key}">
-    <div class="poster">${n.poster ? `<img loading="lazy" src="${n.poster}" alt="">` : esc(initials(n.title))}${posterChip(n)}</div>
-    ${lib ? `<span class="mtoggle" style="background:var(--acc);color:#fff;border-color:transparent">${ICONS.check}</span>`
-          : `<button class="qadd" data-action="quick-add" data-key="${key}" title="Ajouter">${ICONS.plus}</button>`}
-    ${n.why && !lib ? `<button class="hideb" data-action="hide-item" data-key="${key}" title="Pas intéressé">✕</button>` : ''}
+    <div class="poster">${n.poster ? `<img loading="lazy" src="${n.poster}" alt="">` : esc(initials(n.title))}${puce}
+      ${lib ? `<span class="qadd fait" title="Déjà dans ta bibliothèque">${ICONS.check}</span>`
+            : `<button class="qadd" data-action="quick-add" data-key="${key}" title="Ajouter" aria-label="Ajouter ${esc(n.title)}">${ICONS.plus}</button>`}</div>
     <div class="mtitle">${esc(n.title)}</div>
-    <div class="myear">${n.year || ''} · ${n.type === 'tv' ? 'Série' : 'Film'}</div>
-    ${n.why ? `<div class="why">${esc(n.why)}</div>` : ''}
+    <div class="myear">${[n.year, genre || (n.type === 'tv' ? 'Série' : 'Film')].filter(Boolean).join(' · ')}</div>
   </div>`;
 }
 
@@ -3219,17 +3410,19 @@ function discoverCardG(n) {
 const dureeFilms = list => list.reduce((a, m) => a + ((state.tmdb[m.uuid] && state.tmdb[m.uuid].runtime) || 110), 0);
 const fmtDuree = min => min >= 60 ? `${Math.floor(min / 60)} h ${pad2(min % 60)}` : `${min} min`;
 
-/* avoir = carte de la liste « À voir » : durée, et date de sortie si le film n'est pas encore sorti */
+/* avoir = carte de la liste « À voir » : durée posée sur l'affiche (ou date de sortie), année et genre dessous */
 function movieCard(m, avoir = false) {
   const mt = (avoir && state.tmdb[m.uuid]) || {};
   const bientot = avoir && mt.release && mt.release > todayStr();
-  const sous = !avoir ? (m.year || '')
-    : bientot ? `Sortie ${compteARebours(mt.release)}`
-    : [m.year, mt.runtime ? fmtDuree(mt.runtime) : null].filter(Boolean).join(' · ');
+  const genre = (mt.genres || []).map(g => GENRE_NAMES[g]).find(Boolean);
+  const sous = !avoir ? (m.year || '') : [m.year, genre].filter(Boolean).join(' · ');
+  const puce = !avoir ? ''
+    : bientot ? `<span class="pchip date">${fmtShort(asDate(mt.release))}</span>`
+    : mt.runtime ? `<span class="pchip">${fmtDuree(mt.runtime)}</span>` : '';
   const affiche = posterHtml(m, 'movie');
   return `<div class="mcard ${m.is_watched ? 'watched' : ''}" data-action="open-movie" data-uuid="${m.uuid}" data-flip="f-${m.uuid}">
     ${m.is_favorite ? `<span class="mfav">${ICONS.star}</span>` : ''}
-    ${bientot ? `<div class="pwrap">${affiche}<span class="rchip soon">📅 ${fmtShort(asDate(mt.release))}</span></div>` : affiche}
+    ${puce ? `<div class="pwrap">${affiche}${puce}</div>` : affiche}
     <button class="mtoggle" data-action="toggle-movie" data-uuid="${m.uuid}" title="${m.is_watched ? 'Vu' : 'Marquer vu'}">${ICONS.check}</button>
     <div class="mtitle">${esc(m.title)}</div>
     <div class="myear">${sous}</div>
@@ -3520,7 +3713,7 @@ function openMovieModal(uuid) {
 
 function viewMovies() {
   const seg = `<div class="segbar">
-    <button class="${state.movieView === 'avoir' ? 'on' : ''}" data-action="movie-view" data-v="avoir">🎬 À voir</button>
+    <button class="${state.movieView === 'avoir' ? 'on' : ''}" data-action="movie-view" data-v="avoir">À voir</button>
     <button class="${state.movieView === 'grid' ? 'on' : ''}" data-action="movie-view" data-v="grid">Mes films</button>
     <button class="${state.movieView === 'sagas' ? 'on' : ''}" data-action="movie-view" data-v="sagas">Sagas</button>
   </div>`;
@@ -3549,18 +3742,60 @@ function viewMoviesWatchlist() {
   const auj = todayStr();
   const aVenir = list.filter(m => (mt(m).release || '') > auj).sort((a, b) => mt(a).release.localeCompare(mt(b).release));
   const dispo = list.filter(m => !aVenir.includes(m));
+  // « Ce soir ? » : un film disponible tiré au hasard, gardé tant qu'il reste dans la liste
+  let soir = dispo.find(m => m.uuid === ceSoirUuid);
+  if (!soir && dispo.length) {
+    const choix = dispo.length > 1 ? dispo.filter(m => m.uuid !== ceSoirEviter) : dispo;
+    soir = choix[Math.floor(Math.random() * choix.length)];
+    ceSoirUuid = soir.uuid;
+  }
   return `
+    ${soir ? carteCeSoir(soir, dispo.length > 1) : ''}
     <div class="fbar">
       ${selectFiltre('avsort', [['recent', 'Ajout récent'], ['az', 'A → Z'], ['sortie', 'Sortie ↓'], ['court', 'Plus courts'], ['long', 'Plus longs']], t, 'Trier')}
       ${selectFiltre('avgenre', [[-1, 'Tous genres'], ...genresDispo.map(([g, n]) => [g, `${GENRE_NAMES[g]} (${n})`])], state.avGenre, 'Genre')}
     </div>
     ${ligneAnalyseFilms()}
-    <h2 class="section" style="margin-top:2px">À voir <span class="cnt">${dispo.length}</span></h2>
+    ${teteSection(`À voir <span class="cnt">${dispo.length}</span>`, dispo.length ? `<span class="ftotal">≈ ${Math.round(dureeFilms(dispo) / 60)} h de films</span>` : '')}
     ${dispo.length
       ? `<div class="mgrid">${dispo.map(m => movieCard(m, true)).join('')}</div>`
       : `<div class="empty">${aVenir.length ? 'Rien de disponible pour l’instant.' : 'Aucun film ne correspond.'}</div>`}
-    ${aVenir.length ? `<h2 class="section" style="margin-top:26px">📅 Pas encore sortis <span class="cnt">${aVenir.length}</span></h2>
-      <div class="mgrid">${aVenir.map(m => movieCard(m, true)).join('')}</div>` : ''}`;
+    ${aVenir.length ? teteSection(`Pas encore sortis <span class="cnt">${aVenir.length}</span>`)
+      + (aVenir.length === 1 ? carteBientotFilm(aVenir[0], true) : `<div class="hrow">${aVenir.map(m => carteBientotFilm(m)).join('')}</div>`) : ''}`;
+}
+
+/* « Ce soir ? » : grande carte d'un film de la liste, avec « Vu » et « Un autre » */
+let ceSoirUuid = null, ceSoirEviter = null, ceSoirAnim = false;
+function carteCeSoir(m, autre) {
+  const mt = state.tmdb[m.uuid] || {}, fond = mt.backdrop || mt.posterBig || mt.poster;
+  const genres = (mt.genres || []).map(g => GENRE_NAMES[g]).filter(Boolean).slice(0, 2).map((g, i) => i ? g.toLowerCase() : g);
+  const infos = [m.year, mt.runtime ? fmtDuree(mt.runtime) : null, genres.join(', ')].filter(Boolean).join(' · ');
+  const anim = ceSoirAnim ? ' maj' : '';
+  ceSoirAnim = false;
+  return `<div class="cesoir${anim}" data-action="open-movie" data-uuid="${m.uuid}">
+    <div class="cesoir-img"${fond ? ` style="background-image:url('${fond}')"` : ''}></div>
+    <div class="cesoir-txt">
+      <span class="vtag"><i></i>Ce soir ?</span>
+      <h3${m.title.length > 22 ? ' class="long"' : ''}>${esc(m.title)}</h3>
+      ${infos ? `<div class="cesoir-m">${infos}</div>` : ''}
+      <div class="cesoir-btns">
+        <button class="btn" data-action="toggle-movie" data-uuid="${m.uuid}">${ICONS.check} Vu</button>
+        ${autre ? `<button class="verre" data-action="ce-soir-autre">${ICONS.dice} Un autre</button>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* Film pas encore sorti : grande image, date et compte à rebours */
+function carteBientotFilm(m, seul) {
+  const mt = state.tmdb[m.uuid] || {}, fond = mt.backdrop || mt.posterBig || mt.poster;
+  return `<div class="bfilm${seul ? ' seul' : ''}" data-action="open-movie" data-uuid="${m.uuid}" data-flip="f-${m.uuid}">
+    <div class="bfilm-img"${fond ? ` style="background-image:url('${fond}')"` : ''}>
+      <span class="lcard-puce rouge">${dateCourte(mt.release)}</span>
+      <div class="bfilm-t">${esc(m.title)}</div>
+      <div class="bfilm-s">${majuscule(compteARebours(mt.release))}${mt.runtime ? ' · ' + fmtDuree(mt.runtime) : ''}</div>
+    </div>
+  </div>`;
 }
 
 const piedFilms = (vus, total) => total > vus ? `<p style="text-align:center;color:var(--txt2);font-size:12.5px;padding:16px">${vus} / ${total} films — fais défiler pour la suite</p>` : '';
@@ -4978,6 +5213,7 @@ $('#btn-refresh').addEventListener('click', () => refreshAll(false));
 
 let discoverTimer = null, rechercheNo = 0;
 document.body.addEventListener('input', e => {
+  if ((e.target.id === 'fp-de' || e.target.id === 'fp-a') && filtresBrouillon) { filtresBrouillon[e.target.id === 'fp-de' ? 'de' : 'a'] = e.target.value; return; }
   if (e.target.id === 'series-search') { state.seriesSearch = e.target.value; renderKeepFocus('series-search'); }
   if (e.target.id === 'movie-search') { state.movieSearch = e.target.value; renderKeepFocus('movie-search'); }
   if (e.target.id === 'discover-search') {
@@ -5052,7 +5288,6 @@ document.body.addEventListener('click', async e => {
     if (tab === 'series' && vue) state.seriesView = vue;
     if (tab === 'movies' && vue) { state.movieView = vue; state.movieSearch = ''; }
     if (tab === 'discover') { if (src) state.exploreSource = src; if (type) state.exploreType = type; }
-    if (ancre === 'a-commencer') state.aCommencerTout = true;
     setTab(tab).then(() => {
       const a = ancre && document.getElementById(ancre);
       if (a) window.scrollTo(0, a.getBoundingClientRect().top + scrollY - 80);
@@ -5080,6 +5315,7 @@ document.body.addEventListener('click', async e => {
   else if (act === 'expand-overview') el.classList.toggle('clamp');
   else if (act === 'explore-type') {
     state.exploreType = el.dataset.v;
+    if (el.dataset.v === 'tv' && state.dFilters.genre === 4) state.dFilters.genre = 3; // une seule « SF & Fantastique » en séries
     // genre sans équivalent pour ce type (Romance côté séries) : on le retire
     const g = GENRES[state.dFilters.genre];
     if (g && !(el.dataset.v === 'tv' ? g.tv : g.mv)) state.dFilters.genre = -1;
@@ -5088,6 +5324,44 @@ document.body.addEventListener('click', async e => {
   else if (act === 'explore-retry') { state.exploreFeed.error = null; state.exploreFeed.vides = 0; loadExplorePage(); }
   else if (act === 'explore-more') { state.exploreFeed.vides = 0; loadExplorePage(); }
   else if (act === 'explore-source') { state.exploreSource = el.dataset.k; render(); }
+  else if (act === 'explore-genre') {
+    // tuile de genre : la liste complète se filtre sur ce genre, et on y descend
+    state.dFilters.genre = +el.dataset.g;
+    render();
+    const cible = $('#tout-parcourir');
+    if (cible) window.scrollTo({ top: cible.getBoundingClientRect().top + scrollY - 80, behavior: mouvementReduit() ? 'auto' : 'smooth' });
+  }
+  else if (act === 'open-filtres') openFiltres();
+  else if (act === 'filtre-choix' && filtresBrouillon) {
+    const { champ, val } = el.dataset;
+    filtresBrouillon[champ] = champ === 'annee' ? val : +val;
+    // période au choix : proposée par défaut de 2000 à cette année
+    if (champ === 'annee' && val === 'perso' && !filtresBrouillon.de) { filtresBrouillon.de = 2000; filtresBrouillon.a = new Date().getFullYear(); }
+    $('#fp-corps').innerHTML = corpsFiltres();
+  }
+  else if (act === 'filtre-effacer' && filtresBrouillon) {
+    Object.assign(filtresBrouillon, { genre: -1, note: 0, annee: 'all' });
+    $('#fp-corps').innerHTML = corpsFiltres();
+  }
+  else if (act === 'filtre-appliquer' && filtresBrouillon) {
+    const f = filtresBrouillon;
+    if (f.annee === 'perso') {
+      // années saisies à la main : bornées, et remises dans l'ordre si besoin
+      const borne = (v, defaut) => Math.min(ANNEE_MAX, Math.max(1900, Math.round(+v) || defaut));
+      let de = borne(f.de, 1900), a = borne(f.a, new Date().getFullYear());
+      if (de > a) [de, a] = [a, de];
+      Object.assign(f, { de, a });
+    }
+    state.dFilters = f;
+    filtresBrouillon = null;
+    closeModalViaHistory();
+    render();
+  }
+  else if (act === 'filtre-retirer') {
+    const c = el.dataset.champ;
+    state.dFilters[c] = c === 'annee' ? 'all' : c === 'genre' ? -1 : 0;
+    render();
+  }
   else if (act === 'discover-detail') openDiscoverModal(JSON.parse(el.dataset.key));
   else if (act === 'open-person') openPersonModal(el.dataset.pid);
   else if (act === 'add-discover') { closeModalViaHistory(); addItem(JSON.parse(el.dataset.key)); }
@@ -5118,6 +5392,7 @@ document.body.addEventListener('click', async e => {
     render();
   }
   else if (act === 'open-movie') openMovieModal(el.dataset.uuid);
+  else if (act === 'ce-soir-autre') { ceSoirEviter = ceSoirUuid; ceSoirUuid = null; ceSoirAnim = true; render(); }
   else if (act === 'open-stats') openStats();
   else if (act === 'close-stats') { if (overlayMode) history.back(); }
   else if (act === 'open-journal') openOverlay('journal');
@@ -5230,7 +5505,8 @@ document.body.addEventListener('click', async e => {
       const snap = etatFilm(m);
       await toggleMovieWatched(m);
       proposerAnnulation(m.is_watched ? `« ${m.title} » vu ✓` : `« ${m.title} » remis dans À voir`, () => restaurerFilm(snap));
-      const card = el.closest('.mcard');
+      const card = el.closest('.mcard, .cesoir');
+      if (card && card.classList.contains('cesoir')) ceSoirAnim = true; // un autre film prend la place
       if (m.is_watched) { tracer(el); eclat(el); }
       if (m.is_watched && navigator.vibrate) navigator.vibrate(12);
       // si le film ne correspond plus à la liste affichée, il la quitte
@@ -5340,7 +5616,6 @@ document.body.addEventListener('click', async e => {
     addEventListener('popstate', () => setTimeout(() => openSeries(uuid), 0), { once: true });
     history.back();
   }
-  else if (act === 'a-commencer-tout') { state.aCommencerTout = true; render(); }
   else if (act === 'open-saga') openSagaModal(el.dataset.id);
   else if (act === 'saga-add') {
     const saga = sagasCache[idSaga(el.dataset.saga)];
@@ -5699,6 +5974,8 @@ function feteSiTerminee(s, avant, annuler) {
 }
 
 let lastViewKey = null;
+/* cartes qui apparaissent en cascade quand on arrive sur un écran */
+const CARTES_CASCADE = '.rcard, .hsec, .lcard, .mcard, .scard, .pcard, .panel, .erow, .ajour, .cesoir, .bfilm, .t10, .gtuile';
 function afterRender() {
   loadVisiblePosters();
   animateBars($('#view'));
@@ -5720,19 +5997,32 @@ function afterRender() {
   const key = cleVue();
   if (key !== lastViewKey) {
     lastViewKey = key;
-    cascade($('#view'), '.rcard, .hsec, .lcard, .mcard, .scard, .pcard, .panel, .hero');
+    cascade($('#view'), CARTES_CASCADE);
   }
   if (state.tab === 'home') initAccueil();
-  const heros = $('#heros');
-  if (heros) {
-    heros.addEventListener('scroll', () => {
-      clearTimeout(heros._t);
-      heros._t = setTimeout(() => {
-        const i = Math.round(heros.scrollLeft / (heros.clientWidth || 1));
-        document.querySelectorAll('.hdot').forEach((d, j) => d.classList.toggle('on', j === i));
-      }, 80);
-    }, { passive: true });
-  }
+  initVitrine();
+}
+
+/* Vitrine d'Explorer : reste sur la même image après un rafraîchissement ; les tirets et
+   le zoom lent suivent l'image affichée */
+let vitrineIndex = 0;
+function initVitrine() {
+  const v = $('#vitrine');
+  if (!v) return;
+  const diapos = [...v.children], tirets = [...document.querySelectorAll('.vtirets span')];
+  const montrer = i => {
+    diapos.forEach((d, j) => d.classList.toggle('vue', j === i));
+    tirets.forEach((t, j) => t.classList.toggle('on', j === i));
+  };
+  if (vitrineIndex >= diapos.length) vitrineIndex = 0;
+  if (vitrineIndex) { v.scrollLeft = vitrineIndex * v.clientWidth; montrer(vitrineIndex); }
+  v.addEventListener('scroll', () => {
+    clearTimeout(v._t);
+    v._t = setTimeout(() => {
+      vitrineIndex = Math.round(v.scrollLeft / (v.clientWidth || 1));
+      montrer(vitrineIndex);
+    }, 80);
+  }, { passive: true });
 }
 
 /* ---------------- Démarrage ---------------- */
@@ -5751,10 +6041,9 @@ function fermerLancement() {
   }
   l.classList.add('fini');
   // l'Accueil apparaît en cascade au moment où le logo s'efface (et non, invisible, derrière lui)
-  const sel = '.rcard, .hsec, .lcard, .mcard, .scard, .pcard, .panel, .hero';
-  $('#view').querySelectorAll(sel).forEach(el => { el.style.animation = 'none'; });
+  $('#view').querySelectorAll(CARTES_CASCADE).forEach(el => { el.style.animation = 'none'; });
   void $('#view').offsetWidth;
-  cascade($('#view'), sel);
+  cascade($('#view'), CARTES_CASCADE);
   setTimeout(() => l.remove(), 750);
 }
 setTimeout(fermerLancement, 6000);
