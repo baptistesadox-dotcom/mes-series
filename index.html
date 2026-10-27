@@ -83,25 +83,29 @@ header.app h1.brand{color:var(--txt)}
 .iconbtn:active{background:var(--line);color:var(--txt)}
 
 /* ---------- Nav ---------- */
+/* barre flottante en verre (comme les maquettes « verre ») : la page défile dessous, floutée */
 nav.tabs{
-  position:fixed;left:0;right:0;bottom:0;z-index:30;
-  display:flex;background:rgba(20,18,18,.97);backdrop-filter:blur(16px);
-  border-top:var(--frame);
-  padding:8px 8px calc(8px + env(safe-area-inset-bottom));gap:4px;
+  position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:30;
+  max-width:480px;margin:0 auto;height:66px;padding:5px;gap:2px;
+  display:flex;border-radius:33px;
+  background:rgba(36,31,31,.55);backdrop-filter:blur(24px) saturate(180%);
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 10px 30px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.14);
 }
 nav.tabs button{
-  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;
-  padding:6px 0 4px;color:var(--txt2);font-size:11px;font-weight:700;
-  border-radius:12px;border:1px solid transparent;transition:color .2s;
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  color:rgba(245,242,240,.72);font-size:11px;font-weight:700;
+  border-radius:27px;transition:color .2s;
   position:relative;z-index:1;
 }
 nav.tabs button svg{width:23px;height:23px}
 nav.tabs button.on{color:var(--acc2)}
-/* trait rouge de l'onglet actif, en haut de la barre : il glisse d'un onglet à l'autre */
+/* bulle de verre rouge sous l'onglet actif : elle glisse d'un onglet à l'autre en s'étirant comme une goutte */
 nav.tabs .tabpill{
-  position:absolute;left:0;top:-1px;width:30px;height:3px;border-radius:0 0 3px 3px;pointer-events:none;
-  background:var(--acc);box-shadow:0 2px 12px rgba(220,38,38,.6);
-  transition:transform .55s var(--ressort);
+  position:absolute;left:0;top:5px;bottom:5px;width:80px;border-radius:27px;pointer-events:none;
+  background:rgba(220,38,38,.2);
+  box-shadow:inset 0 0 0 1px rgba(248,113,113,.24),inset 0 1px 0 rgba(255,255,255,.16),0 4px 18px rgba(220,38,38,.22);
+  transition:opacity .2s;
 }
 nav.tabs .dot{display:none}
 
@@ -531,7 +535,7 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 
 /* ---------- Toast / modal ---------- */
 #toast{
-  position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translateX(-50%);
+  position:fixed;left:50%;bottom:calc(94px + env(safe-area-inset-bottom));transform:translateX(-50%);
   background:var(--bg3);border:1px solid rgba(255,255,255,.1);color:var(--txt);
   padding:11px 18px;border-radius:14px;z-index:100;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.5);
   opacity:0;pointer-events:none;width:max-content;max-width:88vw;text-align:center;
@@ -660,6 +664,8 @@ html[data-vt="avant"] header.app,html[data-vt="arriere"] header.app{view-transit
 html[data-vt="avant"] nav.tabs,html[data-vt="arriere"] nav.tabs{view-transition-name:barre}
 ::view-transition-old(barre){animation:none;opacity:0}
 ::view-transition-new(barre){animation:none}
+/* la barre est capturée seule pendant le glissement : son verre ne flouterait plus la page, on le refait ici */
+::view-transition-group(barre){border-radius:33px;backdrop-filter:blur(24px) saturate(180%)}
 html[data-vt="avant"]::view-transition-old(root){animation:vtSortG .3s var(--doux) both}
 html[data-vt="avant"]::view-transition-new(root){animation:vtEntreD .45s var(--doux) both}
 html[data-vt="arriere"]::view-transition-old(root){animation:vtSortD .3s var(--doux) both}
@@ -5486,18 +5492,26 @@ function transition(type, maj) {
 }
 const estVisible = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth; };
 
-/* Trait rouge de l'onglet actif : il glisse jusqu'au-dessus du nouvel onglet */
+/* Bulle de l'onglet actif : elle glisse jusqu'au nouvel onglet et s'étire en chemin, comme une goutte */
 function placerPilule() {
   const nav = $('nav.tabs'), on = nav && nav.querySelector('button.on');
   if (!nav) return;
   let p = nav.querySelector('.tabpill');
-  const neuve = !p;
-  if (neuve) { p = document.createElement('span'); p.className = 'tabpill'; nav.prepend(p); }
+  if (!p) { p = document.createElement('span'); p.className = 'tabpill'; nav.prepend(p); }
   if (!on) { p.style.opacity = '0'; return; }
+  // pas de voyage à la première pose, au retour du Profil (bulle cachée) ni quand l'écran change de taille
+  const voyage = p.dataset.tab && p.dataset.tab !== on.dataset.tab && p.style.opacity !== '0' && !mouvementReduit();
+  // un simple rafraîchissement du même onglet laisse finir le voyage en cours
+  const depart = voyage && getComputedStyle(p).translate; // position actuelle, même en plein voyage
+  if (voyage) p.getAnimations().forEach(a => a.cancel());
+  p.dataset.tab = on.dataset.tab;
   p.style.opacity = '';
-  if (neuve) p.style.transition = 'none';
-  p.style.transform = `translateX(${on.offsetLeft + (on.offsetWidth - p.offsetWidth) / 2}px)`;
-  if (neuve) { p.offsetWidth; p.style.transition = ''; }
+  p.style.width = on.offsetWidth + 'px';
+  p.style.translate = on.offsetLeft + 'px';
+  if (!voyage) return;
+  const ressort = getComputedStyle(document.documentElement).getPropertyValue('--ressort').trim() || 'ease-out';
+  p.animate({ translate: [depart, on.offsetLeft + 'px'] }, { duration: 600, easing: ressort });
+  p.animate({ scale: ['1 1', '1.25 .86', '.97 1.03', '1 1'], offset: [0, .35, .7, 1] }, { duration: 600, easing: 'ease-out' });
 }
 addEventListener('resize', placerPilule);
 
