@@ -254,31 +254,26 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
   content:'';position:absolute;inset:0;
   background:linear-gradient(rgba(14,13,13,0) 25%,rgba(14,13,13,.75) 72%,var(--bg));
 }
-.dethead{display:flex;gap:15px;padding:0 16px;align-items:flex-end;margin-top:-84px;position:relative;z-index:2}
-.dethead .poster{width:108px;height:162px;border-radius:14px;box-shadow:0 14px 34px rgba(0,0,0,.6)}
-.dethead .info{flex:1;min-width:0;padding-bottom:4px}
-.dethead h2{font-size:26px;line-height:1.1;letter-spacing:-.025em;font-weight:800}
-.dethead .meta{font-size:12.5px;color:var(--txt2);margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .overview{padding:14px 16px 0;color:var(--txt2);font-size:13.5px}
 .overview.clamp{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-.detactions{display:flex;gap:8px;padding:14px 16px;flex-wrap:wrap}
-details.season{border-top:1px solid rgba(255,255,255,.05);margin:0 6px}
-details.season summary{
-  list-style:none;display:flex;align-items:center;gap:10px;
-  padding:14px 10px;font-weight:650;cursor:pointer;
-}
-details.season summary::-webkit-details-marker{display:none}
-details.season summary .n{flex:1}
-details.season summary .cnt{font-size:12.5px;color:var(--txt2);font-weight:450}
-details.season summary .arrow{color:var(--txt2);transition:transform .15s;width:16px;height:16px}
-details.season[open] summary .arrow{transform:rotate(90deg)}
-.eprow{display:flex;align-items:center;gap:11px;padding:9px 10px 9px 14px;border-radius:12px}
+/* épisode : image, titre, date, coche */
+.eprow{display:flex;align-items:center;gap:12px;padding:8px;border-radius:16px;border:1px solid transparent}
 .eprow:active{background:var(--bg2)}
-.eprow .num{width:30px;flex:none;color:var(--txt2);font-size:12.5px;font-variant-numeric:tabular-nums}
-.eprow .nm{flex:1;min-width:0;font-size:14px}
-.eprow .nm .d{font-size:11.5px;color:var(--txt2)}
-.eprow.future .nm{color:var(--txt2)}
+.eprow .epimg{
+  width:116px;height:66px;border-radius:10px;flex:none;position:relative;overflow:hidden;
+  background:var(--bg3);display:flex;align-items:center;justify-content:center;
+  color:#6B5E5E;font-weight:800;font-size:15px;
+}
+.eprow .epimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.eprow.watched .epimg{opacity:.55}
+.eprow .nm{flex:1;min-width:0}
+.eprow .ept{font-size:14.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eprow.watched .ept{color:var(--txt2)}
+.eprow .nm .d{font-size:12.5px;color:var(--txt2);margin-top:3px}
+.eprow.future .ept{color:var(--txt2)}
 .eprow.future .epcheck{opacity:.25}
+.eprow.suivant{background:#1E1414;border-color:rgba(220,38,38,.35)}
+.epsuiv{font-size:10.5px;font-weight:800;color:var(--acc2);letter-spacing:.07em;text-transform:uppercase;margin-bottom:1px}
 .epcheck{
   width:28px;height:28px;border-radius:50%;border:1.5px solid #4A3F3F;flex:none;
   display:flex;align-items:center;justify-content:center;color:transparent;
@@ -325,6 +320,77 @@ details.season[open] summary .arrow{transform:rotate(90deg)}
 .sagarow .checkbtn{width:38px;height:38px;border-radius:12px}
 .sagarow.vu .t{color:var(--txt2)}
 .seasonbtn{margin-left:auto}
+
+/* ---------- Fiche série (grande image, saisons en onglets, « Vu » en bas) ---------- */
+.overlay.fiche{padding-bottom:0}
+.fiche .backdrop{height:360px}
+.detbar .iconbtn.fav{color:var(--warn)}
+.fhead{position:relative;z-index:2;margin-top:-118px;padding:0 18px}
+.fhead h2{font-size:36px;font-weight:800;letter-spacing:-.02em;line-height:1.02;text-shadow:0 2px 16px rgba(0,0,0,.55)}
+.fmeta{font-size:13.5px;color:#D6D0CC;font-weight:600;margin-top:8px}
+.fbadges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.fprog{display:flex;align-items:center;gap:12px;margin-top:14px}
+.fprog .progress{flex:1;margin:0;height:5px}
+.fprog span{font-size:13px;font-weight:700;color:#D6D0CC;flex:none}
+.saisons{display:flex;gap:8px;overflow-x:auto;padding:20px 16px 4px;scrollbar-width:none}
+.saisons::-webkit-scrollbar{display:none}
+.spill{flex:none;height:38px;padding:0 15px;border-radius:999px;border:1px solid #2E2727;color:var(--txt2);font-size:13px;font-weight:700}
+.spill.on{background:var(--txt);color:var(--bg);border-color:transparent}
+.saison-tete{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px 6px;font-size:13px;color:var(--txt2);font-weight:700;min-height:48px}
+.episodes{display:flex;flex-direction:column;gap:4px;padding:2px 10px 0}
+.fichebar{
+  position:sticky;bottom:0;z-index:6;display:flex;gap:10px;margin-top:8px;
+  padding:26px 14px calc(14px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(14,13,13,0),var(--bg) 38%);
+}
+.fichebar .fvu{flex:1;height:56px;font-size:16.5px;border-radius:16px}
+.fichebar .fdate{width:56px;height:56px;border-radius:16px}
+.fbar-info{flex:1;text-align:center;padding:17px;border-radius:16px;background:var(--bg2);color:var(--txt2);font-weight:700}
+.menu-actions{display:flex;flex-direction:column;gap:10px}
+.menu-actions .btn{justify-content:flex-start;padding:14px 16px;font-size:15px}
+
+/* ---------- Accueil ---------- */
+.iconbtn.avatar{background:var(--grad);color:#FFFFFF;border:none}
+.iconbtn.petit{width:38px;height:38px}
+.hsec{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:28px 0 12px}
+.hsec h2.section{margin:0;font-size:19px;font-weight:800;letter-spacing:-.015em}
+.lien{font-size:13px;font-weight:700;color:var(--acc2);padding:6px 0;flex:none}
+/* carrousel « Reprendre » : une grande carte par série en cours */
+.reprendre{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -14px;padding:2px 14px 6px;scroll-padding:0 14px;scrollbar-width:none}
+.reprendre::-webkit-scrollbar{display:none}
+.rcard{
+  position:relative;flex:0 0 86%;max-width:440px;aspect-ratio:33/38;border-radius:24px;overflow:hidden;
+  scroll-snap-align:start;background:var(--bg2);cursor:pointer;box-shadow:0 16px 40px rgba(0,0,0,.45);
+}
+.rcard-img{position:absolute;inset:0;background:var(--bg3) 62% 30%/cover no-repeat}
+.rcard-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,13,13,0) 25%,rgba(14,13,13,.6) 50%,rgba(14,13,13,.97) 100%)}
+.rcard-ov{position:absolute;left:0;right:0;bottom:0;padding:18px}
+.rcard-chips{display:flex;gap:8px;margin-bottom:10px}
+.rcard-chips span{font-size:12px;font-weight:800;padding:5px 10px;border-radius:6px}
+.rc-ep{background:var(--acc);color:#FFFFFF}
+.rc-reste{background:rgba(255,255,255,.12);color:#E7E2DF}
+.rcard-titre{font-size:28px;font-weight:800;letter-spacing:-.025em;line-height:1.05;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rcard-ep{font-size:14.5px;color:#D6D0CC;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rcard-prog{display:flex;align-items:center;gap:10px;margin-top:12px}
+.rcard-prog .progress{flex:1;margin:0;height:4px;background:rgba(255,255,255,.16)}
+.rcard-prog span{font-size:12px;font-weight:700;color:#D6D0CC}
+.rcard-btns{display:flex;gap:10px;margin-top:14px}
+.rcard-vu{flex:1;height:50px;font-size:16px}
+.rcard-info{width:50px;height:50px;border-radius:12px;background:rgba(255,255,255,.14);color:var(--txt);display:flex;align-items:center;justify-content:center;flex:none}
+.rcard-info svg{width:22px;height:22px}
+.reprendre-pos{text-align:center;font-size:12px;font-weight:700;color:var(--txt2);margin-top:8px;font-variant-numeric:tabular-nums}
+@keyframes rouleIn{from{opacity:0;transform:translateY(16px)}}
+.rcard.maj .rcard-chips,.rcard.maj .rcard-titre,.rcard.maj .rcard-ep{animation:rouleIn .6s var(--ressort) both}
+/* grandes vignettes (nouveaux épisodes, sorties) */
+.lcard{flex:none;width:224px;cursor:pointer}
+.lcard-img{position:relative;height:126px;border-radius:14px;overflow:hidden;background:var(--bg3) center/cover no-repeat;display:flex;align-items:flex-end;padding:9px}
+.lcard-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.75))}
+.lcard-puce{position:relative;z-index:1;font-size:12px;font-weight:800;background:rgba(0,0,0,.72);padding:4px 9px;border-radius:6px}
+.lcard-t{font-size:14px;font-weight:700;margin-top:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lcard-s{font-size:12.5px;color:var(--txt2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard{cursor:pointer}
+.pcard .why{font-size:10.5px;color:var(--txt2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard .poster.sk{width:108px;height:162px}
 
 /* ---------- Settings ---------- */
 .panel{background:var(--bg2);border-radius:var(--radius);padding:16px;margin-bottom:13px;border:var(--card-border);box-shadow:var(--card-shadow)}
@@ -596,7 +662,8 @@ html[data-vt="retour"]::view-transition-new(root){animation:vtEntreRetour .42s v
 @keyframes vtSortRetour{to{opacity:0;transform:scale(1.03)}}
 @keyframes vtEntreRetour{from{opacity:0;transform:scale(.96)}}
 ::view-transition-group(affiche){animation-duration:.6s;animation-timing-function:var(--ressort)}
-::view-transition-old(affiche),::view-transition-new(affiche){animation-duration:.6s;height:100%}
+/* l'image de départ et celle d'arrivée n'ont pas la même forme (affiche, grande image) : elles se recadrent */
+::view-transition-old(affiche),::view-transition-new(affiche){animation-duration:.6s;width:100%;height:100%;object-fit:cover}
 ::view-transition-new(fond){animation:vtFondIn .75s var(--doux) both}
 ::view-transition-old(fond){animation:bgOut .3s ease both}
 @keyframes vtFondIn{from{opacity:0;transform:scale(1.15)}}
@@ -613,18 +680,18 @@ html[data-vt="retour"]::view-transition-new(root){animation:vtEntreRetour .42s v
 
 <header class="app">
   <h1 id="apptitle" class="brand">Mes Séries</h1>
-  <button class="iconbtn hidden" id="btn-dice" title="Que regarder ce soir ?"></button>
   <button class="iconbtn hidden" id="btn-add" title="Ajouter"></button>
   <button class="iconbtn hidden" id="btn-refresh" title="Actualiser"></button>
+  <button class="iconbtn avatar" id="btn-profil" title="Mon profil" aria-label="Mon profil"></button>
 </header>
 
 <main id="view"></main>
 
 <nav class="tabs">
+  <button data-tab="home"><span class="nico"></span>Accueil<span class="dot"></span></button>
   <button data-tab="series"><span class="nico"></span>Séries<span class="dot"></span></button>
   <button data-tab="movies"><span class="nico"></span>Films<span class="dot"></span></button>
   <button data-tab="discover"><span class="nico"></span>Explorer<span class="dot"></span></button>
-  <button data-tab="settings"><span class="nico"></span>Profil<span class="dot"></span></button>
 </nav>
 
 <div id="overlay-root"></div>
@@ -662,11 +729,16 @@ const ICONS = {
   user: I('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
   dice: I('<rect x="3" y="3" width="18" height="18" rx="4.5"/><circle cx="8.6" cy="8.6" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.4" cy="8.6" r="1.35" fill="currentColor" stroke="none"/><circle cx="8.6" cy="15.4" r="1.35" fill="currentColor" stroke="none"/><circle cx="15.4" cy="15.4" r="1.35" fill="currentColor" stroke="none"/>'),
   fire: I('<path d="M12 2c1 4-4 6-4 10a4 4 0 0 0 8 0c0-1.5-.5-2.5-1-3.5 2 .5 4 2.5 4 5.5a7 7 0 1 1-14 0c0-5 5-7 7-12z"/>'),
+  home: I('<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'),
+  info: I('<circle cx="12" cy="12" r="9.5"/><line x1="12" y1="11" x2="12" y2="16.5"/><line x1="12" y1="7.6" x2="12" y2="7.7"/>'),
+  calendar: I('<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>'),
+  more: I('<circle cx="5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="currentColor" stroke="none"/>'),
+  starO: I('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'),
 };
 
 const state = {
   series: [], movies: [], tmdb: {}, settings: {},
-  tab: 'series', seriesView: 'suivre', seriesFilter: 'encours',
+  tab: 'home', seriesView: 'suivre', seriesFilter: 'encours', saisonFiche: {},
   seriesSort: 'recent', seriesGenre: -1, seriesDecade: 'all', seriesMetaBusy: null,
   movieView: 'avoir', movieFilter: 'vus',
   seriesSearch: '', movieSearch: '', discoverSearch: '',
@@ -1313,7 +1385,7 @@ function openNouveautes() {
       ${html || '<div class="empty" style="padding:30px 10px">Aucune nouveauté récente.</div>'}
     </div>
   </div>`;
-  if (state.tab === 'series') rerenderSansPerturber(); // le lien « nouveaux » redevient discret
+  if (state.tab === 'series' || state.tab === 'home') rerenderSansPerturber(); // le lien « nouveaux » redevient discret
 }
 
 /* ---------------- Recherche / tendances (Découvrir) ---------------- */
@@ -1725,7 +1797,7 @@ async function loadSection(key) {
     state.discoverData[key] = { error: e.message };
   }
   state.discoverBusy[key] = false;
-  if (state.tab === 'discover') rerenderSansPerturber();
+  if (state.tab === 'discover' || (key === 'foryou' && state.tab === 'home')) rerenderSansPerturber();
 }
 
 async function loadTrending() {
@@ -2336,7 +2408,7 @@ async function toggleMovieWatched(m) {
 }
 
 /* ---------------- Rendu ---------------- */
-const TABS = { series: 'Séries', discover: 'Explorer', movies: 'Films', settings: 'Profil' };
+const TABS = { home: 'Accueil', series: 'Séries', discover: 'Explorer', movies: 'Films', settings: 'Profil' };
 
 /* ---- Bouton retour Android : fiches, modales et onglets empilés
    dans l'historique du navigateur. Retour = fermer la couche du
@@ -2355,7 +2427,7 @@ window.addEventListener('popstate', () => {
   if (modaleOuverte()) { fermerModale(); return; }
   if (detailUuid) { fermerFiche(); return; }
   if (overlayMode) { overlayMode = null; overlayCle = null; $('#overlay-root').innerHTML = ''; render(); return; }
-  if (state.tab !== 'series') changerOnglet('series');
+  if (state.tab !== 'home') changerOnglet('home');
 });
 
 /* Fermeture d'une fiche série : son affiche retourne se poser sur sa carte dans la liste */
@@ -2366,19 +2438,18 @@ function fermerFiche() {
     if (overlayMode) renderOverlay();
     else { $('#overlay-root').innerHTML = ''; render(); }
   };
-  const affiche = $('#overlay-root .dethead .poster'), fond = $('#overlay-root .backdrop');
-  if (!affiche || overlayMode || !document.startViewTransition || mouvementReduit()) { fermer(); return; }
-  affiche.style.viewTransitionName = 'affiche';
-  if (fond) fond.style.viewTransitionName = 'fond';
+  const image = $('#overlay-root .fhero');
+  if (!image || overlayMode || !document.startViewTransition || mouvementReduit()) { fermer(); return; }
+  image.style.viewTransitionName = 'affiche';
   let carte = null;
   transition('retour', () => {
     fermer();
-    carte = [...document.querySelectorAll(`#view [data-poster="${uuid}"]`)].find(estVisible) || null;
+    carte = [...document.querySelectorAll(`#view [data-morph="${uuid}"], #view [data-poster="${uuid}"]`)].find(estVisible) || null;
     if (carte) carte.style.viewTransitionName = 'affiche';
   }).fini.then(() => { if (carte) carte.style.viewTransitionName = ''; });
 }
 
-const ORDRE_ONGLETS = ['series', 'movies', 'discover', 'settings'];
+const ORDRE_ONGLETS = ['home', 'series', 'movies', 'discover', 'settings'];
 /* Changement d'onglet : la page glisse dans le sens de l'onglet choisi */
 function changerOnglet(tab) {
   if (tab === state.tab) { render(); return Promise.resolve(); }
@@ -2386,10 +2457,10 @@ function changerOnglet(tab) {
   return transition(sens, () => { state.tab = tab; render(); }).pret;
 }
 function setTab(tab) {
-  // revenir sur Séries par la barre : on dépile l'entrée d'historique posée en partant,
+  // revenir sur l'Accueil par la barre : on dépile l'entrée d'historique posée en partant,
   // sinon un appui sur « retour » ne ferait plus rien
-  if (tab === 'series' && state.tab !== 'series' && history.state && history.state.layer === 'tab') { history.back(); return Promise.resolve(); }
-  if (tab !== state.tab && state.tab === 'series') pushLayer('tab');
+  if (tab === 'home' && state.tab !== 'home' && history.state && history.state.layer === 'tab') { history.back(); return Promise.resolve(); }
+  if (tab !== state.tab && state.tab === 'home') pushLayer('tab');
   return changerOnglet(tab);
 }
 
@@ -2413,20 +2484,21 @@ const cleVue = () => [state.tab, state.seriesView, state.movieView, state.series
 
 function renderView() {
   const title = $('#apptitle');
-  title.textContent = state.tab === 'series' ? 'Mes Séries' : TABS[state.tab];
-  title.classList.toggle('brand', state.tab === 'series');
+  title.textContent = state.tab === 'home' ? 'Mes Séries' : TABS[state.tab];
+  title.classList.toggle('brand', state.tab === 'home');
   document.querySelectorAll('nav.tabs button').forEach(b =>
     b.classList.toggle('on', b.dataset.tab === state.tab));
   placerPilule();
-  $('#btn-dice').classList.toggle('hidden', !(state.tab === 'series' || state.tab === 'movies'));
-  $('#btn-add').classList.toggle('hidden', !(state.tab === 'series' || state.tab === 'movies'));
+  $('#btn-add').classList.toggle('hidden', !['home', 'series', 'movies'].includes(state.tab));
   $('#btn-refresh').classList.toggle('hidden', !(state.tab === 'series' && state.seriesView === 'suivre'));
+  $('#btn-profil').classList.toggle('hidden', state.tab === 'settings');
   const v = $('#view');
   if (!state.series.length && !state.movies.length && state.tab !== 'settings' && state.tab !== 'discover') {
     v.innerHTML = viewOnboarding();
     return;
   }
-  if (state.tab === 'series') v.innerHTML = viewSeries();
+  if (state.tab === 'home') v.innerHTML = viewHome();
+  else if (state.tab === 'series') v.innerHTML = viewSeries();
   else if (state.tab === 'discover') v.innerHTML = viewDiscover();
   else if (state.tab === 'movies') v.innerHTML = viewMovies();
   else v.innerHTML = viewSettings();
@@ -2568,7 +2640,9 @@ function viewSeriesGrid() {
       : `<div class="empty">Aucune série ne correspond.</div>`}`;
 }
 
-function viewNext() {
+/* Ce qui est à regarder, ce qui va sortir et ce qui reste à commencer
+   (partagé par l'Accueil et Séries › À suivre) */
+function donneesSuivi() {
   const watchable = [], waiting = [];
   for (const s of state.series) {
     if (s.status === 'stopped') continue;
@@ -2592,6 +2666,11 @@ function viewNext() {
   const aCommencer = state.series.filter(s => s.status === 'not_started_yet')
     .map(s => ({ s, nx: nextUnwatched(s) })).filter(x => x.nx && !isFuture(x.nx.ep))
     .sort((a, b) => (b.s.created_at || '').localeCompare(a.s.created_at || ''));
+  return { watchable, waiting, aCommencer };
+}
+
+function viewNext() {
+  const { watchable, waiting, aCommencer } = donneesSuivi();
   const lastR = state.lastRefresh
     ? `Dernière actualisation : ${fmtDate(state.lastRefresh)}`
     : `Appuie sur ⟳ en haut pour chercher les nouveaux épisodes.`;
@@ -2603,7 +2682,7 @@ function viewNext() {
   const nbSaisons = s => sortedSeasons(s).filter(x => !x.is_specials && x.number !== 0).length;
   const AC_MAX = 4;
   const sectionACommencer = aCommencer.length ? `
-    <h2 class="section" style="margin-top:26px">✨ À commencer <span class="cnt">${aCommencer.length}</span></h2>
+    <h2 class="section" id="a-commencer" style="margin-top:26px">✨ À commencer <span class="cnt">${aCommencer.length}</span></h2>
     <div class="card-list">${aCommencer.slice(0, state.aCommencerTout ? Infinity : AC_MAX).map(({ s, nx }) => `
       <div class="scard" data-action="open-series" data-uuid="${s.uuid}" data-flip="n-${s.uuid}">
         ${posterHtml(s, 'tv')}
@@ -2659,7 +2738,7 @@ function viewNext() {
             ${nx.ep.air_date ? `<div class="sub" style="margin-top:4px">${asDate(nx.ep.air_date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</div>` : ''}
           </div>
         </div>`;
-      let rest = [...waiting], html = `<h2 class="section" style="margin-top:26px">🗓️ Calendrier des sorties <span class="cnt">${waiting.length}</span></h2>`;
+      let rest = [...waiting], html = `<h2 class="section" id="calendrier" style="margin-top:26px">🗓️ Calendrier des sorties <span class="cnt">${waiting.length}</span></h2>`;
       for (const g of groups) {
         const hits = rest.filter(x => g.test(x.nx.ep.air_date));
         rest = rest.filter(x => !hits.includes(x));
@@ -2667,6 +2746,160 @@ function viewNext() {
       }
       return html;
     })()}`;
+}
+
+/* ---------------- Accueil ----------------
+   La vitrine de l'appli : grand carrousel « Reprendre » (toutes les séries en cours,
+   bouton « Vu » direct), puis des rangées qui mènent aux onglets. */
+let carrouselUuid = null, carrouselAnim = null; // série affichée dans « Reprendre », retrouvée après un rafraîchissement
+const fondSerie = s => { const m = state.tmdb[s.uuid] || {}; return m.backdrop || m.posterBig || m.poster || null; };
+const dateCourte = d => { const t = asDate(d).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }); return t.charAt(0).toUpperCase() + t.slice(1); };
+const teteSection = (titre, lien = '') => `<div class="hsec"><h2 class="section">${titre}</h2>${lien}</div>`;
+const lienAller = (texte, attrs) => `<button class="lien" data-action="aller" ${attrs}>${texte}</button>`;
+
+function carteReprendre({ s, nx }) {
+  const p = progress(s), pct = p.total ? Math.round(p.watched / p.total * 100) : 0, fond = fondSerie(s);
+  return `<div class="rcard" data-action="open-series" data-uuid="${s.uuid}">
+    <div class="rcard-img" data-morph="${s.uuid}"${fond ? ` style="background-image:url('${fond}')"` : ''}></div>
+    <div class="rcard-ov">
+      <div class="rcard-chips"><span class="rc-ep">${epCode(nx.season, nx.ep.number)}</span><span class="rc-reste">${pl(episodesRestants(s), 'restant')}</span></div>
+      <div class="rcard-titre">${esc(s.title)}</div>
+      ${nx.ep.name ? `<div class="rcard-ep">${esc(nx.ep.name)}</div>` : ''}
+      <div class="rcard-prog"><div class="progress ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%" data-k="r-${s.uuid}"></i></div><span>${p.watched}/${p.total}</span></div>
+      <div class="rcard-btns">
+        <button class="btn rcard-vu" data-action="mark-next" data-uuid="${s.uuid}">${ICONS.check} Vu</button>
+        <button class="rcard-info" data-action="open-series" data-uuid="${s.uuid}" aria-label="Ouvrir la fiche de ${esc(s.title)}">${ICONS.info}</button>
+      </div>
+    </div>
+  </div>`;
+}
+/* grande vignette (image de fond + pastille) pour les rangées « Nouveaux épisodes » et « Sortent bientôt » */
+const carteLarge = c => `<div class="lcard" data-action="open-series" data-uuid="${c.uuid}">
+  <div class="lcard-img" data-morph="${c.uuid}"${c.fond ? ` style="background-image:url('${c.fond}')"` : ''}>${c.puce ? `<span class="lcard-puce">${esc(c.puce)}</span>` : ''}</div>
+  <div class="lcard-t">${esc(c.titre)}</div>
+  ${c.sous ? `<div class="lcard-s">${esc(c.sous)}</div>` : ''}
+</div>`;
+/* affiche pour les rangées de séries et de films de la bibliothèque */
+const carteAffiche = (action, item, type, sous) => `<div class="pcard" data-action="${action}" data-uuid="${item.uuid}">
+  ${posterHtml(item, type)}
+  <div class="mtitle">${esc(item.title)}</div>
+  ${sous ? `<div class="why">${esc(sous)}</div>` : ''}
+</div>`;
+
+function viewHome() {
+  const { watchable, waiting, aCommencer } = donneesSuivi();
+  const parts = [];
+  const auj = todayStr();
+
+  // Reprendre : toutes les séries en cours, la plus récemment regardée d'abord
+  parts.push(`<div class="hsec" style="margin-top:4px">
+    <h2 class="section">Reprendre <span class="cnt">${pl(watchable.length, 'série')} en cours</span></h2>
+    <button class="iconbtn petit" data-action="roulette" aria-label="Que regarder ce soir ?" title="Que regarder ce soir ?">${ICONS.dice}</button>
+  </div>`);
+  parts.push(watchable.length
+    ? `<div class="reprendre" id="reprendre">${watchable.map(carteReprendre).join('')}</div>
+       ${watchable.length > 1 ? `<div class="reprendre-pos" id="reprendre-pos">1 / ${watchable.length}</div>` : ''}`
+    : `<div class="empty" style="padding:28px 20px">${aCommencer.length ? 'Tu es à jour dans tes séries en cours 🎉' : 'Rien à reprendre pour le moment.'}</div>`);
+
+  // Nouveaux épisodes trouvés par les actualisations : ceux déjà disponibles d'abord
+  const nv = nouveautesActuelles();
+  if (nv.length) {
+    const groupes = new Map();
+    for (const x of nv) { if (!groupes.has(x.uuid)) groupes.set(x.uuid, []); groupes.get(x.uuid).push(x); }
+    const cartes = [...groupes].map(([uuid, eps]) => {
+      eps.sort((a, b) => a.season - b.season || a.number - b.number);
+      const dispo = eps.filter(e => e.air_date <= auj);
+      return { s: state.series.find(x => x.uuid === uuid), premier: dispo[0] || eps[0], dispo: dispo.length };
+    }).sort((a, b) => (b.dispo ? 1 : 0) - (a.dispo ? 1 : 0)).slice(0, 12);
+    parts.push(teteSection('Nouveaux épisodes', '<button class="lien" data-action="open-nouveautes">Tout voir</button>'));
+    parts.push(`<div class="hrow">${cartes.map(c => carteLarge({ uuid: c.s.uuid, fond: fondSerie(c.s), titre: c.s.title,
+      puce: epCode(c.premier.season, c.premier.number),
+      sous: c.dispo ? (c.dispo > 1 ? `${c.dispo} épisodes disponibles` : 'Disponible') : `Sortie ${compteARebours(c.premier.air_date)}` })).join('')}</div>`);
+  }
+
+  // Sortent bientôt (le calendrier complet reste dans Séries › À suivre)
+  const bientot = waiting.filter(w => w.nx.ep.air_date).slice(0, 12);
+  if (bientot.length) {
+    parts.push(teteSection('Sortent bientôt', lienAller('Calendrier', 'data-tab="series" data-vue="suivre" data-ancre="calendrier"')));
+    parts.push(`<div class="hrow">${bientot.map(({ s, nx }) => carteLarge({ uuid: s.uuid, fond: fondSerie(s), titre: s.title,
+      puce: dateCourte(nx.ep.air_date), sous: `${epCode(nx.season, nx.ep.number)} · ${compteARebours(nx.ep.air_date)}` })).join('')}</div>`);
+  }
+
+  // À commencer
+  if (aCommencer.length) {
+    parts.push(teteSection(`À commencer <span class="cnt">${aCommencer.length}</span>`, lienAller('Tout voir', 'data-tab="series" data-vue="suivre" data-ancre="a-commencer"')));
+    parts.push(`<div class="hrow">${aCommencer.slice(0, 15).map(({ s }) => carteAffiche('open-series', s, 'tv',
+      pl(sortedSeasons(s).filter(x => !x.is_specials && x.number !== 0).length, 'saison'))).join('')}</div>`);
+  }
+
+  // Films à voir : les derniers ajoutés
+  const aVoir = state.movies.filter(m => !m.is_watched).sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+  if (aVoir.length) {
+    parts.push(teteSection(`Films à voir <span class="cnt">${aVoir.length}</span>`, lienAller('Tout voir', 'data-tab="movies" data-vue="avoir"')));
+    parts.push(`<div class="hrow">${aVoir.slice(0, 15).map(m => {
+      const mt = state.tmdb[m.uuid] || {};
+      const sous = mt.release && mt.release > auj ? `Sortie ${compteARebours(mt.release)}` : mt.runtime ? fmtDuree(mt.runtime) : (m.year ? String(m.year) : '');
+      return carteAffiche('open-movie', m, 'movie', sous);
+    }).join('')}</div>`);
+  }
+
+  // Pour toi (séries et films), calculé une fois par session
+  if (tmdbKey()) {
+    const d = state.discoverData.foryou;
+    if (!d) loadSection('foryou');
+    const squelette = `<div class="hrow">${'<div class="pcard"><div class="poster sk"></div></div>'.repeat(4)}</div>`;
+    for (const [titre, liste, type] of [['Séries pour toi', d && d.tv, 'tv'], ['Films pour toi', d && d.mv, 'movie']]) {
+      const items = fresh(liste).slice(0, 15);
+      if (d && (d.error || !items.length)) continue;
+      parts.push(teteSection(titre, lienAller('Plus', `data-tab="discover" data-src="foryou" data-type="${type}"`)));
+      parts.push(d ? `<div class="hrow">${items.map(discoverCardH).join('')}</div>` : squelette);
+    }
+  }
+
+  // Sagas à compléter (déjà analysées depuis Films › Sagas)
+  if (tmdbKey() && Object.keys(sagasCache).length) {
+    const { parId, ids } = sagasBibliotheque();
+    const enCours = [];
+    for (const id of ids) {
+      const saga = sagasCache[id];
+      if (!saga || saga.parts.length < 2) continue;
+      const b = bilanSaga(saga, parId);
+      if (b.total && b.vus && b.vus < b.total) enCours.push({ saga, b });
+    }
+    enCours.sort((a, b) => b.b.vus / b.b.total - a.b.vus / a.b.total);
+    if (enCours.length) {
+      parts.push(teteSection(`Sagas à compléter <span class="cnt">${enCours.length}</span>`, lienAller('Tout voir', 'data-tab="movies" data-vue="sagas"')));
+      parts.push(`<div class="hrow">${enCours.slice(0, 12).map(({ saga, b }) => `<div class="pcard" data-action="open-saga" data-id="${saga.id}">
+        <div class="poster">${saga.poster ? `<img loading="lazy" src="${saga.poster}" alt="">` : esc(initials(nomSaga(saga.name)))}</div>
+        <div class="mtitle">${esc(nomSaga(saga.name))}</div>
+        <div class="why">${b.vus}/${b.total} vus${b.prochain ? ' · ' + esc(b.prochain.title) : ''}</div>
+      </div>`).join('')}</div>`);
+    }
+  }
+  return parts.join('');
+}
+
+/* Carrousel « Reprendre » : revient sur la série affichée avant le rafraîchissement,
+   et tient à jour le compteur « 3 / 20 » */
+function initAccueil() {
+  const c = $('#reprendre');
+  if (!c) return;
+  const cartes = [...c.querySelectorAll('.rcard')], pos = $('#reprendre-pos');
+  const pas = () => cartes.length > 1 ? cartes[1].offsetLeft - cartes[0].offsetLeft : c.clientWidth;
+  const cible = carrouselUuid && cartes.find(x => x.dataset.uuid === carrouselUuid);
+  if (cible) c.scrollLeft = cible.offsetLeft - cartes[0].offsetLeft;
+  const suivre = () => {
+    const i = Math.max(0, Math.min(cartes.length - 1, Math.round(c.scrollLeft / (pas() || 1))));
+    carrouselUuid = cartes[i].dataset.uuid;
+    if (pos) pos.textContent = `${i + 1} / ${cartes.length}`;
+  };
+  c.addEventListener('scroll', () => { clearTimeout(c._t); c._t = setTimeout(suivre, 60); }, { passive: true });
+  suivre();
+  if (carrouselAnim) { // la carte qui vient d'être cochée annonce son nouvel épisode
+    const carte = cartes.find(x => x.dataset.uuid === carrouselAnim);
+    if (carte) carte.classList.add('maj');
+    carrouselAnim = null;
+  }
 }
 
 /* pastille sur l'affiche : date à venir sinon note */
@@ -2684,6 +2917,7 @@ function discoverCardH(n) {
     ${lib ? `<span class="inlib">${ICONS.check}</span>`
           : `<button class="qadd" data-action="quick-add" data-key="${key}" title="Ajouter">${ICONS.plus}</button>`}
     <div class="mtitle">${esc(n.title)}</div>
+    ${n.why ? `<div class="why">${esc(n.why)}</div>` : ''}
   </div>`;
 }
 
@@ -4224,7 +4458,9 @@ function openSeries(uuid, depuis) {
     detailUuid = uuid;
     renderDetail();
   };
-  const source = !detailUuid && depuis && depuis.querySelector ? depuis.querySelector('.poster') : null;
+  // image de départ : celle de la carte touchée (carrousel de l'Accueil, vignette, affiche)
+  const carte = depuis && depuis.closest ? (depuis.closest('.rcard') || depuis) : null;
+  const source = !detailUuid && carte ? (carte.matches('[data-morph]') ? carte : carte.querySelector('[data-morph], .poster')) : null;
   if (source && document.startViewTransition && !mouvementReduit()) {
     source.style.viewTransitionName = 'affiche';
     transition('fiche', () => {
@@ -4233,11 +4469,10 @@ function openSeries(uuid, depuis) {
       try { ouvrir(); } finally { ouvertureAnimee = false; }
       const ov = $('#overlay-root .overlay');
       if (ov) ov.style.animation = 'none'; // la transition remplace le glissement habituel
-      const affiche = $('#overlay-root .dethead .poster'), fond = $('#overlay-root .backdrop');
-      if (affiche) affiche.style.viewTransitionName = 'affiche';
-      if (fond) fond.style.viewTransitionName = 'fond';
+      const image = $('#overlay-root .fhero');
+      if (image) image.style.viewTransitionName = 'affiche'; // elle devient la grande image de la fiche
     }).fini.then(() => {
-      for (const el of document.querySelectorAll('#overlay-root .dethead .poster, #overlay-root .backdrop')) el.style.viewTransitionName = '';
+      for (const el of document.querySelectorAll('#overlay-root .fhero')) el.style.viewTransitionName = '';
     });
   } else ouvrir();
   const s = state.series.find(x => x.uuid === uuid);
@@ -4249,104 +4484,163 @@ function closeDetail() {
   if (detailUuid) history.back(); // le popstate fait la fermeture
 }
 
+/* Images et durées des épisodes d'une saison chez le fournisseur (gardées pour la session) */
+const episodesSaison = new Map();
+const cleSaison = (s, num) => { const m = state.tmdb[s.uuid]; return m && m.id ? `${m.provider}:${m.id}:${num}` : null; };
+async function chargerEpisodesSaison(s, num) {
+  const meta = state.tmdb[s.uuid], cle = cleSaison(s, num);
+  if (!cle) return null;
+  if (episodesSaison.has(cle)) return episodesSaison.get(cle);
+  const res = {};
+  try {
+    if (meta.provider === 'tmdb' && tmdbKey()) {
+      const d = await tget(`/tv/${meta.id}/season/${num}`);
+      for (const e of d.episodes || []) res[e.episode_number] = { img: e.still_path ? safeImg(TMDB_IMG + 'w300' + e.still_path) : null, duree: e.runtime || null };
+    } else if (meta.provider === 'tvmaze') {
+      for (const e of await jget(`${TVMAZE}/shows/${meta.id}/episodes`)) if (e.season === num) res[e.number] = { img: safeImg(e.image && e.image.medium), duree: e.runtime || null };
+    }
+  } catch (e) {} // pas d'images cette fois : la fiche reste utilisable
+  episodesSaison.set(cle, res);
+  return res;
+}
+const dateCourteAn = d => {
+  const x = asDate(d);
+  return x.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', ...(x.getFullYear() !== new Date().getFullYear() ? { year: 'numeric' } : {}) });
+};
+
+/* Fiche d'une série, façon cinéma : grande image avec le titre dessus, saisons en
+   onglets, image de chaque épisode, bouton « Vu » fixé en bas sous le pouce */
 function renderDetail() {
   const s = state.series.find(x => x.uuid === detailUuid);
   if (!s) return closeDetail();
   const meta = state.tmdb[s.uuid] || {};
   const p = progress(s);
   const pct = p.total ? Math.round(p.watched / p.total * 100) : 0;
-  const seasons = sortedSeasons(s).filter(x => !x.is_specials && x.number !== 0);
+  const saisons = sortedSeasons(s).filter(x => !x.is_specials && x.number !== 0 && x.episodes.some(e => !e.special));
+  const speciaux = [];
+  for (const sea of sortedSeasons(s)) {
+    const saisonSpeciale = sea.is_specials || sea.number === 0;
+    for (const ep of [...sea.episodes].sort((a, b) => a.number - b.number)) if (saisonSpeciale || ep.special) speciaux.push({ sea: sea.number, ep });
+  }
   const nx = nextUnwatched(s);
-  const bg = meta.backdrop || meta.posterBig;
-  const memeEcran = remplirOverlay(`
-  <div class="overlay">
+  const nep = nextEpValide(meta);
+  // saison affichée : celle choisie, sinon celle du prochain épisode, sinon la dernière
+  let choix = state.saisonFiche[s.uuid];
+  if (choix === undefined || (choix === 'sp' ? !speciaux.length : !saisons.some(x => x.number === choix)))
+    choix = nx ? nx.season : (saisons.length ? saisons[saisons.length - 1].number : 'sp');
+  const special = choix === 'sp';
+  const liste = special ? speciaux
+    : (saisons.find(x => x.number === choix) || { episodes: [] }).episodes
+      .filter(e => !e.special).sort((a, b) => a.number - b.number).map(ep => ({ sea: choix, ep }));
+  const vus = liste.filter(x => x.ep.is_watched).length;
+  // images des épisodes : la saison affichée (les spéciaux seulement s'ils sont tous en « saison 0 »)
+  const numImages = special ? (speciaux.every(x => x.sea === 0) ? 0 : null) : choix;
+  const images = (numImages !== null && episodesSaison.get(cleSaison(s, numImages))) || {};
+
+  const bg = meta.backdrop || meta.posterBig || meta.poster;
+  const genres = (meta.genres || []).filter(g => GENRE_NAMES[g]).slice(0, 2).map(g => GENRE_NAMES[g]);
+  const note = meta.detail && meta.detail.rating;
+  const infos = [meta.year || titleYear(s.title), ...genres, saisons.length ? pl(saisons.length, 'saison') : null,
+    note ? `★ ${String(note).replace('.', ',')}` : null].filter(Boolean).join(' · ');
+  const sortie = nx && isFuture(nx.ep) ? { code: epCode(nx.season, nx.ep.number), date: nx.ep.air_date }
+    : nep ? { code: epCode(nep.season, nep.episode), date: nep.date } : null;
+
+  const carte = ({ sea, ep }) => {
+    const futur = isFuture(ep), suivant = !!nx && nx.ep === ep, img = images[ep.number] || {};
+    const detail = futur ? `Sortie ${compteARebours(ep.air_date)}`
+      : ep.is_watched ? (ep.watched_at ? `Vu le ${dateCourteAn(ep.watched_at)}` : 'Vu')
+      : [img.duree ? `${img.duree} min` : null, ep.air_date ? dateCourteAn(ep.air_date) : null].filter(Boolean).join(' · ');
+    return `<div class="eprow ${ep.is_watched ? 'watched' : ''} ${futur ? 'future' : ''} ${suivant ? 'suivant' : ''}"
+         data-action="open-ep" data-season="${sea}" data-ep="${ep.number}"${special ? ' data-special="1"' : ''}>
+      <div class="epimg">${img.img ? `<img loading="lazy" src="${img.img}" alt="">` : `<span>${pad2(ep.number)}</span>`}</div>
+      <div class="nm">
+        ${suivant ? '<div class="epsuiv">À voir ensuite</div>' : ''}
+        <div class="ept">${ep.number}. ${esc(ep.name || (special ? 'Spécial ' : 'Épisode ') + ep.number)}</div>
+        ${detail ? `<div class="d">${detail}</div>` : ''}
+      </div>
+      <button class="epcheck" data-action="toggle-ep" data-season="${sea}" data-ep="${ep.number}"${special ? ' data-special="1"' : ''}
+              aria-label="${ep.is_watched ? 'Marquer non vu' : 'Marquer vu'}">${ICONS.check}</button>
+    </div>`;
+  };
+  const onglets = saisons.map(sea => {
+    const eps = sea.episodes.filter(e => !e.special), fini = eps.length && eps.every(e => e.is_watched), on = choix === sea.number;
+    return `<button class="spill ${on ? 'on' : ''}" data-action="fiche-saison" data-n="${sea.number}" role="tab" aria-selected="${on}">Saison ${sea.number}${fini ? ' ✓' : ''}</button>`;
+  }).join('') + (speciaux.length ? `<button class="spill ${special ? 'on' : ''}" data-action="fiche-saison" data-n="sp" role="tab" aria-selected="${special}">Spéciaux</button>` : '');
+  const prochain = nx && !isFuture(nx.ep) ? nx : null;
+  const barre = prochain
+    ? `<button class="btn fvu" data-action="mark-next" data-uuid="${s.uuid}" data-stay="1">${ICONS.check} Vu ${epCode(prochain.season, prochain.ep.number)}</button>
+       <button class="iconbtn fdate" data-action="open-ep" data-season="${prochain.season}" data-ep="${prochain.ep.number}" aria-label="Choisir la date de visionnage">${ICONS.calendar}</button>`
+    : `<div class="fbar-info">${s.status === 'stopped' ? 'Série arrêtée'
+        : sortie ? `${sortie.code} ${sortie.date ? compteARebours(sortie.date) : 'annoncé'}`
+        : p.total && p.watched === p.total ? 'Série terminée ✓' : 'À jour ✓'}</div>`;
+
+  remplirOverlay(`
+  <div class="overlay fiche">
     <div class="detbar">
       <button class="iconbtn" data-action="close-detail" aria-label="Retour">${ICONS.back}</button>
       <span style="flex:1"></span>
-      <button class="iconbtn" data-action="refresh-one" title="Actualiser cette série">${ICONS.refresh}</button>
+      <button class="iconbtn ${s.is_favorite ? 'fav' : ''}" data-action="toggle-fav" aria-label="${s.is_favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}">${s.is_favorite ? ICONS.star : ICONS.starO}</button>
+      <button class="iconbtn" data-action="fiche-menu" aria-label="Plus d'options">${ICONS.more}</button>
     </div>
-    <div class="backdrop" ${bg ? `style="background-image:url('${bg}')"` : ''}></div>
-    <div class="dethead">
-      ${posterHtml(s, 'tv', true)}
-      <div class="info">
-        <h2>${esc(s.title)}</h2>
-        <div class="meta">
-          <span class="badge ${s.status === 'up_to_date' ? 'ok' : s.status === 'stopped' ? '' : 'acc'}">${STATUS_LABEL[s.status] || ''}</span>
-          ${meta.tvStatus === 'Ended' || meta.tvStatus === 'Canceled' ? '<span class="badge">Série terminée</span>' : ''}
-          ${s.is_favorite ? '<span class="badge warn">★ Favori</span>' : ''}
-        </div>
-        <div class="meta">${p.watched} / ${p.total} épisodes vus (${pct}%)</div>
-        ${(() => { const nep = nextEpValide(meta); return nep ? `<div class="meta">📅 ${epCode(nep.season, nep.episode)} ${nep.date ? `${compteARebours(nep.date)} <span style="opacity:.7">(${fmtDate(nep.date)})</span>` : 'date à venir'}</div>` : ''; })()}
-        <div class="progress ${pct === 100 ? 'full' : ''}" style="margin-top:10px;max-width:160px"><i style="width:0" data-w="${pct}%" data-k="d-${s.uuid}"></i></div>
+    <div class="backdrop fhero"${bg ? ` style="background-image:url('${bg}')"` : ''}></div>
+    <div class="fhead">
+      <h2>${esc(s.title)}</h2>
+      ${infos ? `<div class="fmeta">${esc(infos)}</div>` : ''}
+      <div class="fbadges">
+        <span class="badge ${s.status === 'up_to_date' ? 'ok' : s.status === 'stopped' ? '' : 'acc'}">${STATUS_LABEL[s.status] || ''}</span>
+        ${meta.tvStatus === 'Ended' || meta.tvStatus === 'Canceled' ? '<span class="badge">Série terminée</span>' : ''}
+        ${sortie && sortie.date ? `<span class="badge warn">📅 ${sortie.code} ${compteARebours(sortie.date)}</span>` : ''}
       </div>
+      <div class="fprog"><div class="progress ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%" data-k="d-${s.uuid}"></i></div><span>${p.watched} / ${p.total}</span></div>
     </div>
     ${meta.overview ? `<p class="overview clamp" data-action="expand-overview">${esc(meta.overview)}</p>` : ''}
     ${serieExtraHtml(meta)}
-    <div class="detactions">
-      ${nx && !isFuture(nx.ep) ? `<button class="btn small" data-action="mark-next" data-uuid="${s.uuid}" data-stay="1">${ICONS.check} Vu ${epCode(nx.season, nx.ep.number)}</button>` : ''}
-      ${p.watched < p.total ? `<button class="btn ghost small" data-action="mark-all-watched">✓✓ Tout vu</button>` : ''}
-      <button class="btn ghost small" data-action="toggle-fav">${s.is_favorite ? '★ Favori' : '☆ Favori'}</button>
-      <button class="btn ghost small" data-action="toggle-stop">${s.status === 'stopped' ? '▶ Reprendre' : '⏸ Arrêter'}</button>
-      <button class="btn danger small" data-action="delete-series">Supprimer</button>
+    ${onglets ? `<div class="saisons" role="tablist" aria-label="Saisons">${onglets}</div>` : ''}
+    <div class="saison-tete">
+      <span>${special ? 'Spéciaux' : `Saison ${choix}`} · ${vus}/${liste.length} vus</span>
+      ${!special && liste.length ? `<button class="btn ghost small" data-action="mark-season" data-season="${choix}" data-watched="${vus < liste.length ? 1 : 0}">${vus < liste.length ? 'Tout vu' : 'Tout non vu'}</button>` : ''}
     </div>
-    ${seasons.map(sea => {
-      const eps = sea.episodes.filter(e => !e.special).sort((a, b) => a.number - b.number);
-      const w = eps.filter(e => e.is_watched).length;
-      const open = nx && nx.season === sea.number;
-      return `<details class="season" data-n="${sea.number}" ${open ? 'open' : ''}>
-        <summary>
-          <span class="arrow">${ICONS.chevron}</span>
-          <span class="n">Saison ${sea.number}</span>
-          <span class="cnt">${w}/${eps.length}</span>
-          <button class="btn ghost small seasonbtn" data-action="mark-season" data-season="${sea.number}" data-watched="${w < eps.length ? 1 : 0}">
-            ${w < eps.length ? 'Tout vu' : 'Tout non vu'}
-          </button>
-        </summary>
-        ${eps.map(ep => `
-          <div class="eprow ${ep.is_watched ? 'watched' : ''} ${isFuture(ep) ? 'future' : ''}"
-               data-action="open-ep" data-season="${sea.number}" data-ep="${ep.number}">
-            <span class="num">${pad2(ep.number)}</span>
-            <span class="nm">${esc(ep.name || 'Épisode ' + ep.number)}
-              ${isFuture(ep) ? `<span class="d">· ${compteARebours(ep.air_date)}</span>`
-                : ep.watched_at ? `<span class="d">· vu le ${fmtDate(ep.watched_at)}</span>` : ''}
-            </span>
-            <button class="epcheck" data-action="toggle-ep" data-season="${sea.number}" data-ep="${ep.number}"
-                    aria-label="${ep.is_watched ? 'Marquer non vu' : 'Marquer vu'}">${ICONS.check}</button>
-          </div>`).join('')}
-      </details>`;
-    }).join('')}
-    ${(() => {
-      // épisodes spéciaux (saison 0, OAV, bonus…) — section repliée
-      const specials = [];
-      for (const sea of sortedSeasons(s)) {
-        const specSeason = sea.is_specials || sea.number === 0;
-        for (const ep of [...sea.episodes].sort((a, b) => a.number - b.number))
-          if (specSeason || ep.special) specials.push({ sea: sea.number, ep });
-      }
-      if (!specials.length) return '';
-      const w = specials.filter(x => x.ep.is_watched).length;
-      return `<details class="season" data-n="speciaux">
-        <summary><span class="arrow">${ICONS.chevron}</span><span class="n">🎁 Spéciaux</span><span class="cnt">${w}/${specials.length}</span></summary>
-        ${specials.map(({ sea, ep }) => `
-          <div class="eprow ${ep.is_watched ? 'watched' : ''} ${isFuture(ep) ? 'future' : ''}" data-action="open-ep" data-season="${sea}" data-ep="${ep.number}" data-special="1">
-            <span class="num">${pad2(ep.number)}</span>
-            <span class="nm">${esc(ep.name || 'Spécial ' + ep.number)}</span>
-            <button class="epcheck" data-action="toggle-ep" data-season="${sea}" data-ep="${ep.number}" data-special="1"
-                    aria-label="${ep.is_watched ? 'Marquer non vu' : 'Marquer vu'}">${ICONS.check}</button>
-          </div>`).join('')}
-      </details>`;
-    })()}
+    <div class="episodes">${liste.length ? liste.map(carte).join('') : '<p class="loadrow">Aucun épisode.</p>'}</div>
+    <div class="fichebar">${barre}</div>
   </div>`);
   loadVisiblePosters();
   animateBars($('#overlay-root'));
+  // onglet de la saison affichée visible dans sa rangée
+  const rangee = $('#overlay-root .saisons'), actif = rangee && rangee.querySelector('.spill.on');
+  if (rangee && actif) rangee.scrollLeft = actif.offsetLeft - rangee.offsetLeft - 16;
   if (detailUuid !== lastDetailAnim) { // cascade à l'ouverture, pas à chaque coche
     lastDetailAnim = detailUuid;
-    // ouverture animée : l'en-tête (avec l'affiche qui s'envole) n'a pas besoin de cascade
-    cascade($('#overlay-root'), ouvertureAnimee ? '#serie-extra, .detactions, details.season' : '.dethead, #serie-extra, .detactions, details.season');
+    // ouverture animée : l'image qui s'envole n'a pas besoin de cascade
+    cascade($('#overlay-root'), ouvertureAnimee ? '.saisons, .saison-tete, .eprow' : '.fhead, .saisons, .saison-tete, .eprow');
   }
   enrichSerieDetail(s);
+  // images des épisodes : une requête par saison, puis la fiche se redessine avec
+  if (numImages !== null && cleSaison(s, numImages) && !episodesSaison.has(cleSaison(s, numImages))) {
+    const uuid = s.uuid;
+    chargerEpisodesSaison(s, numImages).then(() => { if (detailUuid === uuid) renderDetail(); });
+  }
 }
 let lastDetailAnim = null;
+
+/* Menu « … » de la fiche : les actions moins fréquentes */
+function openMenuFiche(s) {
+  if (!modaleOuverte()) pushLayer('modal');
+  modaleCourante = null;
+  const p = progress(s);
+  $('#modal-root').innerHTML = `
+  <div class="modal-bg" data-action="close-modal">
+    <div class="modal">
+      <div class="grab"></div>
+      <h3>${esc(s.title)}</h3>
+      <div class="menu-actions">
+        ${p.watched < p.total ? `<button class="btn ghost" data-action="menu-fiche" data-a="mark-all-watched">${ICONS.check} Tout marquer comme vu</button>` : ''}
+        <button class="btn ghost" data-action="menu-fiche" data-a="refresh-one">${ICONS.refresh} Actualiser la série</button>
+        <button class="btn ghost" data-action="menu-fiche" data-a="toggle-stop">${s.status === 'stopped' ? '▶ Reprendre la série' : '⏸ Arrêter la série'}</button>
+        <button class="btn danger" data-action="menu-fiche" data-a="delete-series">Supprimer la série</button>
+      </div>
+    </div>
+  </div>`;
+}
 
 /* ---------------- Fiche d'un épisode + date de visionnage ---------------- */
 let cibleVu = null; // ce que concernent les boutons « Vu maintenant / à sa diffusion / … »
@@ -4632,13 +4926,13 @@ async function enrichModal(n) {
 
 /* ---------------- Événements ---------------- */
 document.querySelectorAll('nav.tabs button').forEach((b, i) => {
-  b.querySelector('.nico').innerHTML = [ICONS.tv, ICONS.film, ICONS.compass, ICONS.user][i];
+  b.querySelector('.nico').innerHTML = [ICONS.home, ICONS.tv, ICONS.film, ICONS.compass][i];
   b.addEventListener('click', () => setTab(b.dataset.tab));
 });
 $('#btn-add').innerHTML = ICONS.plus;
 $('#btn-refresh').innerHTML = ICONS.refresh;
-$('#btn-dice').innerHTML = ICONS.dice;
-$('#btn-dice').addEventListener('click', () => { state.roulettePick = null; openRoulette(); });
+$('#btn-profil').innerHTML = ICONS.user;
+$('#btn-profil').addEventListener('click', () => setTab('settings'));
 $('#btn-add').addEventListener('click', () => {
   // le champ n'existe qu'une fois la transition vers Explorer faite
   setTab('discover').then(() => { const i = $('#discover-search'); if (i) i.focus(); });
@@ -4714,6 +5008,36 @@ document.body.addEventListener('click', async e => {
   else if (act === 'movie-filter') { state.movieFilter = el.dataset.f; state.movieSearch = ''; state.movieLimit = 60; render(); }
   else if (act === 'series-reset-filters') { state.seriesSort = 'recent'; state.seriesGenre = -1; state.seriesDecade = 'all'; render(); }
   else if (act === 'open-series') openSeries(el.dataset.uuid, el);
+  else if (act === 'roulette') { state.roulettePick = null; openRoulette(); }
+  else if (act === 'aller') {
+    // liens de l'Accueil (« Tout voir », « Calendrier »…) vers le bon onglet, au bon endroit
+    const { tab, vue, src, type, ancre } = el.dataset;
+    if (tab === 'series' && vue) state.seriesView = vue;
+    if (tab === 'movies' && vue) { state.movieView = vue; state.movieSearch = ''; }
+    if (tab === 'discover') { if (src) state.exploreSource = src; if (type) state.exploreType = type; }
+    if (ancre === 'a-commencer') state.aCommencerTout = true;
+    setTab(tab).then(() => {
+      const a = ancre && document.getElementById(ancre);
+      if (a) window.scrollTo(0, a.getBoundingClientRect().top + scrollY - 80);
+    });
+  }
+  else if (act === 'fiche-saison' && s) { state.saisonFiche[s.uuid] = el.dataset.n === 'sp' ? 'sp' : +el.dataset.n; renderDetail(); }
+  else if (act === 'fiche-menu' && s) openMenuFiche(s);
+  else if (act === 'menu-fiche') {
+    // l'action choisie dans le menu « … » de la fiche, une fois le menu refermé
+    const action = el.dataset.a;
+    closeModalViaHistory();
+    setTimeout(() => {
+      const ov = $('#overlay-root .overlay');
+      if (!ov || !detailUuid) return;
+      const b = document.createElement('button');
+      b.dataset.action = action;
+      b.hidden = true;
+      ov.appendChild(b);
+      b.click();
+      b.remove();
+    }, 280);
+  }
   else if (act === 'close-detail') closeDetail();
   else if (act === 'close-modal') { if (e.target === el) closeModalViaHistory(); }
   else if (act === 'expand-overview') el.classList.toggle('clamp');
@@ -4854,6 +5178,8 @@ document.body.addEventListener('click', async e => {
       const ep = await markNext(target);
       if (!ep) return;
       if (navigator.vibrate) navigator.vibrate(12);
+      // Accueil : le carrousel reste sur cette série, qui affiche son nouvel épisode
+      if (!el.dataset.stay && state.tab === 'home') carrouselUuid = carrouselAnim = target.uuid;
       el.dataset.stay ? renderDetail() : render();
       eclat(zone);
       const undo = () => restaurerSerie(snap);
@@ -5127,7 +5453,7 @@ function transition(type, maj) {
   t.finished.then(nettoie, nettoie);
   return { pret: t.updateCallbackDone.catch(e => console.error(e)), fini: t.finished.catch(() => {}) };
 }
-const estVisible = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight; };
+const estVisible = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth; };
 
 /* Trait rouge de l'onglet actif : il glisse jusqu'au-dessus du nouvel onglet */
 function placerPilule() {
@@ -5349,8 +5675,9 @@ function afterRender() {
   const key = cleVue();
   if (key !== lastViewKey) {
     lastViewKey = key;
-    cascade($('#view'), '.mcard, .scard, .pcard, .panel, .hero');
+    cascade($('#view'), '.rcard, .hsec, .lcard, .mcard, .scard, .pcard, .panel, .hero');
   }
+  if (state.tab === 'home') initAccueil();
   const heros = $('#heros');
   if (heros) {
     heros.addEventListener('scroll', () => {
