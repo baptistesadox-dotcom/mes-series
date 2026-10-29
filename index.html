@@ -333,8 +333,6 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 .nvep .d{font-size:11.5px;color:var(--txt2);flex:none}
 
 /* ---------- Sagas ---------- */
-#modal-saga{margin-top:12px}
-#modal-saga:empty{display:none}
 .sagarow{display:flex;align-items:center;gap:11px;padding:8px 0;border-top:1px solid rgba(255,255,255,.06)}
 .sagarow .poster{width:42px;height:63px;font-size:12px}
 .sagarow .mid{flex:1;min-width:0}
@@ -625,7 +623,6 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
   font-size:10.5px;color:var(--txt2);margin-top:2px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85;
 }
-.pourquoi{font-size:12.5px;color:var(--txt2);margin:-2px 0 10px}
 
 /* ---------- Hint banner ---------- */
 .hint{
@@ -668,6 +665,68 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
   color:var(--txt);padding:0;font-size:inherit;font-family:inherit;
   text-decoration:underline;text-decoration-style:dotted;text-underline-offset:3px;
 }
+/* ---------- Fiche d'un film ou d'un titre d'Explorer (feuille qui monte du bas) ---------- */
+.modal.fiche-t{max-height:92vh;padding-top:0}
+.ft-img{position:relative;height:200px;margin:0 -18px;background:var(--bg3) center 35%/cover no-repeat}
+.ft-img::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,23,23,.3),rgba(26,23,23,0) 30%,rgba(26,23,23,0) 40%,var(--bg2))}
+.ft-img.vide{height:84px;background:linear-gradient(160deg,#3A1515,var(--bg2))}
+.fiche-t .grab{position:absolute;left:50%;top:9px;z-index:2;margin:0 0 0 -19px;background:rgba(255,255,255,.55)}
+.ft-haut{position:relative;z-index:2;display:flex;gap:14px;align-items:flex-end;margin-top:-70px}
+.ft-img.vide + .ft-haut{margin-top:-40px}
+.ft-haut .poster{width:92px;height:138px;border-radius:11px;box-shadow:0 12px 30px rgba(0,0,0,.6)}
+.ft-titre{flex:1;min-width:0;padding-bottom:2px}
+.ft-raison{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#FCA5A5;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fiche-t .ft-titre h3{margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em;line-height:1.12}
+.ft-meta{font-size:13px;font-weight:600;color:#D6D0CC;margin-top:5px}
+.ft-origine{font-size:12px;font-weight:600;color:var(--txt2);margin-top:2px}
+.ft-origine:empty{display:none}
+.ft-puces{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+.ft-puces:empty{display:none}
+.ft-puce{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:12px;font-size:11.5px;font-weight:800;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1)}
+.ft-puce.or{color:var(--ok);background:rgba(245,201,110,.1);border-color:rgba(245,201,110,.25)}
+.ft-puce.rouge{color:#FCA5A5;background:rgba(220,38,38,.16);border-color:rgba(248,113,113,.3)}
+.ft-age{display:inline-flex;align-items:center;height:24px;padding:0 7px;border-radius:6px;border:1.5px solid rgba(245,242,240,.75);font-size:11.5px;font-weight:800}
+.ft-actions{display:flex;gap:8px;margin-top:16px}
+.ft-actions .btn{flex:1.25;height:46px;padding:0 14px;border-radius:13px;font-size:15px}
+.ft-actions .verre{flex:1;min-width:0;height:46px;padding:0 12px;border-radius:13px;font-size:14px;white-space:nowrap;overflow:hidden}
+.ft-actions svg{width:19px;height:19px;flex:none}
+.ft-carre{flex:none;width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;color:var(--txt);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)}
+.ft-carre.on{color:var(--warn)}
+.ft-dedans{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;height:46px;border-radius:13px;font-size:14px;font-weight:800;color:var(--ok);background:rgba(245,201,110,.1);border:1px solid rgba(245,201,110,.25)}
+.ft-plus{display:none;gap:8px;margin-top:8px}
+.ft-plus.ouvert{display:flex}
+.ft-plus .btn{flex:1}
+.ft-pourquoi{margin:14px 0 0;padding-left:10px;border-left:2px solid var(--acc);font-size:12.5px;line-height:1.45;color:var(--txt2)}
+.ft-sec{margin-top:20px}
+.ft-sec h4{margin:0 0 10px;font-size:12px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--txt2)}
+.ft-resume{margin:0;font-size:14px;line-height:1.58;color:#E7E2DF}
+.ft-resume.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.ft-suite{margin-top:4px;font-size:13px;font-weight:800;color:var(--acc2)}
+.ft-serie{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ft-info{padding:10px 12px;border-radius:12px;background:var(--bg3)}
+.ft-info span{display:block;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2)}
+.ft-info b{display:block;font-size:13.5px;font-weight:700;margin-top:3px}
+.ft-casting{display:flex;gap:10px;overflow-x:auto;margin:0 -18px;padding:0 18px 4px;scrollbar-width:none}
+.ft-casting::-webkit-scrollbar{display:none}
+.ft-pers{flex:none;width:66px;text-align:center}
+.ft-pers .poster{width:56px;height:56px;border-radius:50%;margin:0 auto;font-size:15px}
+.ft-pers .poster img{object-position:center 20%}
+.ft-pers b{display:block;font-size:11px;font-weight:700;margin-top:6px;line-height:1.2}
+.ft-pers span{display:block;font-size:10.5px;color:var(--txt2);margin-top:2px;line-height:1.2}
+.ft-equipe{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;margin:14px 0 0;font-size:13px}
+.ft-equipe dt{color:var(--txt2);font-weight:700}
+.ft-equipe dd{margin:0;font-weight:700}
+.ft-ligne{display:flex;align-items:center;gap:12px;width:100%;padding:10px;margin-top:10px;border-radius:14px;background:var(--bg3);color:var(--txt);text-decoration:none;text-align:left}
+.ft-liens .ft-ligne:first-child{margin-top:0}
+.ft-vign{flex:none;width:110px;height:62px;border-radius:10px;background:var(--line) center/cover no-repeat;display:flex;align-items:center;justify-content:center}
+.ft-vign i{width:30px;height:30px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;color:#FFFFFF}
+.ft-vign i svg{width:14px;height:14px}
+.ft-pile{flex:none;position:relative;width:110px;height:62px}
+.ft-pile img,.ft-pile span{position:absolute;top:0;width:42px;height:62px;border-radius:6px;object-fit:cover;border:2px solid var(--bg3);background:var(--line)}
+.ft-lt{flex:1;min-width:0}
+.ft-lt b{display:block;font-size:14px;font-weight:800}
+.ft-lt span{display:block;font-size:12px;color:var(--txt2);margin-top:2px}
+.ft-ligne > svg{flex:none;width:18px;height:18px;color:var(--txt2)}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid var(--txt2);border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-3px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .hidden{display:none!important}
@@ -3486,8 +3545,6 @@ let sagasCache = {};
 /* « Shrek - Saga », « The Kissing Booth Collection » → « Shrek », « The Kissing Booth » */
 const nomSaga = n => String(n || '').replace(/\s*[-–]?\s*(saga|collection)\s*$/i, '').trim() || 'Saga';
 const idSaga = x => { const n = +x; return Number.isInteger(n) && n > 0 ? n : null; };
-const sagaBtn = c => idSaga(c.id)
-  ? `<button class="btn ghost small" data-action="open-saga" data-id="${idSaga(c.id)}">🎞️ Saga ${esc(nomSaga(c.name))}</button>` : '';
 let sagasEcriture = null;
 function enregistrerSagas() { // regroupe les écritures d'une rafale de chargements
   clearTimeout(sagasEcriture);
@@ -3657,57 +3714,210 @@ async function openSagaModal(idBrut) {
 }
 
 /* ---------------- Fiche film (bibliothèque) ---------------- */
+/* ---------------- Fiche d'un film ou d'un titre d'Explorer ----------------
+   Feuille qui monte du bas : grande image, affiche, pays et langue, âge conseillé, actions,
+   résumé, infos de la série, casting et équipe, bande-annonce, saga. Les détails viennent de
+   TMDB (de TVMaze sans clé) et restent en mémoire pour la session : rouvrir une fiche est immédiat. */
+const detailsTitres = new Map(), detailsEnCours = new Set(), sagasDemandees = new Set(), resumesOuverts = new Set(), filmsResolus = new Set();
+const enFrancais = type => {
+  try { const noms = new Intl.DisplayNames(['fr'], { type }); return c => { try { return c ? noms.of(c) : null; } catch (e) { return null; } }; }
+  catch (e) { return () => null; }
+};
+const nomPays = enFrancais('region'), nomLangue = enFrancais('language');
+const STATUT_SERIE = { 'Returning Series': 'En cours', Running: 'En cours', Ended: 'Terminée', Canceled: 'Annulée', 'In Production': 'En production', Planned: 'Annoncée', 'To Be Determined': 'En pause' };
+const dateLongue = d => asDate(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+const uniques = (liste, max) => [...new Set(liste.filter(Boolean))].slice(0, max);
+const TRIANGLE = '<svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="8 5 19 12 8 19" fill="currentColor"/></svg>';
+/* âge conseillé en France : « -12 » (interdit au cinéma, déconseillé à la télévision) ou « Tous publics » */
+function ageConseille(c, tv) {
+  const v = String(c || '').trim();
+  if (/^\d+$/.test(v) && +v > 0) return { court: `-${v}`, long: `${tv ? 'Déconseillé' : 'Interdit'} aux moins de ${v} ans` };
+  if (/^(U|TP|Tous publics)$/i.test(v)) return { court: 'Tous publics', long: 'Tous publics' };
+  return null;
+}
+
+async function detailsTitre(type, provider, id) {
+  const tv = type === 'tv';
+  if (provider === 'tvmaze') {
+    const [s, cast] = await Promise.all([jget(`${TVMAZE}/shows/${id}`), jget(`${TVMAZE}/shows/${id}/cast`).catch(() => [])]);
+    const chaine = s.network || s.webChannel;
+    return {
+      note: (s.rating && s.rating.average) || null, genres: s.genres || [], overview: stripHtml(s.summary) || null, backdrop: null,
+      origine: nomPays(chaine && chaine.country && chaine.country.code) || '', age: null,
+      serie: { statut: STATUT_SERIE[s.status] || null, premiere: s.premiered || null, saisons: 0, episodes: 0, duree: s.averageRuntime || s.runtime || null },
+      cast: (cast || []).filter(c => c.person && c.person.name).slice(0, 10)
+        .map(c => ({ id: null, nom: c.person.name, role: c.character && c.character.name, photo: c.person.image ? safeImg(c.person.image.medium) : null })),
+      equipe: [], bandeAnnonce: null, saga: null, brut: null,
+    };
+  }
+  const d = await tget(`/${tv ? 'tv' : 'movie'}/${id}`, { append_to_response: tv ? 'aggregate_credits,videos,content_ratings' : 'credits,videos,release_dates', include_video_language: 'fr,en' });
+  // durée d'un épisode : celle annoncée, sinon la plus courante de la première saison
+  let duree = tv ? (d.episode_run_time || [])[0] || null : d.runtime || null;
+  if (tv && !duree && d.number_of_seasons) {
+    try {
+      const durees = ((await tget(`/tv/${id}/season/1`)).episodes || []).map(e => e.runtime).filter(Boolean).sort((a, b) => a - b);
+      if (durees.length) duree = durees[Math.floor(durees.length / 2)];
+    } catch (e) {}
+  }
+  const enFrance = r => r.iso_3166_1 === 'FR';
+  const certif = tv ? (((d.content_ratings && d.content_ratings.results) || []).find(enFrance) || {}).rating
+    : ((((d.release_dates && d.release_dates.results) || []).find(enFrance) || {}).release_dates || []).map(x => x.certification).find(Boolean);
+  const credits = (tv ? d.aggregate_credits : d.credits) || {};
+  const equipe = (max, ...metiers) => uniques((credits.crew || []).slice().sort((a, b) => (b.total_episode_count || 0) - (a.total_episode_count || 0))
+    .filter(c => (c.jobs ? c.jobs.map(j => j.job) : [c.job]).some(j => metiers.includes(j))).map(c => c.name), max);
+  const pays = uniques(tv ? d.origin_country || [] : (d.production_countries || []).map(p => p.iso_3166_1), 2).map(nomPays).filter(Boolean);
+  const img = (p, w) => p ? safeImg(TMDB_IMG + w + p) : null;
+  const c = d.belongs_to_collection;
+  return {
+    note: d.vote_average ? Math.round(d.vote_average * 10) / 10 : null,
+    genres: (d.genres || []).map(g => GENRE_NAMES[g.id] || g.name),
+    overview: d.overview || null,
+    backdrop: img(d.backdrop_path, 'w780'),
+    origine: [pays.join(', '), nomLangue(d.original_language)].filter(Boolean).join(' · '),
+    age: ageConseille(certif, tv),
+    serie: tv ? { statut: STATUT_SERIE[d.status] || null, premiere: d.first_air_date || null, saisons: d.number_of_seasons || 0, episodes: d.number_of_episodes || 0, duree } : null,
+    cast: (credits.cast || []).slice(0, 10).map(x => ({ id: x.id, nom: x.name, role: tv ? ((x.roles || [])[0] || {}).character : x.character, photo: img(x.profile_path, 'w185') })),
+    equipe: (tv ? [['Création', uniques((d.created_by || []).map(x => x.name), 3)], ['Musique', equipe(2, 'Original Music Composer', 'Music', 'Composer')]]
+      : [['Réalisation', equipe(2, 'Director')], ['Scénario', equipe(3, 'Screenplay', 'Writer')], ['Musique', equipe(2, 'Original Music Composer', 'Music')]])
+      .filter(([, noms]) => noms.length).map(([metier, noms]) => [metier, noms.join(', ')]),
+    bandeAnnonce: pickTrailer(d.videos),
+    saga: c && idSaga(c.id) ? { id: idSaga(c.id), name: String(c.name || ''), poster: img(c.poster_path, 'w185') } : null,
+    brut: tv ? null : { runtime: d.runtime, release_date: d.release_date, belongs_to_collection: c, genres: d.genres, overview: d.overview },
+  };
+}
+
+function ficheOuverte(cle) {
+  const box = $('#modal-root .modal-bg:not(.sortie) .modal');
+  return box && box.dataset.rr === cle ? box : null;
+}
+function afficherFiche(cle, html) {
+  const box = ficheOuverte(cle);
+  if (box) { box.innerHTML = html; return; } // la même fiche redessinée ne remonte pas une seconde fois
+  $('#modal-root').innerHTML = `<div class="modal-bg" data-action="close-modal"><div class="modal fiche-t" data-rr="${cle}">${html}</div></div>`;
+}
+/* détails chargés une fois par session ; la fiche se redessine à leur arrivée si elle est toujours ouverte */
+function chargerDetailsFiche(cle, type, provider, id, apres) {
+  const k = `${type}:${provider}:${id}`;
+  if (detailsTitres.has(k) || detailsEnCours.has(k) || (provider === 'tmdb' && !tmdbKey())) return;
+  detailsEnCours.add(k);
+  detailsTitre(type, provider, id).then(d => {
+    detailsTitres.set(k, d);
+    if (apres) apres(d);
+    redessinerModale();
+  }).catch(() => {}).finally(() => detailsEnCours.delete(k));
+}
+
+function enteteFiche({ image, affiche, titre, raison, meta, origine, puces }) {
+  return `<div class="ft-img${image ? '' : ' vide'}"${image ? ` style="background-image:url('${image}')"` : ''}><div class="grab"></div></div>
+    <div class="ft-haut">
+      <div class="poster">${affiche ? `<img src="${affiche}" alt="">` : esc(initials(titre))}</div>
+      <div class="ft-titre">
+        ${raison ? `<div class="ft-raison">${esc(raison)}</div>` : ''}
+        <h3>${esc(titre)}</h3>
+        ${meta ? `<div class="ft-meta">${esc(meta)}</div>` : ''}
+        <div class="ft-origine">${esc(origine || '')}</div>
+        <div class="ft-puces">${puces}</div>
+      </div>
+    </div>`;
+}
+const puceNote = note => note ? `<span class="ft-puce or">${noteFr(note)}</span>` : '';
+const puceAge = age => age ? `<span class="ft-age" title="${age.long}" aria-label="${age.long}">${age.court}</span>` : '';
+const lignesMeta = (annee, duree, genres) => [annee, duree ? fmtDuree(duree) : null, genres.slice(0, 2).map((g, i) => i ? g.toLowerCase() : g).join(', ')].filter(Boolean).join(' · ');
+
+function resumeFiche(cle, texte) {
+  if (!texte) return '';
+  const long = texte.length > 190, ouvert = resumesOuverts.has(cle);
+  return `<div class="ft-sec"><h4>Résumé</h4>
+    <p class="ft-resume${long && !ouvert ? ' clamp' : ''}">${esc(texte)}</p>
+    ${long ? `<button class="ft-suite" data-action="lire-suite" data-cle="${cle}">${ouvert ? 'Réduire' : 'Lire la suite'}</button>` : ''}</div>`;
+}
+function blocSerie(s) {
+  if (!s) return '';
+  const tuiles = [
+    s.statut && ['Statut', s.statut],
+    s.premiere && ['Première diffusion', dateLongue(s.premiere)],
+    s.saisons && ['Saisons', pl(s.saisons, 'saison') + (s.episodes ? ' · ' + pl(s.episodes, 'épisode') : '')],
+    s.duree && ['Par épisode', '≈ ' + fmtDuree(s.duree)],
+  ].filter(Boolean);
+  return tuiles.length ? `<div class="ft-sec"><h4>La série</h4><div class="ft-serie">${tuiles.map(([l, v]) => `<div class="ft-info"><span>${l}</span><b>${esc(v)}</b></div>`).join('')}</div></div>` : '';
+}
+function castingFiche(d) {
+  if (!d || (!d.cast.length && !d.equipe.length)) return '';
+  const personne = c => {
+    const contenu = `<div class="poster">${c.photo ? `<img loading="lazy" src="${c.photo}" alt="">` : esc(initials(c.nom))}</div><b>${esc(c.nom)}</b>${c.role ? `<span>${esc(c.role)}</span>` : ''}`;
+    // un toucher ouvre sa filmographie (acteurs connus de TMDB)
+    return c.id ? `<button class="ft-pers" data-action="open-person" data-pid="${+c.id}">${contenu}</button>` : `<div class="ft-pers">${contenu}</div>`;
+  };
+  return `<div class="ft-sec"><h4>Casting${d.cast.length ? ` · ${pl(d.cast.length, 'acteur')}` : ''}</h4>
+    ${d.cast.length ? `<div class="ft-casting">${d.cast.map(personne).join('')}</div>` : ''}
+    ${d.equipe.length ? `<dl class="ft-equipe">${d.equipe.map(([metier, noms]) => `<dt>${metier}</dt><dd>${esc(noms)}</dd>`).join('')}</dl>` : ''}</div>`;
+}
+/* bande-annonce (YouTube) et saga ; une saga pas encore chargée l'est en fond, une fois par session */
+function liensFiche(bandeAnnonce, saga) {
+  let html = '';
+  if (bandeAnnonce) html += `<a class="ft-ligne" href="https://www.youtube.com/watch?v=${bandeAnnonce}" target="_blank" rel="noopener">
+      <div class="ft-vign" style="background-image:url('https://i.ytimg.com/vi/${bandeAnnonce}/mqdefault.jpg')"><i>${TRIANGLE}</i></div>
+      <div class="ft-lt"><b>Bande-annonce</b><span>YouTube</span></div>${ICONS.chevron}</a>`;
+  const id = saga && idSaga(saga.id);
+  if (id) {
+    const s = sagasCache[id];
+    if (!s && tmdbKey() && !sagasDemandees.has(id)) {
+      sagasDemandees.add(id);
+      chargerSaga(id).then(redessinerModale).catch(() => {});
+    }
+    const b = s ? bilanSaga(s, sagasBibliotheque().parId) : null;
+    const affiches = s ? s.parts.slice(0, 4).map(p => p.poster) : [saga.poster];
+    html += `<button class="ft-ligne" data-action="open-saga" data-id="${id}">
+      <div class="ft-pile">${affiches.map((p, i) => p ? `<img src="${p}" alt="" style="left:${i * 22}px">` : `<span style="left:${i * 22}px"></span>`).join('')}</div>
+      <div class="ft-lt"><b>Saga ${esc(nomSaga((s && s.name) || saga.name))}</b><span>${b ? `${pl(s.parts.length, 'film')} · ${b.vus} vu${b.vus > 1 ? 's' : ''}` : 'Voir les films de la saga'}</span></div>${ICONS.chevron}</button>`;
+  }
+  return html ? `<div class="ft-sec ft-liens">${html}</div>` : '';
+}
+
 function openMovieModal(uuid) {
   const m = state.movies.find(x => x.uuid === uuid);
   if (!m) return;
-  if (!modaleOuverte()) pushLayer('modal');
-  modaleCourante = { cle: 'film:' + uuid, fn: () => openMovieModal(uuid) };
+  const cle = 'film:' + uuid;
+  if (!ficheOuverte(cle) && !modaleOuverte()) pushLayer('modal');
+  modaleCourante = { cle, fn: () => openMovieModal(uuid) };
   const meta = state.tmdb[uuid] || {};
+  const tmdb = meta.provider === 'tmdb' && meta.id;
+  const d = tmdb ? detailsTitres.get('movie:tmdb:' + meta.id) : null;
   const bientot = !m.is_watched && meta.release && meta.release > todayStr();
-  $('#modal-root').innerHTML = `
-  <div class="modal-bg" data-action="close-modal">
-    <div class="modal" data-rr="film:${uuid}">
-      <div class="grab"></div>
-      <div class="dmodal">
-        <div class="poster">${meta.poster ? `<img src="${meta.posterBig || meta.poster}" alt="">` : esc(initials(m.title))}</div>
-        <div class="dmi">
-          <h3>${esc(m.title)}</h3>
-          <div class="y">${m.year || ''} · Film${meta.runtime ? ' · ' + fmtDuree(meta.runtime) : ''}</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
-            ${m.is_watched
-              ? `<span class="badge ok">✓ Vu${m.watched_at ? ' le ' + fmtDate(m.watched_at) : ' · date inconnue'}</span>`
-              : `<span class="badge acc">À voir</span>`}
-            ${bientot ? `<span class="badge warn">📅 Sortie ${compteARebours(meta.release)}</span>` : ''}
-            ${m.rewatch_count ? `<span class="badge acc">🔁 vu ×${m.rewatch_count + 1}</span>` : ''}
-            ${m.is_favorite ? `<span class="badge warn">★ Favori</span>` : ''}
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn small" data-action="movie-watch" data-uuid="${uuid}">${m.is_watched ? 'Marquer à voir' : `${ICONS.check} Vu`}</button>
-            <button class="btn ghost small" data-action="movie-date" data-uuid="${uuid}">📅 ${m.is_watched ? 'Date' : 'Vu un autre jour'}</button>
-            ${m.is_watched ? `<button class="btn ghost small" data-action="movie-rewatch" data-uuid="${uuid}">🔁 Revu</button>` : ''}
-            <button class="btn ghost small" data-action="movie-fav" data-uuid="${uuid}">${m.is_favorite ? '★ Favori' : '☆ Favori'}</button>
-            <button class="btn danger small" data-action="movie-del" data-uuid="${uuid}">Supprimer</button>
-          </div>
-        </div>
-      </div>
-      <div id="modal-saga">${meta.collection ? sagaBtn(meta.collection) : ''}</div>
-      <div id="modal-extra"><div class="loadrow" style="text-align:left;padding:10px 0"><span class="spin"></span></div></div>
-      ${meta.overview ? `<p style="margin-top:6px;color:var(--txt2);font-size:13.5px">${esc(meta.overview)}</p>` : ''}
+  const genres = d ? d.genres : (meta.genres || []).map(g => GENRE_NAMES[g]).filter(Boolean);
+  const statut = m.is_watched ? (m.rewatch_count ? `<span class="ft-puce">Vu ${m.rewatch_count + 1} fois</span>` : '')
+    : bientot ? `<span class="ft-puce rouge">Sortie ${compteARebours(meta.release)}</span>` : '<span class="ft-puce rouge">À voir</span>';
+  const u = `data-uuid="${uuid}"`;
+  const actions = m.is_watched
+    ? `<button class="verre" data-action="movie-date" ${u} title="Changer la date de visionnage">${ICONS.check} ${m.watched_at ? 'Vu le ' + fmtDate(m.watched_at) : 'Vu · date inconnue'}</button>
+       <button class="ft-carre" data-action="movie-rewatch" ${u} title="Revu" aria-label="Revu">${ICONS.refresh}</button>`
+    : `<button class="btn" data-action="movie-watch" ${u}>${ICONS.check} Vu</button>
+       <button class="ft-carre" data-action="movie-date" ${u} title="Vu un autre jour" aria-label="Vu un autre jour">${ICONS.calendar}</button>`;
+  afficherFiche(cle, `
+    ${enteteFiche({ image: meta.backdrop || (d && d.backdrop), affiche: meta.posterBig || meta.poster, titre: m.title,
+      meta: lignesMeta(m.year, meta.runtime || (d && d.brut && d.brut.runtime), genres), origine: d && d.origine,
+      puces: puceNote(d && d.note) + puceAge(d && d.age) + statut })}
+    <div class="ft-actions">${actions}
+      <button class="ft-carre${m.is_favorite ? ' on' : ''}" data-action="movie-fav" ${u} aria-label="${m.is_favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}">${m.is_favorite ? ICONS.star : ICONS.starO}</button>
+      <button class="ft-carre" data-action="fiche-plus" aria-expanded="false" aria-label="Plus d'options">${ICONS.more}</button>
     </div>
-  </div>`;
-  const clearExtra = () => { const b = $('#modal-extra'); if (b) b.innerHTML = ''; };
-  if (metaNeedsFetch(m, 'movie')) {
-    // référencé via IMDb sans clé, ou pas encore résolu → met à niveau puis réaffiche
-    pool(() => resolveMeta(m, 'movie')).then(mt => {
-      // seulement si c'est toujours la fiche de CE film, encore ouverte (pas en train de se fermer)
-      const box = $('#modal-root .modal-bg:not(.sortie) .modal');
-      if (mt && mt.id && box && box.dataset.rr === 'film:' + uuid) openMovieModal(uuid);
-      else clearExtra();
-    }).catch(clearExtra);
-  } else if (meta.id) {
-    enrichModal({ type: 'movie', provider: meta.provider, provId: meta.id, uuid });
-  } else {
-    clearExtra();
+    <div class="ft-plus">
+      ${m.is_watched ? `<button class="btn ghost small" data-action="movie-watch" ${u}>Remettre dans À voir</button>` : ''}
+      <button class="btn danger small" data-action="movie-del" ${u}>Supprimer</button>
+    </div>
+    ${resumeFiche(cle, meta.overview || (d && d.overview))}
+    ${castingFiche(d)}
+    ${liensFiche(d && d.bandeAnnonce, meta.collection || (d && d.saga))}
+    ${tmdb && !d && tmdbKey() ? '<div class="loadrow"><span class="spin"></span></div>' : ''}`);
+  if (metaNeedsFetch(m, 'movie') && !filmsResolus.has(uuid)) {
+    // référencé via IMDb sans clé, ou pas encore résolu : mis à niveau une fois, puis réaffiché
+    filmsResolus.add(uuid);
+    pool(() => resolveMeta(m, 'movie')).then(mt => { if (mt && mt.id) redessinerModale(); }).catch(() => {});
+  } else if (tmdb && !d) {
+    chargerDetailsFiche(cle, 'movie', 'tmdb', meta.id, det => {
+      // durée, sortie et saga gardées dans les métadonnées du film (sauvegardées et synchronisées)
+      if (det.brut && !meta.detAt && state.tmdb[uuid] === meta) { appliquerDetailsFilm(meta, det.brut); saveMeta(meta).catch(() => {}); }
+    });
   }
 }
 
@@ -5100,40 +5310,32 @@ async function openPersonModal(pid) {
   }
 }
 
-/* ---------------- Modale Découvrir ---------------- */
+/* ---------------- Fiche d'un titre d'Explorer (même feuille que les films) ---------------- */
 function openDiscoverModal(n) {
-  if (!modaleOuverte()) pushLayer('modal');
-  const lib = inLibrary(n);
-  $('#modal-root').innerHTML = `
-  <div class="modal-bg" data-action="close-modal">
-    <div class="modal">
-      <div class="grab"></div>
-      <div class="dmodal">
-        <div class="poster">${n.poster ? `<img src="${n.poster}" alt="">` : esc(initials(n.title))}</div>
-        <div class="dmi">
-          <h3>${esc(n.title)}</h3>
-          <div class="y">${n.year || ''} · ${n.type === 'tv' ? 'Série' : 'Film'}${n.rating ? ` · <span style="color:var(--warn)">★ ${n.rating.toFixed(1)}</span>` : ''}</div>
-          ${n.pourquoi ? `<div class="pourquoi">${esc(n.pourquoi)}</div>` : ''}
-          ${(() => {
-            if (lib) return `<span class="badge ok">✓ Déjà dans ta bibliothèque</span>`;
-            const k = esc(JSON.stringify(n)).replace(/"/g, '&quot;');
-            return `<div style="display:flex;gap:8px;flex-wrap:wrap">
-              ${n.type === 'movie'
-                ? `<button class="btn small" data-action="add-discover" data-key="${k}">${ICONS.plus} À voir</button>
-                   <button class="btn ghost small" data-action="add-discover-watched" data-key="${k}">${ICONS.check} Vu</button>`
-                : `<button class="btn small" data-action="add-discover" data-key="${k}">${ICONS.plus} Ajouter</button>
-                   <button class="btn ghost small" data-action="add-discover-watched" data-key="${k}">${ICONS.check} Déjà vue</button>`}
-              <button class="btn ghost small" data-action="hide-item" data-key="${k}">✕ Pas intéressé</button>
-            </div>`;
-          })()}
-        </div>
-      </div>
-      <div id="modal-saga"></div>
-      <div id="modal-extra"><div class="loadrow" style="text-align:left;padding:10px 0"><span class="spin"></span></div></div>
-      ${n.overview ? `<p style="margin-top:6px;color:var(--txt2);font-size:13.5px">${esc(n.overview)}</p>` : ''}
-    </div>
-  </div>`;
-  enrichModal(n);
+  const cle = `titre:${n.type}:${n.provider}:${n.provId}`;
+  if (!ficheOuverte(cle) && !modaleOuverte()) pushLayer('modal');
+  modaleCourante = { cle, fn: () => openDiscoverModal(n) };
+  const tv = n.type === 'tv', lib = inLibrary(n), k = cleItem(n);
+  const d = detailsTitres.get(`${n.type}:${n.provider}:${n.provId}`);
+  const genres = d ? d.genres : (n.genreIds || []).map(g => GENRE_NAMES[g]).filter(Boolean);
+  const actions = lib ? `<div class="ft-dedans">${ICONS.check} Déjà dans ta bibliothèque</div>`
+    : `<button class="btn" data-action="add-discover" data-key="${k}">${ICONS.plus} ${tv ? 'Ajouter' : 'À voir'}</button>
+       <button class="verre" data-action="add-discover-watched" data-key="${k}">${ICONS.check} ${tv ? 'Déjà vue' : 'Déjà vu'}</button>
+       <button class="ft-carre" data-action="fiche-plus" aria-expanded="false" aria-label="Plus d'options">${ICONS.more}</button>`;
+  afficherFiche(cle, `
+    ${enteteFiche({ image: n.backdrop || (d && d.backdrop), affiche: n.poster, titre: n.title,
+      raison: n.why ? 'Pour toi · ' + n.why.charAt(0).toLowerCase() + n.why.slice(1) : null,
+      meta: lignesMeta(n.year, !tv && d && d.brut && d.brut.runtime, genres), origine: d && d.origine,
+      puces: puceNote((d && d.note) || n.rating) + puceAge(d && d.age) })}
+    <div class="ft-actions">${actions}</div>
+    ${lib ? '' : `<div class="ft-plus"><button class="btn ghost small" data-action="hide-item" data-key="${k}">Pas intéressé</button></div>`}
+    ${n.pourquoi ? `<p class="ft-pourquoi">${esc(n.pourquoi)}</p>` : ''}
+    ${blocSerie(d && d.serie)}
+    ${resumeFiche(cle, n.overview || (d && d.overview))}
+    ${castingFiche(d)}
+    ${liensFiche(d && d.bandeAnnonce, d && d.saga)}
+    ${!d && (n.provider === 'tvmaze' || tmdbKey()) ? '<div class="loadrow"><span class="spin"></span></div>' : ''}`);
+  if (!d) chargerDetailsFiche(cle, n.type, n.provider, n.provId);
 }
 
 /* Casting cliquable (filmographie) + bande-annonce YouTube */
@@ -5152,49 +5354,6 @@ const trailerBtn = key => /^[\w-]{6,20}$/.test(key || '')
   ? `<a class="btn ghost small" style="margin-top:10px" href="https://www.youtube.com/watch?v=${key}" target="_blank" rel="noopener">▶ Bande-annonce</a>`
   : '';
 
-/* Détails supplémentaires de la fiche : note, genres, durée, casting */
-async function enrichModal(n) {
-  const box = () => $('#modal-extra');
-  try {
-    let html = '';
-    if (n.provider === 'tmdb' && tmdbKey()) {
-      const d = await tget(`/${n.type === 'tv' ? 'tv' : 'movie'}/${n.provId}`, { append_to_response: 'credits,videos', include_video_language: 'fr,en' });
-      if (n.type === 'movie') {
-        // lien vers la saga, et détails mémorisés au passage si le film est dans la bibliothèque
-        const z = $('#modal-saga');
-        if (z && d.belongs_to_collection && !z.innerHTML.trim()) z.innerHTML = sagaBtn(d.belongs_to_collection);
-        const mt = n.uuid && state.tmdb[n.uuid];
-        if (mt && mt.provider === 'tmdb' && mt.id === d.id && !mt.detAt) { appliquerDetailsFilm(mt, d); saveMeta(mt).catch(() => {}); }
-      }
-      const parts = [];
-      if (d.vote_average) parts.push(`<span class="badge warn">★ ${d.vote_average.toFixed(1)}/10</span> <span style="color:var(--txt2);font-size:12px">(${d.vote_count.toLocaleString('fr-FR')} votes)</span>`);
-      const genres = (d.genres || []).map(g => `<span class="badge">${esc(g.name)}</span>`).join(' ');
-      if (genres) parts.push(genres);
-      if (n.type === 'movie' && d.runtime) parts.push(`<span class="badge acc">${Math.floor(d.runtime / 60)}h${pad2(d.runtime % 60)}</span>`);
-      if (n.type === 'tv' && d.number_of_seasons) parts.push(`<span class="badge acc">${d.number_of_seasons} saison(s) · ${d.number_of_episodes} épisodes</span>`);
-      const cast = ((d.credits && d.credits.cast) || []).slice(0, 5).map(c => ({ id: c.id, name: c.name }));
-      const director = ((d.credits && d.credits.crew) || []).find(c => c.job === 'Director');
-      html = `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px">${parts.join(' ')}</div>
-        ${cast.length ? `<p style="margin-top:10px;font-size:12.5px;color:var(--txt2)"><b style="color:var(--txt)">Avec :</b> ${castLinks(cast)}</p>` : ''}
-        ${director ? `<p style="margin-top:4px;font-size:12.5px;color:var(--txt2)"><b style="color:var(--txt)">Réalisé par :</b> ${esc(director.name)}</p>` : ''}
-        ${trailerBtn(pickTrailer(d.videos))}`;
-    } else if (n.provider === 'tvmaze') {
-      const [show, cast] = await Promise.all([
-        jget(`${TVMAZE}/shows/${n.provId}`),
-        jget(`${TVMAZE}/shows/${n.provId}/cast`).catch(() => []),
-      ]);
-      const parts = [];
-      if (show.rating && show.rating.average) parts.push(`<span class="badge warn">★ ${show.rating.average.toFixed(1)}/10</span>`);
-      parts.push((show.genres || []).map(g => `<span class="badge">${esc(g)}</span>`).join(' '));
-      const actors = (cast || []).slice(0, 5).map(c => c.person && c.person.name).filter(Boolean);
-      html = `<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:12px">${parts.join(' ')}</div>
-        ${actors.length ? `<p style="margin-top:10px;font-size:12.5px;color:var(--txt2)"><b style="color:var(--txt)">Avec :</b> ${esc(actors.join(', '))}</p>` : ''}`;
-    }
-    if (box()) box().innerHTML = html;
-  } catch (e) {
-    if (box()) box().innerHTML = '';
-  }
-}
 
 /* ---------------- Événements ---------------- */
 document.querySelectorAll('nav.tabs button').forEach((b, i) => {
@@ -5313,6 +5472,16 @@ document.body.addEventListener('click', async e => {
   else if (act === 'close-detail') closeDetail();
   else if (act === 'close-modal') { if (e.target === el) closeModalViaHistory(); }
   else if (act === 'expand-overview') el.classList.toggle('clamp');
+  else if (act === 'lire-suite') {
+    // résumé de la fiche déplié ou replié (et retenu si la fiche se redessine)
+    const ouvert = !el.previousElementSibling.classList.toggle('clamp');
+    el.textContent = ouvert ? 'Réduire' : 'Lire la suite';
+    if (ouvert) resumesOuverts.add(el.dataset.cle); else resumesOuverts.delete(el.dataset.cle);
+  }
+  else if (act === 'fiche-plus') {
+    const plus = el.closest('.modal').querySelector('.ft-plus');
+    if (plus) el.setAttribute('aria-expanded', plus.classList.toggle('ouvert'));
+  }
   else if (act === 'explore-type') {
     state.exploreType = el.dataset.v;
     if (el.dataset.v === 'tv' && state.dFilters.genre === 4) state.dFilters.genre = 3; // une seule « SF & Fantastique » en séries
