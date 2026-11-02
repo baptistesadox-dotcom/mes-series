@@ -21,6 +21,7 @@
   --grad:linear-gradient(180deg,#DC2626,#BE1B1B);
   --gold:linear-gradient(135deg,#F5C96E,#DFA23C);
   --ok:#F5C96E; --warn:#FBBF24; --danger:#F87171;
+  --rv:#3B82F6; --rv2:#93C5FD; /* bleu : tout ce qui est revu */
   --radius:16px;
   --card-border:1px solid rgba(255,255,255,.05);
   --card-shadow:none;
@@ -599,6 +600,73 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 .sy-bts svg{width:18px;height:18px;flex:none}
 .sy-deco{width:100%;height:46px;margin-top:10px;border-radius:13px;font-size:14px;font-weight:800;color:var(--danger);border:1px solid rgba(248,113,113,.3)}
 
+/* ---------- Revisionnages : tout ce qui est revu est en bleu ---------- */
+.badge.rv{display:inline-flex;align-items:center;gap:5px;background:rgba(96,165,250,.15);color:var(--rv2)}
+.badge.rv svg{width:12px;height:12px}
+/* fiche série : la carte du visionnage en cours */
+.revi{margin:16px 16px 0;padding:14px 15px;border-radius:16px;background:linear-gradient(135deg,rgba(96,165,250,.16),rgba(96,165,250,.04));border:1px solid rgba(96,165,250,.28)}
+.revi-l{display:flex;align-items:center;gap:12px}
+.revi-i{flex:none;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(96,165,250,.2);color:var(--rv2)}
+.revi-i svg{width:19px;height:19px}
+.revi-t{flex:1;min-width:0}
+.revi-t b{display:block;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--rv2)}
+.revi-t span{display:block;font-size:13px;font-weight:600;color:#D6D0CC;margin-top:2px}
+.revi-n{flex:none;font-size:15px;font-weight:800}
+.revi .progress{margin-top:12px;height:6px;background:rgba(96,165,250,.15)}
+.progress.rv i,.progress.rv.full i{background:var(--rv)}
+.spill.revue{color:var(--rv2);border-color:rgba(96,165,250,.3)}
+.spill.revue.on{color:var(--bg)}
+.eprow.revu .epimg{opacity:.55}
+.eprow.revu .ept{color:var(--txt2)}
+.eprow.revu .epcheck{background:var(--rv);border-color:transparent;color:#FFFFFF}
+.eprow.arevoir{background:#121A26;border-color:rgba(96,165,250,.4)}
+.eprow.arevoir .epcheck{border-color:#60A5FA}
+.eprow .nm .d.rv{color:var(--rv2);font-weight:650}
+.epsuiv.rv{color:var(--rv2)}
+.fichebar .revoir{flex:1;height:56px;border-radius:16px;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:9px;color:var(--txt);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(14px)}
+.fichebar .revoir svg{width:20px;height:20px;color:var(--rv2)}
+/* Reprendre (Accueil) et À suivre : une série qu'on revoit */
+.rc-reste.rv{background:rgba(59,130,246,.9);color:#FFFFFF}
+.erow-img b.rv{background:var(--rv)}
+.erow-img .progress.rv i{background:#60A5FA}
+/* fiche d'un film ou d'un épisode : la liste des visionnages */
+.ft-puce.bleu{color:var(--rv2);background:rgba(96,165,250,.14);border-color:rgba(96,165,250,.32)}
+.ft-puce svg{width:12px;height:12px;margin-right:4px}
+.ft-actions .verre.revu{flex:none;padding:0 15px}
+.ft-actions .verre.revu svg{color:var(--rv2)}
+.histo{border-radius:14px;background:var(--bg3);overflow:hidden}
+.histo-l{display:flex;align-items:center;gap:11px;min-height:50px;padding:0 8px 0 14px;font-size:14px}
+.histo-l + .histo-l{border-top:1px solid rgba(255,255,255,.06)}
+.histo-l i{flex:none;width:9px;height:9px;border-radius:50%;background:var(--acc)}
+.histo-l i.rv{background:var(--rv)}
+.histo-l b{flex:1;font-weight:750}
+.histo-l span{color:#D6D0CC;font-weight:600}
+.histo-x{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#78716C}
+.histo-x svg{width:16px;height:16px}
+.histo-x.vide{visibility:hidden}
+.histo-plus{padding:10px 14px;font-size:12.5px;color:var(--txt2)}
+.histo-ajout{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13.5px;font-weight:800;color:var(--acc2)}
+.histo-ajout svg{width:16px;height:16px}
+.modal .histo{margin-top:10px}
+/* statistiques */
+.seg.rv{background:linear-gradient(180deg,#60A5FA,#2563EB)}
+.rv-partage{display:flex;gap:3px;height:10px;margin-top:4px}
+.rv-partage i{display:block;border-radius:5px;min-width:6px}
+.rv-partage i.p{background:var(--grad)}
+.rv-partage i.r{background:linear-gradient(180deg,#60A5FA,#2563EB)}
+.statgrid.trois{grid-template-columns:repeat(3,1fr);margin-top:14px}
+.statgrid.trois .v{font-size:21px;color:var(--rv2)}
+.grow .gb.duo{display:flex}
+.grow .gb.duo i{border-radius:0}
+.grow .gb.duo i.rv{background:linear-gradient(180deg,#60A5FA,#2563EB)}
+.toprv{display:flex;align-items:center;gap:12px;padding:8px 0}
+.toprv + .toprv{border-top:1px solid rgba(255,255,255,.06)}
+.toprv .poster{width:44px;height:66px;border-radius:7px;font-size:12px}
+.toprv .tt{flex:1;min-width:0}
+.toprv .tt b{display:block;font-size:14.5px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.toprv .tt span{display:block;font-size:12.5px;color:var(--txt2);margin-top:2px}
+.fois{flex:none;height:28px;padding:0 10px;border-radius:14px;display:flex;align-items:center;font-size:13px;font-weight:800;color:var(--rv2);background:rgba(96,165,250,.14);border:1px solid rgba(96,165,250,.3)}
+
 /* ---------- Explorer : vitrine, rangées, onglets, filtres ---------- */
 /* la vitrine : une grande image bord à bord, le n°1 de la semaine puis les suivants en glissant */
 .vitrine-wrap{position:relative;margin:-12px -14px 0;height:clamp(440px,64vh,580px)}
@@ -1061,6 +1129,7 @@ const ICONS = {
   poubelle: I('<polyline points="4 7 20 7"/><path d="M6 7l1 13h10l1-13"/><path d="M9.5 7V4h5v3"/>'),
   oeil: I('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
   sortie: I('<path d="M7 17 17 7"/><polyline points="8 7 17 7 17 16"/>'),
+  croix: I('<line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>'),
 };
 
 const state = {
@@ -1202,9 +1271,84 @@ function nextUnwatched(s) {
 function lastActivity(s) {
   let max = s.created_at || '';
   for (const sea of s.seasons || [])
-    for (const ep of sea.episodes)
+    for (const ep of sea.episodes) {
       if (ep.watched_at && ep.watched_at > max) max = ep.watched_at;
+      for (const r of ep.rewatches || []) if (r > max) max = r;
+    }
   return max;
+}
+
+/* ---------------- Revisionnages ----------------
+   Un épisode ou un film peut être revu sans limite. rewatch_count = nombre total de
+   revisionnages (ceux venus de TV Time n'ont pas de date) ; rewatches = les dates de
+   ceux enregistrés dans l'appli. Une série qu'on revoit en entier a un visionnage en
+   cours : s.revision = { n, debut }, n valant 2 pour le premier revisionnage, puis 3… */
+const vuesEp = ep => ep.is_watched ? 1 + (ep.rewatch_count || 0) : 0; // marche aussi pour un film
+/* nombre de fois que la série a été vue en entier (épisodes déjà diffusés) */
+function vuesSerie(s) {
+  let min = Infinity;
+  for (const x of realEpisodes(s)) if (!isFuture(x.ep)) min = Math.min(min, vuesEp(x.ep));
+  return min === Infinity ? 0 : min;
+}
+const enRevision = s => !!(s.revision && s.revision.n > 1);
+const nieme = n => n === 1 ? '1re' : n + 'e';
+/* prochain épisode du visionnage en cours : le premier, dans l'ordre, pas encore revu cette fois-ci */
+function prochainARevoir(s) {
+  if (!enRevision(s)) return null;
+  for (const x of realEpisodes(s)) if (x.ep.is_watched && !isFuture(x.ep) && vuesEp(x.ep) < s.revision.n) return x;
+  return null;
+}
+function progresRevision(s) {
+  const eps = realEpisodes(s).filter(x => x.ep.is_watched && !isFuture(x.ep));
+  return { faits: eps.filter(x => vuesEp(x.ep) >= s.revision.n).length, total: eps.length };
+}
+/* épisodes concernés par « Toute la saison / toute la série revue » : ceux pas encore revus
+   pendant le visionnage en cours, ou tous les épisodes déjà vus s'il n'y en a pas */
+function episodesARevoir(s, seasonNum = null) {
+  const n = enRevision(s) ? s.revision.n : Infinity;
+  return realEpisodes(s).filter(x => (seasonNum === null || x.season === seasonNum) &&
+    x.ep.is_watched && !isFuture(x.ep) && vuesEp(x.ep) < n).map(x => x.ep);
+}
+/* un revisionnage de plus (épisode ou film) ; sans date, seul le compteur bouge */
+function ajouterRevu(item, quand = 'now') {
+  item.rewatch_count = (item.rewatch_count || 0) + 1;
+  const at = horodatage(quand, null);
+  if (at) item.rewatches = [...(item.rewatches || []), at];
+}
+/* retire un revisionnage : celui de cette date, un sans date (at = ''), ou le plus récent (at absent) */
+function retirerRevu(item, at) {
+  if (!(item.rewatch_count > 0)) return false;
+  const dates = item.rewatches || [];
+  let i = -1;
+  if (at === undefined) dates.forEach((d, j) => { if (i < 0 || d > dates[i]) i = j; });
+  else if (at) { i = dates.indexOf(at); if (i < 0) return false; }
+  else if (item.rewatch_count <= dates.length) return false; // aucun revisionnage sans date
+  if (i >= 0) item.rewatches = dates.filter((_, j) => j !== i);
+  item.rewatch_count--;
+  return true;
+}
+const dernierRevu = item => (item.rewatches || []).reduce((a, d) => d > a ? d : a, '');
+/* le visionnage en cours est-il fini ? Il est alors clos et son numéro renvoyé, sinon 0 */
+function finirRevisionSiFinie(s) {
+  if (!enRevision(s) || prochainARevoir(s)) return 0;
+  const n = s.revision.n;
+  s.revision = null;
+  return n;
+}
+/* temps devant l'écran en minutes, premiers visionnages et revisionnages à part (durée
+   réelle quand elle est connue, sinon 40 min par épisode et 1 h 50 par film) */
+function tempsEcran() {
+  let premieres = 0, revus = 0;
+  for (const s of state.series) {
+    const duree = (state.tmdb[s.uuid] && state.tmdb[s.uuid].runtime) || 40;
+    for (const x of realEpisodes(s)) if (x.ep.is_watched) { premieres += duree; revus += (x.ep.rewatch_count || 0) * duree; }
+  }
+  for (const m of state.movies) {
+    if (!m.is_watched) continue;
+    const duree = (state.tmdb[m.uuid] && state.tmdb[m.uuid].runtime) || 110;
+    premieres += duree; revus += (m.rewatch_count || 0) * duree;
+  }
+  return { premieres, revus };
 }
 /* Jour LOCAL « AAAA-MM-JJ » d'une date ou d'un horodatage ISO. Les dates de
    diffusion sont des jours calendaires ; les horodatages de visionnage sont
@@ -1913,6 +2057,7 @@ function poidsBibliotheque(type) {
       else if (vus >= 4) base = 0.5;
       else base = ilYaAns(dernier) > 0.5 ? -0.3 : 0.2;               // 1 à 3 épisodes puis plus rien : pas accroché
       if (s.is_favorite) base += 0.6;
+      if (base > 0 && (vuesSerie(s) >= 2 || enRevision(s))) base += 0.5; // revue en entier : vraiment aimée
       const recence = 0.5 + 0.5 * Math.pow(0.5, ilYaAns(dernier || s.created_at) / 1.5);
       items.push({ titre: s.title, id: m.id, genres: m.genres || [], poids: base > 0 ? base * recence : base, liste: false });
     }
@@ -2321,6 +2466,8 @@ async function importData(arr) {
         } else if (epI.is_watched && epL.is_watched && epI.watched_at && (!epL.watched_at || epI.watched_at < epL.watched_at)) {
           epL.watched_at = epI.watched_at; change = true; // la date la plus ancienne est la vraie
         }
+        // revisionnages notés dans TV Time (sans date) : on garde le compte le plus élevé
+        if (epI.is_watched && (epI.rewatch_count || 0) > (epL.rewatch_count || 0)) { epL.rewatch_count = epI.rewatch_count; change = true; }
       }
     }
     if (s.is_favorite && !loc.is_favorite) { loc.is_favorite = true; change = true; }
@@ -2655,7 +2802,10 @@ function marquerVu(ep, quand = 'now') {
   ep.watched_at = horodatage(quand, ep);
   ep.watched_count = Math.max(1, ep.watched_count || 0);
 }
-function marquerNonVu(ep) { ep.is_watched = false; ep.watched_at = null; ep.watched_count = 0; }
+function marquerNonVu(ep) {
+  ep.is_watched = false; ep.watched_at = null; ep.watched_count = 0;
+  ep.rewatch_count = 0; delete ep.rewatches; // un épisode non vu n'a pas de revisionnage
+}
 /* épisodes concernés par « Tout vu » : diffusés, pas encore vus, hors spéciaux.
    Les épisodes déjà vus ne sont pas touchés : leurs vraies dates sont conservées. */
 function episodesAMarquer(s, seasonNum = null) {
@@ -2706,13 +2856,17 @@ async function markAllWatched(s, quand = 'now') {
    l'actualisation. */
 function etatSerie(s) {
   const eps = [];
-  for (const sea of s.seasons || []) for (const ep of sea.episodes) eps.push([ep, ep.is_watched, ep.watched_at, ep.watched_count]);
-  return { s, status: s.status, eps };
+  for (const sea of s.seasons || []) for (const ep of sea.episodes) eps.push([ep, ep.is_watched, ep.watched_at, ep.watched_count, ep.rewatch_count, ep.rewatches]);
+  return { s, status: s.status, revision: s.revision || null, eps };
 }
 async function restaurerSerie(snap) {
   const { s } = snap;
   if (!state.series.includes(s)) return toast('Trop tard pour annuler : les données ont été rechargées');
-  for (const [ep, w, at, c] of snap.eps) Object.assign(ep, { is_watched: w, watched_at: at, watched_count: c });
+  for (const [ep, w, at, c, rc, rw] of snap.eps) {
+    Object.assign(ep, { is_watched: w, watched_at: at, watched_count: c, rewatch_count: rc });
+    if (rw) ep.rewatches = rw; else delete ep.rewatches; // les listes de dates ne sont jamais modifiées sur place
+  }
+  s.revision = snap.revision;
   s.status = snap.status;
   autoStatus(s);
   await saveSeries(s);
@@ -2732,6 +2886,13 @@ function proposerAnnulation(msg, annuler, ms = 5000) {
     redessinerModale();
     rafraichirEcrans();
   } });
+}
+/* Message d'un revisionnage, avec « Annuler » ; une série revue en entier a droit aux confettis */
+function annoncerRevu(s, msg, fini, annuler) {
+  if (fini) {
+    confetti();
+    proposerAnnulation(`🔁 « ${s.title} » revue en entier — ${nieme(fini)} fois`, annuler, 6000);
+  } else proposerAnnulation(`${msg} 🔁`, annuler);
 }
 /* Modale capable de se redessiner (fiche film, épisode, saga) : redessinée après une
    annulation ou un ajout, seulement si c'est toujours elle qui est affichée */
@@ -2989,6 +3150,10 @@ function donneesSuivi() {
     if (s.status === 'stopped') continue;
     const nx = nextUnwatched(s);
     if (nx && !isFuture(nx.ep) && s.status !== 'not_started_yet') watchable.push({ s, nx });
+    else if (enRevision(s)) { // série qu'on revoit : son prochain épisode à revoir
+      const rv = prochainARevoir(s);
+      if (rv) watchable.push({ s, nx: rv, revoir: s.revision.n });
+    }
     // calendrier : la prochaine SORTIE de chaque série suivie, même si
     // des épisodes déjà diffusés restent à regarder
     let fut = null;
@@ -3021,20 +3186,23 @@ function quandRelatif(iso) {
 const majuscule = t => t ? t.charAt(0).toUpperCase() + t.slice(1) : '';
 
 /* Épisode à regarder : l'image de la série avec le code de l'épisode et la progression */
-function ligneEpisode({ s, nx }) {
-  const p = progress(s), pct = p.total ? Math.round(p.watched / p.total * 100) : 0, fond = fondSerie(s);
-  const code = epCode(nx.season, nx.ep.number);
+function ligneEpisode({ s, nx, revoir }) {
+  // série qu'on revoit : la progression est celle du visionnage en cours, en bleu
+  const p = progress(s), r = revoir ? progresRevision(s) : null;
+  const faits = r ? r.faits : p.watched, total = r ? r.total : p.total;
+  const pct = total ? Math.round(faits / total * 100) : 0, fond = fondSerie(s);
+  const code = epCode(nx.season, nx.ep.number), verbe = revoir ? 'revu' : 'vu';
   return `<div class="erow" data-action="open-series" data-uuid="${s.uuid}" data-flip="n-${s.uuid}">
     <div class="erow-img" data-morph="${s.uuid}"${fond ? ` style="background-image:url('${fond}')"` : ''}>${fond ? '' : esc(initials(s.title))}
-      <b>${code}</b>
-      <div class="progress ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%" data-k="n-${s.uuid}"></i></div>
+      <b${revoir ? ' class="rv"' : ''}>${code}</b>
+      <div class="progress ${revoir ? 'rv' : pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%" data-k="n-${s.uuid}"></i></div>
     </div>
     <div class="erow-txt">
       <div class="erow-t">${esc(s.title)}</div>
       ${nx.ep.name ? `<div class="erow-n">${esc(nx.ep.name)}</div>` : ''}
-      <div class="erow-m">${pl(episodesRestants(s), 'restant')} · ${p.watched}/${p.total}</div>
+      <div class="erow-m">${revoir ? `${nieme(revoir)} visionnage` : pl(episodesRestants(s), 'restant')} · ${faits}/${total}</div>
     </div>
-    <button class="checkbtn" data-action="mark-next" data-uuid="${s.uuid}" title="Marquer ${code} vu" aria-label="Marquer ${code} vu">${ICONS.check}</button>
+    <button class="checkbtn" data-action="mark-next" data-uuid="${s.uuid}" title="Marquer ${code} ${verbe}" aria-label="Marquer ${code} ${verbe}">${revoir ? ICONS.refresh : ICONS.check}</button>
   </div>`;
 }
 
@@ -3109,17 +3277,20 @@ const dateCourte = d => { const t = asDate(d).toLocaleDateString('fr-FR', { week
 const teteSection = (titre, lien = '', id = '') => `<div class="hsec"${id ? ` id="${id}"` : ''}><h2 class="section">${titre}</h2>${lien}</div>`;
 const lienAller = (texte, attrs) => `<button class="lien" data-action="aller" ${attrs}>${texte}</button>`;
 
-function carteReprendre({ s, nx }) {
-  const p = progress(s), pct = p.total ? Math.round(p.watched / p.total * 100) : 0, fond = fondSerie(s);
+function carteReprendre({ s, nx, revoir }) {
+  const p = progress(s), r = revoir ? progresRevision(s) : null;
+  const faits = r ? r.faits : p.watched, total = r ? r.total : p.total;
+  const pct = total ? Math.round(faits / total * 100) : 0, fond = fondSerie(s);
   return `<div class="rcard" data-action="open-series" data-uuid="${s.uuid}">
     <div class="rcard-img" data-morph="${s.uuid}"${fond ? ` style="background-image:url('${fond}')"` : ''}></div>
     <div class="rcard-ov">
-      <div class="rcard-chips"><span class="rc-ep">${epCode(nx.season, nx.ep.number)}</span><span class="rc-reste">${pl(episodesRestants(s), 'restant')}</span></div>
+      <div class="rcard-chips"><span class="rc-ep">${epCode(nx.season, nx.ep.number)}</span>${revoir
+        ? `<span class="rc-reste rv">${nieme(revoir)} fois</span>` : `<span class="rc-reste">${pl(episodesRestants(s), 'restant')}</span>`}</div>
       <div class="rcard-titre">${esc(s.title)}</div>
       ${nx.ep.name ? `<div class="rcard-ep">${esc(nx.ep.name)}</div>` : ''}
-      <div class="rcard-prog"><div class="progress ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%" data-k="r-${s.uuid}"></i></div><span>${p.watched}/${p.total}</span></div>
+      <div class="rcard-prog"><div class="progress ${revoir ? 'rv' : pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%" data-k="r-${s.uuid}"></i></div><span>${faits}/${total}</span></div>
       <div class="rcard-btns">
-        <button class="btn rcard-vu" data-action="mark-next" data-uuid="${s.uuid}">${ICONS.check} Vu</button>
+        <button class="btn rcard-vu" data-action="mark-next" data-uuid="${s.uuid}">${revoir ? `${ICONS.refresh} Revu` : `${ICONS.check} Vu`}</button>
         <button class="rcard-info" data-action="open-series" data-uuid="${s.uuid}" aria-label="Ouvrir la fiche de ${esc(s.title)}">${ICONS.info}</button>
       </div>
     </div>
@@ -4022,12 +4193,13 @@ function openMovieModal(uuid) {
   const d = tmdb ? detailsTitres.get('movie:tmdb:' + meta.id) : null;
   const bientot = !m.is_watched && meta.release && meta.release > todayStr();
   const genres = d ? d.genres : (meta.genres || []).map(g => GENRE_NAMES[g]).filter(Boolean);
-  const statut = m.is_watched ? (m.rewatch_count ? `<span class="ft-puce">Vu ${m.rewatch_count + 1} fois</span>` : '')
+  if (m.is_watched) cibleRevu = { type: 'movie', uuid };
+  const statut = m.is_watched ? (m.rewatch_count ? `<span class="ft-puce bleu">${ICONS.refresh}Vu ${m.rewatch_count + 1} fois</span>` : '')
     : bientot ? `<span class="ft-puce rouge">Sortie ${compteARebours(meta.release)}</span>` : '<span class="ft-puce rouge">À voir</span>';
   const u = `data-uuid="${uuid}"`;
   const actions = m.is_watched
     ? `<button class="verre" data-action="movie-date" ${u} title="Changer la date de visionnage">${ICONS.check} ${m.watched_at ? 'Vu le ' + fmtDate(m.watched_at) : 'Vu · date inconnue'}</button>
-       <button class="ft-carre" data-action="movie-rewatch" ${u} title="Revu" aria-label="Revu">${ICONS.refresh}</button>`
+       <button class="verre revu" data-action="movie-rewatch" ${u} title="Revu aujourd’hui">${ICONS.refresh} Revu</button>`
     : `<button class="btn" data-action="movie-watch" ${u}>${ICONS.check} Vu</button>
        <button class="ft-carre" data-action="movie-date" ${u} title="Vu un autre jour" aria-label="Vu un autre jour">${ICONS.calendar}</button>`;
   afficherFiche(cle, `
@@ -4042,6 +4214,11 @@ function openMovieModal(uuid) {
       ${m.is_watched ? `<button class="btn ghost small" data-action="movie-watch" ${u}>Remettre dans À voir</button>` : ''}
       <button class="btn danger small" data-action="movie-del" ${u}>Supprimer</button>
     </div>
+    ${m.is_watched ? `<div class="ft-sec"><h4>Tes visionnages · ${vuesEp(m)}</h4>
+      ${histoVisionnages(m)}
+      <button class="histo-ajout" data-action="revu-pick">${ICONS.plus} Revu un autre jour</button>
+      <input type="date" class="vudate-in" id="revu-date" max="${todayStr()}" data-revu-date="1" tabindex="-1" aria-label="Date du revisionnage">
+    </div>` : ''}
     ${resumeFiche(cle, meta.overview || (d && d.overview))}
     ${castingFiche(d)}
     ${liensFiche(d && d.bandeAnnonce, meta.collection || (d && d.saga))}
@@ -4214,10 +4391,13 @@ function viewMoviesGrid() {
 /* Profil : ticket de cinéma (heures, séries, films), podium des séries les plus vues,
    Ma collection en tuiles illustrées, puis Mes données (sauvegarde, synchro, effacement) */
 function viewSettings() {
-  const parSerie = state.series.map(s => ({ s, vus: progress(s).watched }));
-  let minutes = dureeFilms(state.movies.filter(m => m.is_watched));
-  for (const { s, vus } of parSerie)
-    if (vus) minutes += vus * ((state.tmdb[s.uuid] && state.tmdb[s.uuid].runtime) || 40);
+  // épisodes vus et revisionnages de chaque série : le podium compte les deux
+  const parSerie = state.series.map(s => {
+    let vus = 0, revus = 0;
+    for (const x of realEpisodes(s)) if (x.ep.is_watched) { vus++; revus += x.ep.rewatch_count || 0; }
+    return { s, vus, revus };
+  });
+  const temps = tempsEcran(), minutes = temps.premieres + temps.revus; // revus compris
   const heures = Math.round(minutes / 60), jours = Math.round(minutes / 1440);
   const premiere = lastViewKey !== cleVue(); // le compteur ne grimpe qu'à l'arrivée sur l'écran
   const nb = (n, sing, plur) => `<div><b>${n.toLocaleString('fr-FR')}</b><span>${n > 1 ? plur : sing}</span></div>`;
@@ -4232,12 +4412,15 @@ function viewSettings() {
     <i class="pf-perfo" aria-hidden="true"></i><i class="pf-enc h" aria-hidden="true"></i><i class="pf-enc b" aria-hidden="true"></i>
   </div>`;
 
-  const top = parSerie.filter(x => x.vus).sort((a, b) => b.vus - a.vus).slice(0, 3);
-  const marche = (x, rang) => `<button class="pf-pm p${rang}" data-action="open-series" data-uuid="${x.s.uuid}" aria-label="${esc(x.s.title)}, ${pl(x.vus, 'épisode')} vus, ${rang === 1 ? '1re' : rang + 'e'} place">
+  const top = parSerie.filter(x => x.vus).sort((a, b) => (b.vus + b.revus) - (a.vus + a.revus)).slice(0, 3);
+  const marche = (x, rang) => {
+    const v = vuesSerie(x.s), fois = v >= 2 ? ` · ×${v}` : x.revus ? ` · +${x.revus}` : '';
+    return `<button class="pf-pm p${rang}" data-action="open-series" data-uuid="${x.s.uuid}" aria-label="${esc(x.s.title)}, ${pl(x.vus, 'épisode')} vus${x.revus ? `, ${pl(x.revus, 'revisionnage')}` : ''}, ${rang === 1 ? '1re' : rang + 'e'} place">
       ${posterHtml(x.s, 'tv', rang === 1)}
-      <span class="pf-pt">${esc(x.s.title)}</span><span class="pf-pe">${pl(x.vus, 'épisode')}</span>
+      <span class="pf-pt">${esc(x.s.title)}</span><span class="pf-pe">${pl(x.vus, 'épisode')}${fois}</span>
       <span class="pf-socle" aria-hidden="true">${rang}</span>
     </button>`;
+  };
   const podium = top.length ? teteSection('Mon podium') + `<div class="pf-podium">${
     [[top[1], 2], [top[0], 1], [top[2], 3]].filter(([x]) => x).map(([x, r]) => marche(x, r)).join('')}</div>` : '';
 
@@ -4252,7 +4435,11 @@ function viewSettings() {
   };
   for (const s of state.series)
     for (const sea of s.seasons || [])
-      for (const ep of sea.episodes) if (ep.is_watched && ep.watched_at) compter(ep.watched_at, s);
+      for (const ep of sea.episodes) {
+        if (!ep.is_watched) continue;
+        if (ep.watched_at) compter(ep.watched_at, s);
+        for (const r of ep.rewatches || []) compter(r, s);
+      }
   for (const m of state.movies) {
     if (!m.is_watched) continue;
     if (m.watched_at) compter(m.watched_at, m);
@@ -4534,16 +4721,21 @@ function openStats() {
 
 function renderStats() {
   // événements datés (dates réelles de visionnage)
+  // (les revisionnages datés forment une 3e catégorie, « rv », en bleu)
   const events = [];
   let epCount = 0;
   for (const s of state.series)
     for (const sea of s.seasons || [])
       for (const ep of sea.episodes)
-        if (ep.is_watched) { epCount++; if (ep.watched_at) events.push({ d: dayOf(ep.watched_at), t: 'ep' }); }
+        if (ep.is_watched) {
+          epCount++;
+          if (ep.watched_at) events.push({ d: dayOf(ep.watched_at), t: 'ep' });
+          for (const r of ep.rewatches || []) events.push({ d: dayOf(r), t: 'rv' });
+        }
   const mvWatched = state.movies.filter(m => m.is_watched);
   for (const m of mvWatched) {
     if (m.watched_at) events.push({ d: dayOf(m.watched_at), t: 'mv' });
-    for (const r of m.rewatches || []) events.push({ d: dayOf(r), t: 'mv' });
+    for (const r of m.rewatches || []) events.push({ d: dayOf(r), t: 'rv' });
   }
 
   // 12 derniers mois
@@ -4551,7 +4743,7 @@ function renderStats() {
   const months = [];
   for (let i = 11; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push({ key: `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`, lab: MOIS[d.getMonth()], ep: 0, mv: 0 });
+    months.push({ key: `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`, lab: MOIS[d.getMonth()], ep: 0, mv: 0, rv: 0 });
   }
   const mIdx = Object.fromEntries(months.map((m, i) => [m.key, i]));
   const perDay = {};
@@ -4565,28 +4757,43 @@ function renderStats() {
     if (mk in mIdx) months[mIdx[mk]][e.t]++;
     if (!bulk.has(e.d)) days[(asDate(e.d).getDay() + 6) % 7]++;
   }
-  const maxM = Math.max(1, ...months.map(m => m.ep + m.mv));
+  const maxM = Math.max(1, ...months.map(m => m.ep + m.mv + m.rv));
   const maxD = Math.max(1, ...days);
   // par année (l'historique complet, cochage en masse inclus)
   const byYear = {};
   for (const e of events) {
     const y = e.d.slice(0, 4);
-    (byYear[y] = byYear[y] || { ep: 0, mv: 0 })[e.t]++;
+    (byYear[y] = byYear[y] || { ep: 0, mv: 0, rv: 0 })[e.t]++;
   }
   const years = Object.keys(byYear).sort();
-  const maxY = Math.max(1, ...years.map(y => byYear[y].ep + byYear[y].mv));
+  const maxY = Math.max(1, ...years.map(y => byYear[y].ep + byYear[y].mv + byYear[y].rv));
   let recDay = null, recN = 0;
   for (const [d, n] of Object.entries(perDay)) if (!bulk.has(d) && n > recN) { recN = n; recDay = d; }
 
-  // temps estimé : durée réelle des épisodes quand elle est connue
-  let minutes = dureeFilms(mvWatched);
+  // temps estimé (revisionnages compris) : durée réelle des épisodes quand elle est connue
+  const temps = tempsEcran();
+  const heures = Math.round((temps.premieres + temps.revus) / 60);
+  // premières fois et revus : compteurs, et les titres les plus revus (au temps passé à les revoir)
+  let epRevus = 0, filmsRevus = 0;
+  const plusRevus = [];
   for (const s of state.series) {
-    const w = progress(s).watched;
-    if (!w) continue;
-    const meta = state.tmdb[s.uuid];
-    minutes += w * ((meta && meta.runtime) || 40);
+    let k = 0;
+    for (const x of realEpisodes(s)) if (x.ep.is_watched) k += x.ep.rewatch_count || 0;
+    if (!k) continue;
+    epRevus += k;
+    const v = vuesSerie(s);
+    plusRevus.push({ item: s, type: 'tv', min: k * ((state.tmdb[s.uuid] && state.tmdb[s.uuid].runtime) || 40),
+      sous: (v >= 2 ? `Vue ${v} fois` : pl(k, 'épisode revu', 'épisodes revus')) + (enRevision(s) ? ` · ${nieme(s.revision.n)} visionnage en cours` : ''),
+      fois: v >= 2 ? `×${v}` : `+${k} ép.` });
   }
-  const heures = Math.round(minutes / 60);
+  for (const m of mvWatched) {
+    if (!m.rewatch_count) continue;
+    filmsRevus += m.rewatch_count;
+    const der = dernierRevu(m);
+    plusRevus.push({ item: m, type: 'movie', min: m.rewatch_count * ((state.tmdb[m.uuid] && state.tmdb[m.uuid].runtime) || 110),
+      sous: `Vu ${m.rewatch_count + 1} fois${der ? ' · revu ' + jourRelatif(der) : ''}`, fois: `×${m.rewatch_count + 1}` });
+  }
+  plusRevus.sort((a, b) => b.min - a.min);
 
   // genres (épisodes vus pondèrent les séries, un film compte 2)
   const gcount = {};
@@ -4605,15 +4812,19 @@ function renderStats() {
   const topG = Object.entries(gcount).filter(([g]) => GENRE_NAMES[g]).sort((a, b) => b[1] - a[1]).slice(0, 8);
   const maxG = Math.max(1, ...topG.map(x => x[1]));
 
-  // top séries par épisodes vus
-  const topS = state.series.map(s => ({ s, w: progress(s).watched })).filter(x => x.w > 0)
-    .sort((a, b) => b.w - a.w).slice(0, 5);
-  const maxS = Math.max(1, ...topS.map(x => x.w));
+  // top séries par épisodes regardés, revisionnages compris (la part revue en bleu)
+  const topS = state.series.map(s => {
+    let w = 0, r = 0;
+    for (const x of realEpisodes(s)) if (x.ep.is_watched) { w++; r += x.ep.rewatch_count || 0; }
+    return { s, w, r };
+  }).filter(x => x.w > 0).sort((a, b) => (b.w + b.r) - (a.w + a.r)).slice(0, 5);
+  const maxS = Math.max(1, ...topS.map(x => x.w + x.r));
 
   const barChart = (cols, max, small) => `
     <div class="chart ${small ? 'small' : ''}">
       ${cols.map(c => `<div class="ccol" title="${c.title || ''}">
         <div class="bars">
+          ${c.rv ? `<span class="seg rv" style="height:0" data-h="${c.rv / max * 100}%"></span>` : ''}
           ${c.mv ? `<span class="seg mv" style="height:0" data-h="${c.mv / max * 100}%"></span>` : ''}
           ${c.ep ? `<span class="seg ep" style="height:0" data-h="${c.ep / max * 100}%"></span>` : ''}
         </div>
@@ -4635,25 +4846,42 @@ function renderStats() {
           <div class="stat"><div class="v" data-count="${heures}" data-prefix="≈ " data-suffix=" h">0</div><div class="l">devant l'écran*</div></div>
           <div class="stat"><div class="v" data-count="${recN}">0</div><div class="l">record en 1 jour${recDay ? '<br>' + fmtDate(recDay) : ''}</div></div>
         </div>
-        <p style="margin:10px 0 0;font-size:11px;color:var(--txt2)">* durées réelles des séries quand connues (sinon 40 min/épisode), 1h50/film</p>
+        <p style="margin:10px 0 0;font-size:11px;color:var(--txt2)">* revus compris ; durées réelles des séries quand connues (sinon 40 min/épisode), 1h50/film</p>
+      </div>
+
+      <div class="panel">
+        <h3>🔁 Premières fois et revus</h3>
+        ${epRevus || filmsRevus ? `
+        <div class="rv-partage" aria-hidden="true"><i class="p" style="flex:${temps.premieres}"></i><i class="r" style="flex:${temps.revus}"></i></div>
+        <div class="legend">
+          <span><span class="dot" style="background:var(--acc)"></span>Premières fois · ${Math.round(temps.premieres / 60).toLocaleString('fr-FR')} h</span>
+          <span><span class="dot" style="background:var(--rv)"></span>Revus · ${Math.round(temps.revus / 60).toLocaleString('fr-FR')} h</span>
+        </div>
+        <div class="statgrid trois">
+          <div class="stat"><div class="v" data-count="${epRevus}">0</div><div class="l">${epRevus > 1 ? 'épisodes revus' : 'épisode revu'}</div></div>
+          <div class="stat"><div class="v" data-count="${filmsRevus}">0</div><div class="l">${filmsRevus > 1 ? 'films revus' : 'film revu'}</div></div>
+          <div class="stat"><div class="v" data-count="${Math.round(temps.revus / 60)}" data-suffix=" h">0</div><div class="l">de revisionnage</div></div>
+        </div>`
+        : `<p style="margin:0">Aucun revisionnage pour l'instant. Sur la fiche d'un film ou d'une série déjà vus, touche « Revu ».</p>`}
       </div>
 
       <div class="panel">
         <h3>📅 Activité des 12 derniers mois</h3>
-        ${barChart(months.map(m => ({ ...m, title: `${m.lab} : ${m.ep} ép. + ${m.mv} films` })), maxM)}
+        ${barChart(months.map(m => ({ ...m, title: `${m.lab} : ${m.ep} ép. + ${m.mv} films${m.rv ? ` + ${m.rv} revus` : ''}` })), maxM)}
         <div class="legend">
           <span><span class="dot" style="background:var(--acc)"></span>Épisodes</span>
           <span><span class="dot" style="background:#E8B04E"></span>Films</span>
+          <span><span class="dot" style="background:var(--rv)"></span>Revus</span>
         </div>
       </div>
 
       <div class="panel">
         <h3>📆 Année par année</h3>
-        ${barChart(years.map(y => ({ lab: y, ...byYear[y], title: `${y} : ${byYear[y].ep} ép. + ${byYear[y].mv} films` })), maxY, true)}
+        ${barChart(years.map(y => ({ lab: y, ...byYear[y], title: `${y} : ${byYear[y].ep} ép. + ${byYear[y].mv} films${byYear[y].rv ? ` + ${byYear[y].rv} revus` : ''}` })), maxY, true)}
         ${years.map(y => `<div class="grow">
           <span class="gl">${y}</span>
-          <span class="gb"><i style="width:0" data-w="${(byYear[y].ep + byYear[y].mv) / maxY * 100}%"></i></span>
-          <span class="gv" style="width:auto">${byYear[y].ep.toLocaleString('fr-FR')} ép. · ${byYear[y].mv} films</span>
+          <span class="gb"><i style="width:0" data-w="${(byYear[y].ep + byYear[y].mv + byYear[y].rv) / maxY * 100}%"></i></span>
+          <span class="gv" style="width:auto">${byYear[y].ep.toLocaleString('fr-FR')} ép. · ${byYear[y].mv} films${byYear[y].rv ? ` · ${byYear[y].rv} revus` : ''}</span>
         </div>`).join('')}
         <p style="margin:10px 0 0;font-size:11px;color:var(--txt2)">L'année de création de ton compte TV Time inclut tout l'historique coché ce jour-là.</p>
       </div>
@@ -4677,13 +4905,23 @@ function renderStats() {
 
       <div class="panel">
         <h3>🏅 Tes séries les plus regardées</h3>
-        ${topS.map(({ s, w }) => `
-          <div class="grow" data-action="open-series" data-uuid="${s.uuid}">
+        ${topS.map(({ s, w, r }) => `
+          <div class="grow" data-action="open-series" data-uuid="${s.uuid}" title="${w} épisodes${r ? `, revus ${r} fois` : ''}">
             <span class="gl">${esc(s.title)}</span>
-            <span class="gb"><i style="width:0" data-w="${w / maxS * 100}%"></i></span>
-            <span class="gv">${w} ép.</span>
+            <span class="gb duo"><i style="width:0" data-w="${w / maxS * 100}%"></i>${r ? `<i class="rv" style="width:0" data-w="${r / maxS * 100}%"></i>` : ''}</span>
+            <span class="gv">${w + r} ép.</span>
           </div>`).join('')}
       </div>
+
+      ${plusRevus.length ? `<div class="panel">
+        <h3>🔁 Tes plus revus</h3>
+        ${plusRevus.slice(0, 5).map(x => `
+          <div class="toprv" data-action="${x.type === 'tv' ? 'open-series' : 'open-movie'}" data-uuid="${x.item.uuid}">
+            ${posterHtml(x.item, x.type)}
+            <div class="tt"><b>${esc(x.item.title)}</b><span>${esc(x.sous)}</span></div>
+            <span class="fois">${x.fois}</span>
+          </div>`).join('')}
+      </div>` : ''}
     </main>
   </div>`);
   animateOverlay(memeEcran);
@@ -4702,9 +4940,12 @@ function collectEvents() {
   const ev = [];
   for (const s of state.series)
     for (const sea of s.seasons || [])
-      for (const ep of sea.episodes)
-        if (ep.is_watched && ep.watched_at)
-          ev.push({ t: 'ep', at: ep.watched_at, d: dayOf(ep.watched_at), uuid: s.uuid, title: s.title, code: epCode(sea.number, ep.number), name: ep.name });
+      for (const ep of sea.episodes) {
+        if (!ep.is_watched) continue;
+        const base = { t: 'ep', uuid: s.uuid, title: s.title, code: epCode(sea.number, ep.number), name: ep.name };
+        if (ep.watched_at) ev.push({ ...base, at: ep.watched_at, d: dayOf(ep.watched_at) });
+        for (const r of ep.rewatches || []) ev.push({ ...base, at: r, d: dayOf(r), revu: true });
+      }
   for (const m of state.movies) {
     if (!m.is_watched) continue;
     if (m.watched_at) ev.push({ t: 'mv', at: m.watched_at, d: dayOf(m.watched_at), uuid: m.uuid, title: m.title, year: m.year });
@@ -4734,14 +4975,14 @@ function renderJournal() {
          ${miniPoster(e.uuid, e.title)}
          <div class="mid">
            <div class="title" style="font-size:13.5px">${esc(e.title)}</div>
-           <div class="sub"><span class="badge acc">${e.code}</span> ${esc(e.name || '')}</div>
+           <div class="sub"><span class="badge ${e.revu ? 'rv' : 'acc'}">${e.revu ? ICONS.refresh : ''}${e.code}</span> ${esc(e.name || '')}</div>
          </div>
        </div>`
     : `<div class="scard" style="padding:8px" data-action="open-movie" data-uuid="${e.uuid}">
          ${miniPoster(e.uuid, e.title)}
          <div class="mid">
            <div class="title" style="font-size:13.5px">🎬 ${esc(e.title)}</div>
-           <div class="sub">${e.year || ''} · ${e.revu ? 'film revu 🔁' : 'film'}</div>
+           <div class="sub">${e.year ? e.year + ' · ' : ''}${e.revu ? `<span class="badge rv">${ICONS.refresh}Revu</span>` : 'film'}</div>
          </div>
        </div>`;
 
@@ -4805,11 +5046,13 @@ function computeWrapped() {
     if (!p.total || p.watched !== p.total) continue;
     if (String(lastActivity(s)).slice(0, 4) === y) terminees++;
   }
-  return { ev, years, y, yEv, eps, mvs, heures, topSeries, maxTop, bestMois, joursActifs, topGenres, terminees };
+  // revisionnages de l'année (déjà comptés dans les épisodes, les films et les heures)
+  const revus = { ep: eps.filter(e => e.revu).length, mv: mvs.filter(e => e.revu).length };
+  return { ev, years, y, yEv, eps, mvs, heures, topSeries, maxTop, bestMois, joursActifs, topGenres, terminees, revus };
 }
 
 function renderWrapped() {
-  const { years, y, yEv, eps, mvs, heures, topSeries, maxTop, bestMois, joursActifs, topGenres, terminees } = computeWrapped();
+  const { years, y, yEv, eps, mvs, heures, topSeries, maxTop, bestMois, joursActifs, topGenres, terminees, revus } = computeWrapped();
 
   const memeEcran = remplirOverlay(`
   <div class="overlay">
@@ -4849,6 +5092,7 @@ function renderWrapped() {
         <p style="margin:0">
           ${bestMois ? `📆 Mois le plus intense : <b style="color:var(--txt)">${MOIS[bestMois[0] - 1]} ${y}</b> (${bestMois[1]} visionnages)<br>` : ''}
           ${terminees ? `🎬 Séries bouclées : <b style="color:var(--txt)">${terminees}</b><br>` : ''}
+          ${revus.ep || revus.mv ? `🔁 Revus : <b style="color:var(--rv2)">${[revus.ep ? pl(revus.ep, 'épisode') : '', revus.mv ? pl(revus.mv, 'film') : ''].filter(Boolean).join(' et ')}</b><br>` : ''}
           ${topGenres.length ? `🎭 Genres dominants : <b style="color:var(--txt)">${topGenres.map(([id]) => GENRE_NAMES[id]).join(', ')}</b><br>` : ''}
           ⏱️ Soit environ <b style="color:var(--txt)">${(Math.round(heures / 24 * 10) / 10).toLocaleString('fr-FR')} jours</b> non-stop devant l'écran.
         </p>
@@ -5205,10 +5449,14 @@ function renderDetail() {
   }
   const nx = nextUnwatched(s);
   const nep = nextEpValide(meta);
-  // saison affichée : celle choisie, sinon celle du prochain épisode, sinon la dernière
+  // série qu'on revoit : numéro du visionnage en cours et prochain épisode à revoir
+  const revision = enRevision(s) ? s.revision.n : 0;
+  const arevoir = revision ? prochainARevoir(s) : null;
+  // saison affichée : celle choisie, sinon celle du prochain épisode (à voir, puis à revoir), sinon la dernière
   let choix = state.saisonFiche[s.uuid];
+  const cible = nx && !isFuture(nx.ep) ? nx : arevoir || nx;
   if (choix === undefined || (choix === 'sp' ? !speciaux.length : !saisons.some(x => x.number === choix)))
-    choix = nx ? nx.season : (saisons.length ? saisons[saisons.length - 1].number : 'sp');
+    choix = cible ? cible.season : (saisons.length ? saisons[saisons.length - 1].number : 'sp');
   const special = choix === 'sp';
   const liste = special ? speciaux
     : (saisons.find(x => x.number === choix) || { episodes: [] }).episodes
@@ -5228,32 +5476,62 @@ function renderDetail() {
 
   const carte = ({ sea, ep }) => {
     const futur = isFuture(ep), suivant = !!nx && nx.ep === ep, img = images[ep.number] || {};
+    const v = vuesEp(ep);
+    // pendant un revisionnage, le rond des épisodes déjà vus dit s'ils ont été revus cette fois-ci (en bleu)
+    const modeRevu = !!revision && !special && ep.is_watched && !futur;
+    const fait = modeRevu && v >= revision, aRevoirIci = modeRevu && !!arevoir && arevoir.ep === ep;
+    const revuLe = dernierRevu(ep);
     const detail = futur ? `Sortie ${compteARebours(ep.air_date)}`
-      : ep.is_watched ? (ep.watched_at ? `Vu le ${dateCourteAn(ep.watched_at)}` : 'Vu')
+      : fait ? (revuLe ? `Revu ${jourRelatif(revuLe)} · ${nieme(v)} fois` : `Vu ${v} fois`)
+      : ep.is_watched ? `${v > 1 ? `Vu ${v} fois` : 'Vu'}${ep.watched_at ? `${v > 1 ? ' ·' : ''} le ${dateCourteAn(ep.watched_at)}` : ''}`
       : [img.duree ? `${img.duree} min` : null, ep.air_date ? dateCourteAn(ep.air_date) : null].filter(Boolean).join(' · ');
-    return `<div class="eprow ${ep.is_watched ? 'watched' : ''} ${futur ? 'future' : ''} ${suivant ? 'suivant' : ''}"
-         data-action="open-ep" data-season="${sea}" data-ep="${ep.number}"${special ? ' data-special="1"' : ''}>
+    const attrs = `data-season="${sea}" data-ep="${ep.number}"${special ? ' data-special="1"' : ''}`;
+    return `<div class="eprow ${ep.is_watched && !modeRevu ? 'watched' : ''} ${fait ? 'revu' : ''} ${aRevoirIci ? 'arevoir' : ''} ${futur ? 'future' : ''} ${suivant ? 'suivant' : ''}"
+         data-action="open-ep" ${attrs}>
       <div class="epimg">${img.img ? `<img loading="lazy" src="${img.img}" alt="">` : `<span>${pad2(ep.number)}</span>`}</div>
       <div class="nm">
-        ${suivant ? '<div class="epsuiv">À voir ensuite</div>' : ''}
+        ${suivant ? '<div class="epsuiv">À voir ensuite</div>' : aRevoirIci ? '<div class="epsuiv rv">À revoir</div>' : ''}
         <div class="ept">${ep.number}. ${esc(ep.name || (special ? 'Spécial ' : 'Épisode ') + ep.number)}</div>
-        ${detail ? `<div class="d">${detail}</div>` : ''}
+        ${detail ? `<div class="d${fait && revuLe ? ' rv' : ''}">${detail}</div>` : ''}
       </div>
-      <button class="epcheck" data-action="toggle-ep" data-season="${sea}" data-ep="${ep.number}"${special ? ' data-special="1"' : ''}
-              aria-label="${ep.is_watched ? 'Marquer non vu' : 'Marquer vu'}">${ICONS.check}</button>
+      ${modeRevu
+        ? `<button class="epcheck" data-action="toggle-revu" ${attrs} aria-label="${fait ? 'Retirer ce revisionnage' : 'Marquer revu'}">${ICONS.check}</button>`
+        : `<button class="epcheck" data-action="toggle-ep" ${attrs} aria-label="${ep.is_watched ? 'Marquer non vu' : 'Marquer vu'}">${ICONS.check}</button>`}
     </div>`;
   };
   const onglets = saisons.map(sea => {
     const eps = sea.episodes.filter(e => !e.special), fini = eps.length && eps.every(e => e.is_watched), on = choix === sea.number;
-    return `<button class="spill ${on ? 'on' : ''}" data-action="fiche-saison" data-n="${sea.number}" role="tab" aria-selected="${on}">Saison ${sea.number}${fini ? ' ✓' : ''}</button>`;
+    // pendant un revisionnage, la coche (bleue) dit que la saison a été revue
+    const vusIci = eps.filter(e => e.is_watched && !isFuture(e));
+    const revue = !!revision && vusIci.length > 0 && vusIci.every(e => vuesEp(e) >= revision);
+    const coche = revision ? revue : fini;
+    return `<button class="spill ${on ? 'on' : ''} ${revue ? 'revue' : ''}" data-action="fiche-saison" data-n="${sea.number}" role="tab" aria-selected="${on}">Saison ${sea.number}${coche ? ' ✓' : ''}</button>`;
   }).join('') + (speciaux.length ? `<button class="spill ${special ? 'on' : ''}" data-action="fiche-saison" data-n="sp" role="tab" aria-selected="${special}">Spéciaux</button>` : '');
   const prochain = nx && !isFuture(nx.ep) ? nx : null;
   const barre = prochain
     ? `<button class="btn fvu" data-action="mark-next" data-uuid="${s.uuid}" data-stay="1">${ICONS.check} Vu ${epCode(prochain.season, prochain.ep.number)}</button>
        <button class="iconbtn fdate" data-action="open-ep" data-season="${prochain.season}" data-ep="${prochain.ep.number}" aria-label="Choisir la date de visionnage">${ICONS.calendar}</button>`
+    : arevoir
+    ? `<button class="btn fvu" data-action="mark-next" data-uuid="${s.uuid}" data-stay="1">${ICONS.refresh} Revu ${epCode(arevoir.season, arevoir.ep.number)}</button>
+       <button class="iconbtn fdate" data-action="open-ep" data-season="${arevoir.season}" data-ep="${arevoir.ep.number}" aria-label="Revu un autre jour">${ICONS.calendar}</button>`
+    : !sortie && s.status !== 'stopped' && vuesSerie(s) >= 1
+    // tout est vu et rien n'est annoncé : on peut la revoir
+    ? `<button class="revoir" data-action="revoir-serie">${ICONS.refresh} Revoir la série</button>`
     : `<div class="fbar-info">${s.status === 'stopped' ? 'Série arrêtée'
         : sortie ? `${sortie.code} ${sortie.date ? compteARebours(sortie.date) : 'annoncé'}`
         : p.total && p.watched === p.total ? 'Série terminée ✓' : 'À jour ✓'}</div>`;
+  const vs = vuesSerie(s);
+  const pr = revision ? progresRevision(s) : null;
+  const carteRevision = revision ? `<div class="revi">
+      <div class="revi-l">
+        <span class="revi-i">${ICONS.refresh}</span>
+        <div class="revi-t"><b>${nieme(revision)} visionnage</b><span>Commencé ${jourRelatif(s.revision.debut)}${arevoir ? ` · prochain ${epCode(arevoir.season, arevoir.ep.number)}` : ''}</span></div>
+        <span class="revi-n">${pr.faits} / ${pr.total}</span>
+      </div>
+      <div class="progress rv"><i style="width:0" data-w="${pr.total ? Math.round(pr.faits / pr.total * 100) : 0}%" data-k="rv-${s.uuid}"></i></div>
+    </div>` : '';
+  const revusSaison = revision && !special ? liste.filter(x => x.ep.is_watched && !isFuture(x.ep) && vuesEp(x.ep) >= revision).length : 0;
+  const aRevoirSaison = revision && !special ? episodesARevoir(s, choix).length : 0;
 
   remplirOverlay(`
   <div class="overlay fiche">
@@ -5271,15 +5549,19 @@ function renderDetail() {
         <span class="badge ${s.status === 'up_to_date' ? 'ok' : s.status === 'stopped' ? '' : 'acc'}">${STATUS_LABEL[s.status] || ''}</span>
         ${meta.tvStatus === 'Ended' || meta.tvStatus === 'Canceled' ? '<span class="badge">Série terminée</span>' : ''}
         ${sortie && sortie.date ? `<span class="badge warn">📅 ${sortie.code} ${compteARebours(sortie.date)}</span>` : ''}
+        ${vs >= 2 ? `<span class="badge rv">${ICONS.refresh} Vue ${vs} fois</span>` : ''}
       </div>
       <div class="fprog"><div class="progress ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%" data-k="d-${s.uuid}"></i></div><span>${p.watched} / ${p.total}</span></div>
     </div>
+    ${carteRevision}
     ${meta.overview ? `<p class="overview clamp" data-action="expand-overview">${esc(meta.overview)}</p>` : ''}
     ${serieExtraHtml(meta)}
     ${onglets ? `<div class="saisons" role="tablist" aria-label="Saisons">${onglets}</div>` : ''}
-    <div class="saison-tete">
-      <span>${special ? 'Spéciaux' : `Saison ${choix}`} · ${vus}/${liste.length} vus</span>
-      ${!special && liste.length ? `<button class="btn ghost small" data-action="mark-season" data-season="${choix}" data-watched="${vus < liste.length ? 1 : 0}">${vus < liste.length ? 'Tout vu' : 'Tout non vu'}</button>` : ''}
+    <div class="saison-tete">${revision && !special
+      ? `<span>Saison ${choix} · ${revusSaison}/${liste.length} revus</span>
+         ${aRevoirSaison ? `<button class="btn ghost small" data-action="revoir-saison" data-season="${choix}">${ICONS.check} Toute la saison revue</button>` : ''}`
+      : `<span>${special ? 'Spéciaux' : `Saison ${choix}`} · ${vus}/${liste.length} vus</span>
+         ${!special && liste.length ? `<button class="btn ghost small" data-action="mark-season" data-season="${choix}" data-watched="${vus < liste.length ? 1 : 0}">${vus < liste.length ? 'Tout vu' : 'Tout non vu'}</button>` : ''}`}
     </div>
     <div class="episodes">${liste.length ? liste.map(carte).join('') : '<p class="loadrow">Aucun épisode.</p>'}</div>
     <div class="fichebar">${barre}</div>
@@ -5315,6 +5597,9 @@ function openMenuFiche(s) {
       <h3>${esc(s.title)}</h3>
       <div class="menu-actions">
         ${p.watched < p.total ? `<button class="btn ghost" data-action="menu-fiche" data-a="mark-all-watched">${ICONS.check} Tout marquer comme vu</button>` : ''}
+        ${!enRevision(s) && vuesSerie(s) >= 1 ? `<button class="btn ghost" data-action="menu-fiche" data-a="revoir-serie">${ICONS.refresh} Revoir la série</button>` : ''}
+        ${p.watched ? `<button class="btn ghost" data-action="menu-fiche" data-a="revue-dun-coup">${ICONS.refresh} ${enRevision(s) ? 'Finir le revisionnage d’un coup…' : 'Toute la série revue d’un coup…'}</button>` : ''}
+        ${enRevision(s) ? `<button class="btn ghost" data-action="menu-fiche" data-a="stop-revision">⏹ Arrêter le revisionnage</button>` : ''}
         <button class="btn ghost" data-action="menu-fiche" data-a="refresh-one">${ICONS.refresh} Actualiser la série</button>
         <button class="btn ghost" data-action="menu-fiche" data-a="toggle-stop">${s.status === 'stopped' ? '▶ Reprendre la série' : '⏸ Arrêter la série'}</button>
         <button class="btn danger" data-action="menu-fiche" data-a="delete-series">Supprimer la série</button>
@@ -5398,6 +5683,87 @@ async function appliquerVu(quand) {
   if (!feteSiTerminee(s, avant, undo)) proposerAnnulation(msg, undo);
 }
 
+/* ---------------- Revu : date d'un revisionnage, liste des visionnages ---------------- */
+let cibleRevu = null; // ce que concernent « Revu aujourd'hui / un autre jour » : film, épisode, saison ou série
+const jourRelatif = iso => { const j = dayOf(iso); return j === todayStr() ? 'aujourd’hui' : j === dayOf(new Date(Date.now() - 86400000)) ? 'hier' : 'le ' + dateCourteAn(iso); };
+const jourCourt = iso => { const j = jourRelatif(iso); return j.startsWith('le ') ? fmtDate(iso) : majuscule(j); };
+function choixRevuHtml({ pluriel = false, principal = true } = {}) {
+  return `<div class="vuchoix">
+    <button class="btn ${principal ? 'vuprim' : 'ghost small'}" data-action="revu-quand" data-when="now">${ICONS.refresh} ${pluriel ? 'Revus' : 'Revu'} aujourd’hui</button>
+    <button class="btn ghost small" data-action="revu-quand" data-when="unknown">Date inconnue</button>
+    <button class="btn ghost small" data-action="revu-pick">📅 Autre date…</button>
+    <input type="date" class="vudate-in" id="revu-date" max="${todayStr()}" data-revu-date="1" tabindex="-1" aria-label="Date du revisionnage">
+  </div>`;
+}
+/* Choix de la date pour « Toute la saison / toute la série revue » */
+function openRevuModal(cible, titre, sous) {
+  cibleRevu = cible;
+  if (!modaleOuverte()) pushLayer('modal');
+  modaleCourante = null;
+  $('#modal-root').innerHTML = `
+  <div class="modal-bg" data-action="close-modal">
+    <div class="modal">
+      <div class="grab"></div>
+      <h3 style="margin-bottom:4px">${esc(titre)}</h3>
+      <p style="color:var(--txt2);font-size:13px;margin-bottom:16px">${esc(sous)}</p>
+      <p class="vulabel">Quand les as-tu revus ?</p>
+      ${choixRevuHtml({ pluriel: true })}
+    </div>
+  </div>`;
+}
+/* « Tes visionnages » d'un film ou d'un épisode : la 1re fois, puis chaque revisionnage (retirable) */
+function histoVisionnages(item) {
+  const dates = [...(item.rewatches || [])].sort();
+  const sansDate = Math.max(0, (item.rewatch_count || 0) - dates.length);
+  const croix = at => `<button class="histo-x" data-action="retirer-revu" data-at="${at}" aria-label="Retirer ce revisionnage">${ICONS.croix}</button>`;
+  const lignes = [`<div class="histo-l"><i></i><b>1re fois</b><span>${item.watched_at ? jourCourt(item.watched_at) : 'Date inconnue'}</span><span class="histo-x vide"></span></div>`];
+  for (let k = 0; k < sansDate; k++) lignes.push(`<div class="histo-l"><i class="rv"></i><b>Revu</b><span>Date inconnue</span>${croix('')}</div>`);
+  for (const at of dates) lignes.push(`<div class="histo-l"><i class="rv"></i><b>Revu</b><span>${jourCourt(at)}</span>${croix(at)}</div>`);
+  // au-delà de 30 visionnages, seuls les plus récents sont listés
+  const cache = lignes.length > 30 ? lignes.length - 30 : 0;
+  return `<div class="histo">${cache ? `<div class="histo-plus">+ ${pl(cache, 'visionnage plus ancien', 'visionnages plus anciens')}</div>` : ''}${lignes.slice(cache).join('')}</div>`;
+}
+async function appliquerRevu(quand) {
+  const c = cibleRevu;
+  if (!c) return;
+  const jour = /^\d{4}-\d{2}-\d{2}$/.test(quand);
+  if (jour && quand > todayStr()) { toast('Cette date est dans le futur 📅'); return; }
+  const libelle = quand === 'unknown' ? ' (date inconnue)' : jour ? ` le ${fmtDate(quand)}` : '';
+  if (c.type === 'movie') {
+    const m = state.movies.find(x => x.uuid === c.uuid);
+    if (!m || !m.is_watched) return;
+    const snap = etatFilm(m);
+    ajouterRevu(m, quand);
+    await saveMovie(m);
+    if (navigator.vibrate) navigator.vibrate(12);
+    openMovieModal(m.uuid);
+    rafraichirEcrans();
+    proposerAnnulation(`« ${m.title} » revu${libelle} — vu ${vuesEp(m)} fois 🔁`, () => restaurerFilm(snap));
+    return;
+  }
+  const s = state.series.find(x => x.uuid === c.uuid);
+  if (!s) return;
+  const snap = etatSerie(s);
+  let msg;
+  if (c.type === 'ep') {
+    const ep = trouverEpisode(s, c.season, c.ep, c.special);
+    if (!ep || !ep.is_watched) return;
+    ajouterRevu(ep, quand);
+    msg = `${c.special ? 'Spécial ' + c.ep : epCode(c.season, c.ep)} revu${libelle}`;
+  } else {
+    const eps = episodesARevoir(s, c.type === 'saison' ? c.season : null);
+    if (!eps.length) return;
+    eps.forEach(ep => ajouterRevu(ep, quand));
+    msg = `${pl(eps.length, 'épisode revu', 'épisodes revus')}${libelle}`;
+  }
+  const fini = finirRevisionSiFinie(s);
+  await saveSeries(s);
+  if (navigator.vibrate) navigator.vibrate(12);
+  if (c.type === 'ep') redessinerModale(); else closeModalViaHistory();
+  if (detailUuid === s.uuid) renderDetail(); else rafraichirEcrans();
+  annoncerRevu(s, msg, fini, () => restaurerSerie(snap));
+}
+
 /* Détails d'un épisode chez le fournisseur (image, résumé, durée, note), gardés pour la session */
 const episodesInfos = new Map();
 async function infosEpisode(s, seasonNum, epNum) {
@@ -5436,10 +5802,12 @@ function openEpisodeModal(uuid, seasonNum, epNum, special) {
   if (!ep) return;
   if (!modaleOuverte()) pushLayer('modal');
   cibleVu = { type: 'ep', uuid, season: seasonNum, ep: epNum, special };
+  cibleRevu = { type: 'ep', uuid, season: seasonNum, ep: epNum, special };
   const cle = `ep:${uuid}:${seasonNum}:${epNum}:${special ? 1 : 0}`;
   modaleCourante = { cle, fn: () => openEpisodeModal(uuid, seasonNum, epNum, special) };
   const futur = isFuture(ep);
   const code = special ? `Spécial ${epNum}` : epCode(seasonNum, epNum);
+  const v = vuesEp(ep);
   $('#modal-root').innerHTML = `
   <div class="modal-bg" data-action="close-modal">
     <div class="modal" data-rr="${cle}">
@@ -5450,11 +5818,15 @@ function openEpisodeModal(uuid, seasonNum, epNum, special) {
       <div class="epinfos" id="ep-infos">
         ${ep.air_date ? `<span class="badge">📺 ${futur ? `Sortie ${compteARebours(ep.air_date)} · ` : ''}${fmtDate(ep.air_date)}</span>` : ''}
         ${ep.is_watched ? `<span class="badge ok">✓ Vu ${ep.watched_at ? 'le ' + fmtDate(ep.watched_at) : '· date inconnue'}</span>` : ''}
+        ${v > 1 ? `<span class="badge rv">${ICONS.refresh} Vu ${v} fois</span>` : ''}
       </div>
       ${futur ? '' : ep.is_watched
         ? `<p class="vulabel">Changer la date de visionnage</p>
            ${choixDateHtml({ diffusion: !!ep.air_date, dejaVu: true })}
-           <button class="btn danger small" style="margin-top:12px" data-action="ep-unwatch">Marquer non vu</button>`
+           <p class="vulabel" style="margin-top:18px">Revu</p>
+           ${choixRevuHtml({ principal: false })}
+           ${v > 1 ? histoVisionnages(ep) : ''}
+           <button class="btn danger small" style="margin-top:14px" data-action="ep-unwatch">Marquer non vu</button>`
         : choixDateHtml({ diffusion: !!ep.air_date })}
       <p class="epresume" id="ep-resume"><span class="spin"></span></p>
     </div>
@@ -5604,6 +5976,7 @@ function renderKeepFocus(id) {
 document.body.addEventListener('change', e => {
   if (e.target.dataset.action === 'import-files' && e.target.files.length) handleFiles([...e.target.files]);
   if (e.target.dataset.vuDate) { if (e.target.value) appliquerVu(e.target.value); return; }
+  if (e.target.dataset.revuDate) { if (e.target.value) appliquerRevu(e.target.value); return; }
   if (e.target.dataset.r) { // filtres de la roulette
     state.roulette[e.target.dataset.r] = e.target.dataset.r === 'genre' ? +e.target.value : e.target.value;
     if (e.target.dataset.r === 'type' && e.target.value === 'movie') state.roulette.duree = 'all';
@@ -5816,17 +6189,38 @@ document.body.addEventListener('click', async e => {
     if (m) { m.is_favorite = !m.is_favorite; await saveMovie(m); openMovieModal(m.uuid); rafraichirEcrans(); }
   }
   else if (act === 'movie-rewatch') {
-    const m = state.movies.find(x => x.uuid === el.dataset.uuid);
-    if (m) {
+    // la date du premier visionnage reste intacte ; chaque revisionnage est daté à part
+    cibleRevu = { type: 'movie', uuid: el.dataset.uuid };
+    await appliquerRevu('now');
+  }
+  else if (act === 'revu-quand') await appliquerRevu(el.dataset.when);
+  else if (act === 'revu-pick') {
+    // sélecteur de date natif (appelé pendant le geste de l'utilisateur, sinon refusé)
+    const i = $('#revu-date');
+    if (i) { try { i.showPicker(); } catch (err) { i.classList.add('visible'); i.focus(); } }
+  }
+  else if (act === 'retirer-revu') {
+    const c = cibleRevu, at = el.dataset.at; // at vide : un revisionnage sans date
+    if (!c) return;
+    if (c.type === 'movie') {
+      const m = state.movies.find(x => x.uuid === c.uuid);
+      if (!m) return;
       const snap = etatFilm(m);
-      m.rewatch_count = (m.rewatch_count || 0) + 1;
-      // la date du premier visionnage reste intacte ; chaque revisionnage est daté à part
-      m.rewatches = [...(m.rewatches || []), nowISO()];
+      if (!retirerRevu(m, at)) return;
       await saveMovie(m);
-      if (navigator.vibrate) navigator.vibrate(12);
-      proposerAnnulation(`« ${m.title} » revu — ×${m.rewatch_count + 1} au compteur 🔁`, () => restaurerFilm(snap));
       openMovieModal(m.uuid);
       rafraichirEcrans();
+      proposerAnnulation(`« ${m.title} » : revisionnage retiré`, () => restaurerFilm(snap));
+    } else if (c.type === 'ep') {
+      const serie = state.series.find(x => x.uuid === c.uuid);
+      const ep = serie && trouverEpisode(serie, c.season, c.ep, c.special);
+      if (!ep) return;
+      const snap = etatSerie(serie);
+      if (!retirerRevu(ep, at)) return;
+      await saveSeries(serie);
+      redessinerModale();
+      if (detailUuid === serie.uuid) renderDetail(); else rafraichirEcrans();
+      proposerAnnulation(`${c.special ? 'Spécial ' + c.ep : epCode(c.season, c.ep)} : revisionnage retiré`, () => restaurerSerie(snap));
     }
   }
   else if (act === 'movie-del') {
@@ -5856,6 +6250,19 @@ document.body.addEventListener('click', async e => {
       const avant = progress(target).watched;
       const nx = nextUnwatched(target);
       const zone = el.getBoundingClientRect(); // le bouton disparaît au rafraîchissement : on garde sa place
+      // tout ce qui est diffusé est vu et la série est en revisionnage : « Revu » sur le prochain à revoir
+      const rv = (!nx || isFuture(nx.ep)) && prochainARevoir(target);
+      if (rv) {
+        ajouterRevu(rv.ep);
+        const fini = finirRevisionSiFinie(target);
+        await saveSeries(target);
+        if (navigator.vibrate) navigator.vibrate(12);
+        if (!el.dataset.stay && state.tab === 'home' && !fini) carrouselUuid = carrouselAnim = target.uuid;
+        el.dataset.stay ? renderDetail() : render();
+        eclat(zone);
+        annoncerRevu(target, `${target.title} · ${epCode(rv.season, rv.ep.number)} revu`, fini, () => restaurerSerie(snap));
+        return;
+      }
       const ep = await markNext(target);
       if (!ep) return;
       if (navigator.vibrate) navigator.vibrate(12);
@@ -5952,6 +6359,57 @@ document.body.addEventListener('click', async e => {
       renderDetail();
       proposerAnnulation(`Saison ${num} marquée non vue`, () => restaurerSerie(snap));
     }
+  }
+  else if (act === 'revoir-serie' && s) {
+    const vs = vuesSerie(s);
+    if (vs < 1) { toast('Regarde d’abord tous les épisodes déjà diffusés'); return; }
+    const snap = etatSerie(s);
+    s.revision = { n: vs + 1, debut: nowISO() };
+    await saveSeries(s);
+    const rv = prochainARevoir(s);
+    if (rv) state.saisonFiche[s.uuid] = rv.season;
+    renderDetail();
+    rafraichirEcrans();
+    proposerAnnulation(`🔁 ${nieme(s.revision.n)} visionnage de « ${s.title} » commencé`, () => restaurerSerie(snap));
+  }
+  else if (act === 'stop-revision' && s) {
+    const snap = etatSerie(s);
+    s.revision = null;
+    await saveSeries(s);
+    renderDetail();
+    rafraichirEcrans();
+    proposerAnnulation('Revisionnage arrêté — les épisodes revus restent comptés', () => restaurerSerie(snap));
+  }
+  else if (act === 'revue-dun-coup' && s) {
+    const n = episodesARevoir(s).length;
+    if (!n) { toast('Aucun épisode vu à revoir'); return; }
+    openRevuModal({ type: 'serie', uuid: s.uuid }, `${pl(n, 'épisode')} à marquer ${n > 1 ? 'revus' : 'revu'}`,
+      `${s.title} · ${enRevision(s) ? `fin du ${nieme(s.revision.n)} visionnage` : 'toute la série'}`);
+  }
+  else if (act === 'revoir-saison' && s) {
+    e.preventDefault(); e.stopPropagation();
+    const num = +el.dataset.season, n = episodesARevoir(s, num).length;
+    if (n) openRevuModal({ type: 'saison', uuid: s.uuid, season: num }, `Saison ${num} : ${pl(n, 'épisode')} à marquer ${n > 1 ? 'revus' : 'revu'}`, s.title);
+  }
+  else if (act === 'toggle-revu' && s) {
+    // rond d'un épisode pendant un revisionnage : revu cette fois-ci, ou retiré
+    const ep = trouverEpisode(s, +el.dataset.season, +el.dataset.ep, false);
+    if (!ep || !ep.is_watched || !enRevision(s)) return;
+    const snap = etatSerie(s);
+    const fait = vuesEp(ep) >= s.revision.n;
+    if (fait) retirerRevu(ep); else ajouterRevu(ep);
+    const fini = fait ? 0 : finirRevisionSiFinie(s);
+    await saveSeries(s);
+    renderDetail();
+    const code = epCode(+el.dataset.season, ep.number);
+    const coche = document.querySelector(`.eprow[data-season="${el.dataset.season}"][data-ep="${el.dataset.ep}"]:not([data-special]) .epcheck`);
+    if (!fait && coche) {
+      coche.style.animation = 'pop .3s ease';
+      tracer(coche); eclat(coche);
+      if (navigator.vibrate) navigator.vibrate(12);
+    }
+    if (fait) proposerAnnulation(`${code} : revisionnage retiré`, () => restaurerSerie(snap), 4000);
+    else annoncerRevu(s, `${code} revu`, fini, () => restaurerSerie(snap));
   }
   else if (act === 'toggle-fav' && s) { s.is_favorite = !s.is_favorite; await saveSeries(s); renderDetail(); }
   else if (act === 'toggle-stop' && s) {
