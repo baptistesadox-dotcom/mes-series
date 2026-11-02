@@ -1107,16 +1107,14 @@ const STATUS_LABEL = {
    sinon TVMaze (séries) et IMDb (films) — gratuits, sans clé. */
 
 /* Clé TMDB de l'appli (gratuite, en lecture seule) : tout le monde a les fiches en français,
-   les tendances et les suggestions sans rien saisir. Une clé personnelle entrée dans le Profil
-   reste prioritaire. Écrite à l'envers et en morceaux pour ne pas être ramassée telle quelle par
-   les robots qui fouillent les dépôts publics (elle reste lisible par qui lit le code). */
+   les tendances et les suggestions sans rien saisir. Une clé personnelle venue d'une ancienne
+   version ou d'une sauvegarde passe d'abord. Écrite à l'envers et en morceaux pour ne pas être
+   ramassée telle quelle par les robots qui fouillent les dépôts publics (elle reste lisible par
+   qui lit le code). */
 const CLE_TMDB_APPLI = ['a0327a9c', '0577540e', '894494d1', '6be7f47e'].join('').split('').reverse().join('');
-let cleAppliRefusee = false; // refusée par TMDB (révoquée) : l'appli repasse sur TVMaze / IMDb
+const clesRefusees = new Set(); // refusées par TMDB (révoquées) : la suivante prend le relais, sinon TVMaze / IMDb
 function cleTmdbPerso() { return (state.settings.tmdbKey || '').trim(); }
-function tmdbKey() { return cleTmdbPerso() || (cleAppliRefusee ? '' : CLE_TMDB_APPLI); }
-const etatCleTmdb = () => cleTmdbPerso() ? '✅ Ta clé personnelle est utilisée'
-  : cleAppliRefusee ? '⚠️ La clé de l’appli est refusée par TMDB : affiches via TVMaze / IMDb'
-  : '✅ Clé de l’appli utilisée';
+function tmdbKey() { return [cleTmdbPerso(), CLE_TMDB_APPLI].find(c => c && !clesRefusees.has(c)) || ''; }
 function providerFor(type) { return tmdbKey() ? 'tmdb' : (type === 'tv' ? 'tvmaze' : 'imdb'); }
 
 /* API de suggestions IMDb (sans clé, CORS ouvert).
@@ -1146,7 +1144,8 @@ async function tget(path, params = {}) {
   let r = await fetch(`${TMDB}${path}?${q}`);
   if (r.status === 429) { await sleep(2000); r = await fetch(`${TMDB}${path}?${q}`); }
   if (r.status === 401) {
-    if (!cleTmdbPerso()) cleAppliRefusee = true;
+    clesRefusees.add(key);
+    if (tmdbKey()) return tget(path, params); // nouvel essai avec l'autre clé
     throw new Error('Clé TMDB invalide');
   }
   if (!r.ok) throw new Error(`TMDB ${r.status}`);
@@ -1533,7 +1532,7 @@ async function refreshAll(quiet = false) {
   const voir = trouvailles.length ? { label: 'Voir', run: openNouveautes } : null;
   const nettoyage = totalRemoved ? ` · ${pl(totalRemoved, 'fantôme retiré', 'fantômes retirés')}` : '';
   if (toutEchoue) {
-    if (!quiet) toast('Actualisation impossible — vérifie ta connexion ou ta clé TMDB', 4500);
+    if (!quiet) toast('Actualisation impossible — vérifie ta connexion', 4500);
   } else if (!quiet) {
     toast(totalAdded
       ? `${pl(totalAdded, 'nouvel épisode trouvé', 'nouveaux épisodes trouvés')} 🎉${nettoyage}`
@@ -3253,8 +3252,7 @@ function viewDiscover() {
     if (!state.trending) { loadTrending(); body = `<div class="hrow" style="margin-top:14px">${skelCard.repeat(4)}</div>`; }
     else body = `
       ${teteSection('En ce moment en streaming')}
-      <div class="hrow">${fresh(state.trending.tv).map(discoverCardH).join('')}</div>
-      <div class="hint" style="margin-top:16px"><span class="em">💡</span><p><b>Astuce :</b> avec une clé TMDB gratuite (onglet Profil), tu débloques les tendances, les tops, les genres et les recommandations personnalisées.</p></div>`;
+      <div class="hrow">${fresh(state.trending.tv).map(discoverCardH).join('')}</div>`;
     return `<div class="searchbar">${champ}</div>${body}`;
   }
 
@@ -3634,7 +3632,7 @@ async function preparerSagas() {
 }
 
 function viewSagas() {
-  if (!tmdbKey()) return `<div class="hint"><span class="em">🎞️</span><p><b>Sagas :</b> cette vue utilise TMDB. Ajoute ta clé dans Profil → Clé API TMDB.</p></div>`;
+  if (!tmdbKey()) return `<div class="hint"><span class="em">🎞️</span><p><b>Sagas :</b> cette vue utilise TMDB, qui ne répond pas pour le moment. Réessaie plus tard.</p></div>`;
   const { parId, ids } = sagasBibliotheque();
   const cartes = [];
   for (const id of ids) {
@@ -4104,19 +4102,6 @@ function viewSettings() {
       <div style="font-size:12.5px;color:var(--txt2);margin-top:2px">${state.series.length} séries · ${state.movies.filter(m => m.is_watched).length} films vus · ≈ ${Math.round(minutes / 60).toLocaleString('fr-FR')} h d'écran</div>
     </div>
   </div>
-  ${!tmdbKey() ? `<div class="hint"><span class="em">🎬</span><p><b>Recommandé :</b> avec une clé TMDB gratuite, tu as les synopsis en français, les tendances de la semaine et une meilleure détection des nouveaux épisodes. Sans clé, l'app fonctionne déjà via TVMaze et IMDb (gratuits, sans compte).</p></div>` : ''}
-  <div class="panel">
-    <h3>🎬 Données TMDB</h3>
-    <p>L'appli a sa propre clé TMDB : fiches en français, tendances et suggestions marchent sans rien saisir.
-    Si tu as ta propre « Clé d'API » (v3), créée gratuitement sur <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">themoviedb.org</a>,
-    tu peux la coller ici : elle passera avant celle de l'appli.</p>
-    <div class="row">
-      <input class="field" id="tmdb-key" type="password" placeholder="Ta clé personnelle (facultatif)" value="${esc(state.settings.tmdbKey || '')}">
-      <button class="btn small" data-action="save-key">Enregistrer</button>
-    </div>
-    <p id="key-status" style="margin:8px 0 0">${etatCleTmdb()}</p>
-  </div>
-
   <div class="panel">
     <h3>📊 Ma collection</h3>
     <div class="row" style="margin-bottom:12px">
@@ -4143,7 +4128,7 @@ function viewSettings() {
         <input type="file" accept=".json,application/json" multiple hidden data-action="import-files">
       </label>
     </div>
-    <p style="margin-top:8px;font-size:12px">Un seul fichier avec tout : séries, films, clé TMDB, préférences. L'import accepte aussi les exports TV Time.</p>
+    <p style="margin-top:8px;font-size:12px">Un seul fichier avec tout : séries, films, préférences. L'import accepte aussi les exports TV Time.</p>
   </div>
 
   <div class="panel">
@@ -4305,9 +4290,9 @@ function rerenderSansPerturber() {
   const a = document.activeElement;
   const dansVue = a && $('#view').contains(a);
   if (dansVue && a.tagName === 'SELECT') { setTimeout(rerenderSansPerturber, 900); return; }
-  // les champs qui ne sont pas liés à l'état (clé TMDB et jeton en cours de saisie) gardent leur contenu
+  // les champs qui ne sont pas liés à l'état (jeton en cours de saisie) gardent leur contenu
   const saisies = {};
-  for (const id of ['tmdb-key', 'gh-token']) { const el = $('#' + id); if (el && el.value) saisies[id] = el.value; }
+  for (const id of ['gh-token']) { const el = $('#' + id); if (el && el.value) saisies[id] = el.value; }
   const focus = dansVue && a.tagName === 'INPUT' && a.id ? { id: a.id, pos: a.selectionStart } : null;
   render();
   for (const id in saisies) { const el = $('#' + id); if (el) el.value = saisies[id]; }
@@ -5831,29 +5816,6 @@ document.body.addEventListener('click', async e => {
       toast(r.found ? (bouts.length ? bouts.join(' · ') : 'Série à jour ✓') : 'Série introuvable chez le fournisseur');
     } catch (err) { toast('Erreur : ' + err.message); }
     renderDetail();
-  }
-  else if (act === 'save-key') {
-    const nouvelle = $('#tmdb-key').value.trim();
-    if (!nouvelle) { // clé personnelle effacée : retour à la clé de l'appli
-      state.settings.tmdbKey = ''; await saveSettings();
-      state.trending = null; state.exploreFeed.key = null; state.discoverData = {};
-      $('#key-status').textContent = etatCleTmdb();
-      return;
-    }
-    // la clé est VÉRIFIÉE avant d'être enregistrée : une clé refusée casserait toute l'app
-    $('#key-status').innerHTML = '<span class="spin"></span> Vérification…';
-    try {
-      const r = await fetch(`${TMDB}/configuration?api_key=${encodeURIComponent(nouvelle)}`);
-      if (r.status === 401) throw new Error('clé refusée par TMDB — vérifie que tu as copié la « Clé d’API » (v3), pas le « Jeton d’accès en lecture » (v4)');
-      if (!r.ok) throw new Error('TMDB ne répond pas (' + r.status + '), réessaie plus tard');
-      state.settings.tmdbKey = nouvelle;
-      await saveSettings();
-      state.trending = null; state.exploreFeed.key = null; state.discoverData = {};
-      $('#key-status').textContent = '✅ Clé valide et enregistrée';
-      toast('Clé TMDB enregistrée ✓');
-    } catch (err) {
-      $('#key-status').textContent = '❌ ' + (err.message === 'Failed to fetch' ? 'pas de connexion, réessaie plus tard' : err.message) + (tmdbKey() ? ' (l’ancienne clé est conservée)' : '');
-    }
   }
   else if (act === 'export-full') {
     download(`mes-series-sauvegarde-${new Date().toISOString().slice(0, 10)}.json`, fullBackupPayload());
