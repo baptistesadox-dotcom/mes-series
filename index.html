@@ -1106,7 +1106,17 @@ const STATUS_LABEL = {
    TMDB si une clé est configurée (images + textes en français),
    sinon TVMaze (séries) et IMDb (films) — gratuits, sans clé. */
 
-function tmdbKey() { return (state.settings.tmdbKey || '').trim(); }
+/* Clé TMDB de l'appli (gratuite, en lecture seule) : tout le monde a les fiches en français,
+   les tendances et les suggestions sans rien saisir. Une clé personnelle entrée dans le Profil
+   reste prioritaire. Écrite à l'envers et en morceaux pour ne pas être ramassée telle quelle par
+   les robots qui fouillent les dépôts publics (elle reste lisible par qui lit le code). */
+const CLE_TMDB_APPLI = ['a0327a9c', '0577540e', '894494d1', '6be7f47e'].join('').split('').reverse().join('');
+let cleAppliRefusee = false; // refusée par TMDB (révoquée) : l'appli repasse sur TVMaze / IMDb
+function cleTmdbPerso() { return (state.settings.tmdbKey || '').trim(); }
+function tmdbKey() { return cleTmdbPerso() || (cleAppliRefusee ? '' : CLE_TMDB_APPLI); }
+const etatCleTmdb = () => cleTmdbPerso() ? '✅ Ta clé personnelle est utilisée'
+  : cleAppliRefusee ? '⚠️ La clé de l’appli est refusée par TMDB : affiches via TVMaze / IMDb'
+  : '✅ Clé de l’appli utilisée';
 function providerFor(type) { return tmdbKey() ? 'tmdb' : (type === 'tv' ? 'tvmaze' : 'imdb'); }
 
 /* API de suggestions IMDb (sans clé, CORS ouvert).
@@ -1135,7 +1145,10 @@ async function tget(path, params = {}) {
   const q = new URLSearchParams({ api_key: key, language: 'fr-FR', ...params });
   let r = await fetch(`${TMDB}${path}?${q}`);
   if (r.status === 429) { await sleep(2000); r = await fetch(`${TMDB}${path}?${q}`); }
-  if (r.status === 401) throw new Error('Clé TMDB invalide');
+  if (r.status === 401) {
+    if (!cleTmdbPerso()) cleAppliRefusee = true;
+    throw new Error('Clé TMDB invalide');
+  }
   if (!r.ok) throw new Error(`TMDB ${r.status}`);
   return r.json();
 }
@@ -2248,7 +2261,7 @@ async function importFull(p) {
       for (const t of metas) state.tmdb[t.uuid] = t;
       state.hidden = new Set(hidden);
       libVersion++;
-      if (p.settings && p.settings.tmdbKey && !tmdbKey()) {
+      if (p.settings && p.settings.tmdbKey && !cleTmdbPerso()) {
         state.settings.tmdbKey = p.settings.tmdbKey;
         await saveSettings();
       }
@@ -4093,15 +4106,15 @@ function viewSettings() {
   </div>
   ${!tmdbKey() ? `<div class="hint"><span class="em">🎬</span><p><b>Recommandé :</b> avec une clé TMDB gratuite, tu as les synopsis en français, les tendances de la semaine et une meilleure détection des nouveaux épisodes. Sans clé, l'app fonctionne déjà via TVMaze et IMDb (gratuits, sans compte).</p></div>` : ''}
   <div class="panel">
-    <h3>🎬 Clé API TMDB</h3>
-    <p>Crée un compte gratuit sur <a href="https://www.themoviedb.org/signup" target="_blank" rel="noopener">themoviedb.org</a>,
-    puis va dans <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">Paramètres → API</a>
-    et colle ici ta « Clé d'API » (v3).</p>
+    <h3>🎬 Données TMDB</h3>
+    <p>L'appli a sa propre clé TMDB : fiches en français, tendances et suggestions marchent sans rien saisir.
+    Si tu as ta propre « Clé d'API » (v3), créée gratuitement sur <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">themoviedb.org</a>,
+    tu peux la coller ici : elle passera avant celle de l'appli.</p>
     <div class="row">
-      <input class="field" id="tmdb-key" type="password" placeholder="Clé API v3…" value="${esc(state.settings.tmdbKey || '')}">
+      <input class="field" id="tmdb-key" type="password" placeholder="Ta clé personnelle (facultatif)" value="${esc(state.settings.tmdbKey || '')}">
       <button class="btn small" data-action="save-key">Enregistrer</button>
     </div>
-    <p id="key-status" style="margin:8px 0 0">${tmdbKey() ? '✅ Clé enregistrée' : 'ℹ️ Sans clé : affiches via TVMaze / IMDb'}</p>
+    <p id="key-status" style="margin:8px 0 0">${etatCleTmdb()}</p>
   </div>
 
   <div class="panel">
@@ -5821,10 +5834,10 @@ document.body.addEventListener('click', async e => {
   }
   else if (act === 'save-key') {
     const nouvelle = $('#tmdb-key').value.trim();
-    if (!nouvelle) { // effacer la clé : retour aux sources sans clé
+    if (!nouvelle) { // clé personnelle effacée : retour à la clé de l'appli
       state.settings.tmdbKey = ''; await saveSettings();
-      state.trending = null; state.exploreFeed.key = null;
-      $('#key-status').textContent = 'ℹ️ Sans clé : affiches via TVMaze / IMDb';
+      state.trending = null; state.exploreFeed.key = null; state.discoverData = {};
+      $('#key-status').textContent = etatCleTmdb();
       return;
     }
     // la clé est VÉRIFIÉE avant d'être enregistrée : une clé refusée casserait toute l'app
