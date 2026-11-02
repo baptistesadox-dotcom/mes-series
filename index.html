@@ -482,6 +482,123 @@ h2.section .cnt{font-size:12px;color:var(--txt2);font-weight:500}
 .stat .v{font-size:24px;font-weight:800;letter-spacing:-.02em;color:var(--txt)}
 .stat .l{font-size:12px;color:var(--txt2)}
 
+/* ---------- Profil : ticket, podium, collection, données ---------- */
+/* le ticket de cinéma : partie principale + talon détachable (pointillés et encoches) */
+.pf-ticket{position:relative;display:flex;min-height:206px;margin-top:4px}
+.pf-tk{flex:1;min-width:0;position:relative;overflow:hidden;padding:16px 18px;border-radius:18px 0 0 18px;background:radial-gradient(130% 120% at 0% 0%,#8E1B1B 0%,#4A1212 44%,#241818 100%);box-shadow:0 16px 30px rgba(0,0,0,.45)}
+.pf-tk::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.03) 0 2px,rgba(255,255,255,0) 2px 9px);pointer-events:none}
+.pf-tk > *{position:relative;z-index:1}
+.pf-tag{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#F5C96E}
+.pf-id{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:17px;font-weight:800;letter-spacing:-.01em}
+.pf-av{flex:none;width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22)}
+.pf-av svg{width:19px;height:19px}
+.pf-gros{display:block;margin-top:16px;font-size:46px;font-weight:800;letter-spacing:-.04em;line-height:1.05;background:linear-gradient(135deg,#FCE7B2,#F5C96E 40%,#DFA23C);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pf-sous{font-size:12.5px;font-weight:700;color:#E9D5CB;margin-top:6px}
+.pf-talon{flex:none;width:92px;border-radius:0 18px 18px 0;background:linear-gradient(180deg,#DC2626,#9F1717);box-shadow:0 16px 30px rgba(0,0,0,.45);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;color:#FFFFFF}
+.pf-talon b{display:block;font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.pf-talon span{display:block;font-size:10px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.8);margin-top:4px}
+.pf-cb{width:54px;height:16px;opacity:.8;background:repeating-linear-gradient(90deg,#FFFFFF 0 2px,rgba(255,255,255,0) 2px 4px,#FFFFFF 4px 5px,rgba(255,255,255,0) 5px 8px)}
+.pf-perfo{position:absolute;top:14px;bottom:14px;right:91px;border-left:2px dashed rgba(14,13,13,.8)}
+.pf-enc{position:absolute;right:81px;width:22px;height:22px;border-radius:50%;background:var(--bg)}
+.pf-enc.h{top:-11px}
+.pf-enc.b{bottom:-11px}
+/* podium des trois séries les plus vues : le n°1 au centre, sur la plus haute marche */
+.pf-podium{display:flex;align-items:flex-end;justify-content:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08)}
+.pf-pm{display:flex;flex-direction:column;align-items:center;width:104px;min-width:0;text-align:center}
+.pf-pm .poster{width:88px;height:132px;border-radius:10px;box-shadow:0 10px 24px rgba(0,0,0,.5)}
+.pf-pm.p1{width:120px}
+.pf-pm.p1 .poster{width:108px;height:162px;box-shadow:0 0 0 2px #F5C96E,0 14px 34px rgba(245,201,110,.22)}
+.pf-pt{width:100%;margin-top:9px;font-size:12.5px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-pe{font-size:11.5px;color:var(--txt2);margin-top:1px}
+.pf-socle{align-self:stretch;margin-top:9px;border-radius:12px 12px 0 0;display:flex;justify-content:center;padding-top:7px;font-size:26px;font-weight:800;background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.015));border:1px solid rgba(255,255,255,.1);border-bottom:none}
+.pf-pm.p1 .pf-socle{height:84px;color:#F5C96E;background:linear-gradient(180deg,rgba(245,201,110,.24),rgba(245,201,110,.02));border-color:rgba(245,201,110,.32)}
+.pf-pm.p2 .pf-socle{height:60px;color:#E7E5E4}
+.pf-pm.p3 .pf-socle{height:42px;color:#D9A06B}
+/* Ma collection : quatre tuiles illustrées */
+.pf-tuiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pf-tuile{position:relative;height:104px;border-radius:16px;overflow:hidden;padding:12px 13px;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;text-align:left;background:#1F1A1A center/cover no-repeat;border:1px solid rgba(255,255,255,.05)}
+.pf-tuile::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(14,13,13,.86) 12%,rgba(14,13,13,.1))}
+.pf-tuile b,.pf-tuile > span{position:relative;z-index:2;max-width:100%}
+.pf-tuile b{display:flex;align-items:center;gap:7px;font-size:15.5px;font-weight:800;letter-spacing:-.01em}
+.pf-tuile > span{font-size:11.5px;font-weight:600;color:#D6D0CC;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pf-badge{font-style:normal;font-size:11px;font-weight:800;min-width:22px;height:20px;padding:0 6px;border-radius:10px;background:var(--acc);color:#FFFFFF;display:inline-flex;align-items:center;justify-content:center}
+.pf-barres{position:absolute;right:14px;top:10px;height:36px;display:flex;align-items:flex-end;gap:5px}
+.pf-barres i{display:block;width:9px;border-radius:3px 3px 1px 1px;background:linear-gradient(180deg,#F87171,#B91C1C)}
+.pf-tuile.retro{background:radial-gradient(circle at 88% 18%,rgba(245,201,110,.3),rgba(245,201,110,0) 62%),#1F1A1A}
+.pf-an{position:absolute;right:12px;top:6px;font-style:normal;font-size:40px;font-weight:800;letter-spacing:-.05em;line-height:1.1;background:linear-gradient(135deg,#F5C96E,#DFA23C);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pf-eventail{position:absolute;right:9px;top:7px;width:66px;height:44px}
+.pf-eventail img{position:absolute;top:0;width:28px;height:40px;border-radius:5px;object-fit:cover;border:1.5px solid #1F1A1A;box-shadow:0 6px 14px rgba(0,0,0,.5)}
+.pf-eventail img:nth-child(1){left:0;transform:rotate(-10deg)}
+.pf-eventail img:nth-child(2){left:19px;top:-3px;z-index:1}
+.pf-eventail img:nth-child(3){left:38px;transform:rotate(10deg);z-index:2}
+/* Mes données : la sauvegarde en carte, le reste en liste */
+.pf-carte{padding:16px;border-radius:18px;background:var(--bg2);border:1px solid rgba(255,255,255,.05)}
+.pf-sl{display:flex;align-items:center;gap:12px}
+.pf-ico{flex:none;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.07);color:var(--txt)}
+.pf-ico svg{width:20px;height:20px}
+.pf-ico.ambre{background:rgba(251,191,36,.13);color:var(--warn)}
+.pf-ico.rouge{background:rgba(220,38,38,.16);color:var(--acc2)}
+.pf-ico.or{background:rgba(245,201,110,.14);color:var(--ok)}
+.pf-lt{flex:1;min-width:0}
+.pf-lt b{display:block;font-size:15px;font-weight:750}
+.pf-lt span{display:block;font-size:12.5px;color:var(--txt2);margin-top:1px}
+.pf-lt span.ambre{color:var(--warn);font-weight:700}
+.pf-lt span.or{color:var(--ok);font-weight:700}
+.pf-carte p{margin:12px 0 0;font-size:13px;line-height:1.5;color:var(--txt2)}
+.pf-bts{display:flex;gap:8px;margin-top:14px}
+.pf-bts .btn,.pf-bts .verre{flex:1;min-width:0;height:46px;padding:0 12px;border-radius:13px;font-size:14.5px;font-weight:800;cursor:pointer}
+.pf-bts .verre{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12)}
+.pf-bts svg{width:18px;height:18px;flex:none}
+.pf-liste{margin-top:10px;border-radius:18px;background:var(--bg2);border:1px solid rgba(255,255,255,.05);overflow:hidden}
+.pf-ligne{display:flex;align-items:center;gap:12px;width:100%;min-height:66px;padding:13px 14px;text-align:left}
+.pf-ligne + .pf-ligne{border-top:1px solid rgba(255,255,255,.06)}
+.pf-ligne:active{background:rgba(255,255,255,.04)}
+.pf-ligne > svg{flex:none;width:18px;height:18px;color:#78716C}
+.pf-ligne.danger b{color:var(--danger)}
+.pf-pied{margin:26px 0 8px;text-align:center;font-size:12px;line-height:1.6;color:var(--txt2)}
+/* feuille « Synchronisation cloud » */
+.modal.sy{max-height:92vh}
+.sy-tete{display:flex;align-items:center;gap:14px;margin-top:6px}
+.sy-rond{flex:none;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--acc2);background:rgba(220,38,38,.16);box-shadow:inset 0 0 0 1px rgba(248,113,113,.26),inset 0 1px 0 rgba(255,255,255,.12)}
+.sy-rond.ok{color:var(--ok);background:rgba(245,201,110,.13);box-shadow:inset 0 0 0 1px rgba(245,201,110,.28),inset 0 1px 0 rgba(255,255,255,.12)}
+.sy-rond svg{width:26px;height:26px}
+.sy-tete h3{margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em}
+.sy-etat{display:inline-flex;align-items:center;gap:6px;height:24px;margin-top:6px;padding:0 10px;border-radius:12px;font-size:11.5px;font-weight:800;color:#D6D0CC;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1)}
+.sy-etat i{width:7px;height:7px;border-radius:50%;background:#78716C}
+.sy-etat.ok{color:var(--ok);background:rgba(245,201,110,.1);border-color:rgba(245,201,110,.25)}
+.sy-etat.ok i{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+.sy-etat.panne{color:var(--warn);background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.28)}
+.sy-etat.panne i{background:var(--warn)}
+.sy-intro{margin:18px 0 0;font-size:14px;line-height:1.55;color:#D6D0CC}
+.sy-intro b,.sy-et b{color:var(--txt)}
+.sy-etapes{margin:22px 0 0;padding:0;list-style:none}
+.sy-etapes li{position:relative;display:flex;gap:13px;padding-bottom:20px}
+.sy-etapes li:not(:last-child)::before{content:'';position:absolute;left:13px;top:30px;bottom:4px;width:2px;background:rgba(255,255,255,.08)}
+.sy-n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--acc);color:#FFFFFF;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.sy-et{flex:1;min-width:0;padding-top:4px;font-size:13.5px;line-height:1.5;color:#D6D0CC}
+.sy-et .field{display:block;width:100%;height:48px;margin-top:9px;background:var(--bg);border:1px solid var(--line)}
+.sy-lien{display:inline-flex;align-items:center;gap:6px;height:34px;margin-top:9px;padding:0 13px;border-radius:17px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);font-size:13px;font-weight:750;color:var(--txt);text-decoration:none}
+.sy-lien svg{width:14px;height:14px}
+.sy .btn.large{width:100%;height:50px;margin-top:4px;border-radius:14px;font-size:15.5px}
+.sy-statut{margin:10px 0 0;font-size:13px;color:var(--txt2);text-align:center}
+.sy-statut:empty{display:none}
+.sy-panne{margin-top:18px;padding:13px 15px;border-radius:14px;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);font-size:13px;line-height:1.5;color:#E7E2DF}
+.sy-panne > b{color:var(--warn)}
+.sy-renouv{display:flex;gap:8px;margin-top:12px}
+.sy-renouv .field{height:46px}
+.sy-renouv .btn{height:46px;padding:0 16px;border-radius:13px;font-size:14px}
+.sy-infos{margin-top:20px;border-radius:16px;background:var(--bg3);overflow:hidden}
+.sy-info{display:flex;justify-content:space-between;gap:12px;padding:13px 15px;font-size:13.5px}
+.sy-info + .sy-info{border-top:1px solid rgba(255,255,255,.06)}
+.sy-info span{color:var(--txt2);font-weight:600}
+.sy-info b{font-weight:750;text-align:right}
+.sy-info b.ambre{color:var(--warn)}
+.sy-note{margin:12px 2px 0;font-size:12.5px;line-height:1.5;color:var(--txt2)}
+.sy-bts{display:flex;gap:8px;margin-top:18px}
+.sy-bts .verre{flex:1;min-width:0;height:48px;padding:0 12px;font-size:14px;font-weight:800;background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12)}
+.sy-bts svg{width:18px;height:18px;flex:none}
+.sy-deco{width:100%;height:46px;margin-top:10px;border-radius:13px;font-size:14px;font-weight:800;color:var(--danger);border:1px solid rgba(248,113,113,.3)}
+
 /* ---------- Explorer : vitrine, rangées, onglets, filtres ---------- */
 /* la vitrine : une grande image bord à bord, le n°1 de la semaine puis les suivants en glissant */
 .vitrine-wrap{position:relative;margin:-12px -14px 0;height:clamp(440px,64vh,580px)}
@@ -935,6 +1052,15 @@ const ICONS = {
   calendar: I('<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>'),
   more: I('<circle cx="5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="currentColor" stroke="none"/>'),
   starO: I('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'),
+  nuage: I('<path d="M7 18.5a4.5 4.5 0 0 1-.7-8.95 6 6 0 0 1 11.6-1.05A4.5 4.5 0 0 1 17.5 18.5z"/>'),
+  nuageOk: I('<path d="M7 18.5a4.5 4.5 0 0 1-.7-8.95 6 6 0 0 1 11.6-1.05A4.5 4.5 0 0 1 17.5 18.5z"/><polyline points="9 13.5 11.2 15.5 15 11.5"/>'),
+  sauver: I('<path d="M12 3v12"/><polyline points="7 10 12 15 17 10"/><path d="M5 21h14"/>'),
+  importer: I('<path d="M12 21V9"/><polyline points="7 14 12 9 17 14"/><path d="M5 3h14"/>'),
+  envoyer: I('<path d="M12 19V7"/><polyline points="7 12 12 7 17 12"/>'),
+  recuperer: I('<path d="M12 5v12"/><polyline points="7 12 12 17 17 12"/>'),
+  poubelle: I('<polyline points="4 7 20 7"/><path d="M6 7l1 13h10l1-13"/><path d="M9.5 7V4h5v3"/>'),
+  oeil: I('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
+  sortie: I('<path d="M7 17 17 7"/><polyline points="8 7 17 7 17 16"/>'),
 };
 
 const state = {
@@ -3801,10 +3927,10 @@ function ficheOuverte(cle) {
   const box = $('#modal-root .modal-bg:not(.sortie) .modal');
   return box && box.dataset.rr === cle ? box : null;
 }
-function afficherFiche(cle, html) {
+function afficherFiche(cle, html, classe = 'fiche-t') {
   const box = ficheOuverte(cle);
   if (box) { box.innerHTML = html; return; } // la même fiche redessinée ne remonte pas une seconde fois
-  $('#modal-root').innerHTML = `<div class="modal-bg" data-action="close-modal"><div class="modal fiche-t" data-rr="${cle}">${html}</div></div>`;
+  $('#modal-root').innerHTML = `<div class="modal-bg" data-action="close-modal"><div class="modal ${classe}" data-rr="${cle}">${html}</div></div>`;
 }
 /* détails chargés une fois par session ; la fiche se redessine à leur arrivée si elle est toujours ouverte */
 function chargerDetailsFiche(cle, type, provider, id, apres) {
@@ -4085,91 +4211,166 @@ function viewMoviesGrid() {
       : `<div class="empty">Aucun film ici.</div>`}`;
 }
 
+/* Profil : ticket de cinéma (heures, séries, films), podium des séries les plus vues,
+   Ma collection en tuiles illustrées, puis Mes données (sauvegarde, synchro, effacement) */
 function viewSettings() {
-  const p = state.series.reduce((acc, s) => {
-    const pr = progress(s); acc.w += pr.watched; acc.t += pr.total; return acc;
-  }, { w: 0, t: 0 });
+  const parSerie = state.series.map(s => ({ s, vus: progress(s).watched }));
   let minutes = dureeFilms(state.movies.filter(m => m.is_watched));
-  for (const s of state.series) {
-    const w = progress(s).watched;
-    if (w) minutes += w * ((state.tmdb[s.uuid] && state.tmdb[s.uuid].runtime) || 40);
-  }
-  return `
-  <div class="panel" style="display:flex;align-items:center;gap:15px">
-    <div style="width:62px;height:62px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;flex:none">${ICONS.user.replace('<svg', '<svg style="width:28px;height:28px;color:#fff"')}</div>
-    <div>
-      <div style="font-size:17px;font-weight:800;letter-spacing:-.01em">Mon profil</div>
-      <div style="font-size:12.5px;color:var(--txt2);margin-top:2px">${state.series.length} séries · ${state.movies.filter(m => m.is_watched).length} films vus · ≈ ${Math.round(minutes / 60).toLocaleString('fr-FR')} h d'écran</div>
+  for (const { s, vus } of parSerie)
+    if (vus) minutes += vus * ((state.tmdb[s.uuid] && state.tmdb[s.uuid].runtime) || 40);
+  const heures = Math.round(minutes / 60), jours = Math.round(minutes / 1440);
+  const premiere = lastViewKey !== cleVue(); // le compteur ne grimpe qu'à l'arrivée sur l'écran
+  const nb = (n, sing, plur) => `<div><b>${n.toLocaleString('fr-FR')}</b><span>${n > 1 ? plur : sing}</span></div>`;
+  const ticket = `<div class="pf-ticket">
+    <div class="pf-tk">
+      <div class="pf-tag">Mes Séries · Carte membre</div>
+      <div class="pf-id"><span class="pf-av">${ICONS.user}</span>Mon profil</div>
+      <b class="pf-gros"${premiere ? ` data-count="${heures}" data-suffix="&nbsp;h"` : ''}>${premiere ? 0 : heures.toLocaleString('fr-FR')}&nbsp;h</b>
+      <div class="pf-sous">devant l'écran${jours ? `, soit ${pl(jours, 'jour')}` : ''}</div>
     </div>
-  </div>
-  <div class="panel">
-    <h3>📊 Ma collection</h3>
-    <div class="row" style="margin-bottom:12px">
-      <button class="btn small" data-action="open-stats">📊 Statistiques</button>
-      <button class="btn ghost small" data-action="open-journal">📖 Journal</button>
-      <button class="btn ghost small" data-action="open-wrapped">🏆 Rétrospective</button>
-      <button class="btn ghost small" data-action="open-menage">🧹 Ménage${(() => { const n = seriesDormantes().length; return n ? ` (${n})` : ''; })()}</button>
-    </div>
-    <div class="statgrid">
-      <div class="stat"><div class="v" data-count="${state.series.length}">0</div><div class="l">séries</div></div>
-      <div class="stat"><div class="v" data-count="${p.w}">0</div><div class="l">épisodes vus</div></div>
-      <div class="stat"><div class="v" data-count="${state.movies.filter(m => m.is_watched).length}">0</div><div class="l">films vus</div></div>
-      <div class="stat"><div class="v" data-count="${state.movies.filter(m => !m.is_watched).length}">0</div><div class="l">films à voir</div></div>
-    </div>
-  </div>
+    <div class="pf-talon">${nb(state.series.length, 'série', 'séries')}${nb(state.movies.length, 'film', 'films')}<i class="pf-cb" aria-hidden="true"></i></div>
+    <i class="pf-perfo" aria-hidden="true"></i><i class="pf-enc h" aria-hidden="true"></i><i class="pf-enc b" aria-hidden="true"></i>
+  </div>`;
 
-  <div class="panel">
-    <h3>📂 Import / sauvegarde</h3>
-    <p>Importe ton export TV Time, ou télécharge une sauvegarde (recommandé régulièrement — tes données ne vivent que sur cet appareil).<br>
-    <b style="color:${!state.lastExport || Date.now() - new Date(state.lastExport) > 30 * 86400 * 1000 ? 'var(--warn)' : 'var(--ok)'}">💾 Dernière sauvegarde : ${state.lastExport ? fmtDate(state.lastExport) : 'jamais'}</b></p>
-    <div class="row">
-      <button class="btn small" data-action="export-full">💾 Sauvegarde complète</button>
-      <label class="btn ghost small">Importer / restaurer
+  const top = parSerie.filter(x => x.vus).sort((a, b) => b.vus - a.vus).slice(0, 3);
+  const marche = (x, rang) => `<button class="pf-pm p${rang}" data-action="open-series" data-uuid="${x.s.uuid}" aria-label="${esc(x.s.title)}, ${pl(x.vus, 'épisode')} vus, ${rang === 1 ? '1re' : rang + 'e'} place">
+      ${posterHtml(x.s, 'tv', rang === 1)}
+      <span class="pf-pt">${esc(x.s.title)}</span><span class="pf-pe">${pl(x.vus, 'épisode')}</span>
+      <span class="pf-socle" aria-hidden="true">${rang}</span>
+    </button>`;
+  const podium = top.length ? teteSection('Mon podium') + `<div class="pf-podium">${
+    [[top[1], 2], [top[0], 1], [top[2], 3]].filter(([x]) => x).map(([x, r]) => marche(x, r)).join('')}</div>` : '';
+
+  // activité des 6 derniers mois (épisodes et films, revisionnages compris) et dernier titre vu
+  const auj = new Date(), debut = new Date(auj.getFullYear(), auj.getMonth() - 5, 1);
+  const mois = [0, 0, 0, 0, 0, 0];
+  let dernier = null;
+  const compter = (at, item) => {
+    if (!dernier || at > dernier.at) dernier = { at, item };
+    const d = new Date(at), i = (d.getFullYear() - debut.getFullYear()) * 12 + d.getMonth() - debut.getMonth();
+    if (i >= 0 && i < 6) mois[i]++;
+  };
+  for (const s of state.series)
+    for (const sea of s.seasons || [])
+      for (const ep of sea.episodes) if (ep.is_watched && ep.watched_at) compter(ep.watched_at, s);
+  for (const m of state.movies) {
+    if (!m.is_watched) continue;
+    if (m.watched_at) compter(m.watched_at, m);
+    for (const r of m.rewatches || []) compter(r, m);
+  }
+  const max = Math.max(...mois);
+  const barres = max ? mois.map(n => Math.max(10, Math.round(n / max * 100))) : [22, 48, 92, 84, 60, 76];
+  const fondJournal = dernier && fondSerie(dernier.item); // fondSerie ne lit que l'uuid : marche aussi pour un film
+  const annee = (dernier ? new Date(dernier.at) : auj).getFullYear();
+  const dormantes = seriesDormantes();
+  const affichesPause = dormantes.map(s => state.tmdb[s.uuid] && state.tmdb[s.uuid].poster).filter(Boolean).slice(0, 3);
+  const tuiles = `<div class="pf-tuiles">
+    <button class="pf-tuile" data-action="open-stats">
+      <i class="pf-barres" aria-hidden="true">${barres.map(h => `<i style="height:${h}%"></i>`).join('')}</i>
+      <b>Statistiques</b><span>Activité, genres, records</span>
+    </button>
+    <button class="pf-tuile" data-action="open-journal"${fondJournal ? ` style="background-image:url('${fondJournal}')"` : ''}>
+      <b>Journal</b><span>${dernier ? 'Dernier : ' + esc(dernier.item.title) : 'Tout ce que tu as vu, jour par jour'}</span>
+    </button>
+    <button class="pf-tuile retro" data-action="open-wrapped">
+      <i class="pf-an" aria-hidden="true">${annee}</i>
+      <b>Rétrospective</b><span>Ton année en un coup d'œil</span>
+    </button>
+    <button class="pf-tuile" data-action="open-menage">
+      ${affichesPause.length ? `<i class="pf-eventail" aria-hidden="true">${affichesPause.map(p => `<img src="${p}" alt="">`).join('')}</i>` : ''}
+      <b>Ménage${dormantes.length ? ` <i class="pf-badge">${dormantes.length}</i>` : ''}</b>
+      <span>${dormantes.length ? 'Séries en pause depuis longtemps' : 'Rien à ranger pour le moment'}</span>
+    </button>
+  </div>`;
+
+  const jourMs = 86400000;
+  const vieille = !state.lastExport || Date.now() - new Date(state.lastExport) > 30 * jourMs;
+  const etatSauvegarde = !state.lastExport ? 'Jamais faite'
+    : `Faite le ${fmtDate(state.lastExport)}${vieille ? ` · il y a ${pl(Math.floor((Date.now() - new Date(state.lastExport)) / jourMs), 'jour')}` : ''}`;
+  const connectee = !!state.settings.gistId, err = state.syncErr;
+  const syncVieille = connectee && (!state.lastSync || Date.now() - new Date(state.lastSync) > 7 * jourMs);
+  const [classeSync, etatSync] = !connectee ? ['', 'Non connectée']
+    : err ? ['ambre', err.auth ? 'Jeton expiré : à renouveler' : `En panne depuis le ${fmtDate(err.at)}`]
+    : [syncVieille ? 'ambre' : '', `Connectée · ${state.lastSync ? 'synchro ' + quandRelatif(state.lastSync) : 'jamais synchronisée'}`];
+  const ligne = (action, ico, titre, sous, classe = '') => `<button class="pf-ligne${classe === 'rouge' ? ' danger' : ''}" data-action="${action}">
+      <span class="pf-ico ${classe}">${ico}</span>
+      <span class="pf-lt"><b>${titre}</b><span${sous[0] ? ` class="${sous[0]}"` : ''}>${sous[1]}</span></span>${ICONS.chevron}
+    </button>`;
+
+  return `${ticket}
+  ${podium}
+  ${teteSection('Ma collection')}${tuiles}
+  ${teteSection('Mes données')}
+  <div class="pf-carte">
+    <div class="pf-sl">
+      <span class="pf-ico ${vieille ? 'ambre' : 'or'}">${ICONS.sauver}</span>
+      <div class="pf-lt"><b>Sauvegarde</b><span class="${vieille ? 'ambre' : 'or'}">${etatSauvegarde}</span></div>
+    </div>
+    <p>${connectee ? '' : 'Tes données ne vivent que sur ce téléphone. '}Un seul fichier garde tout : séries, films, préférences. L'import accepte aussi les exports TV Time.</p>
+    <div class="pf-bts">
+      <button class="btn" data-action="export-full">${ICONS.sauver} Sauvegarder</button>
+      <label class="verre">${ICONS.importer} Importer
         <input type="file" accept=".json,application/json" multiple hidden data-action="import-files">
       </label>
     </div>
-    <p style="margin-top:8px;font-size:12px">Un seul fichier avec tout : séries, films, préférences. L'import accepte aussi les exports TV Time.</p>
   </div>
-
-  <div class="panel">
-    <h3>☁️ Synchronisation cloud</h3>
-    ${state.settings.gistId ? `
-      ${state.syncErr ? `<div class="hint" style="border-color:var(--warn)"><span class="em">⚠️</span><p><b>Synchro en panne depuis le ${fmtDate(state.syncErr.at)}</b> : ${esc(state.syncErr.msg)}.${state.syncErr.auth ? ' Crée un nouveau jeton (même lien que lors de la connexion, en choisissant « No expiration ») et colle-le ci-dessous : ta sauvegarde est conservée.' : ' Elle réessaiera toute seule.'}</p></div>` : ''}
-      <p>✅ Connectée au compte <b style="color:var(--ok)">@${esc(state.settings.ghLogin || '')}</b><br>
-      Dernière synchro : <b style="color:${!state.lastSync || Date.now() - new Date(state.lastSync) > 7 * 86400000 ? 'var(--warn)' : 'var(--txt)'}">${state.lastSync ? fmtDate(state.lastSync) : 'jamais'}</b> — envoi automatique quand tu quittes l'app, réconciliation à chaque retour.</p>
-      <div class="row">
-        <button class="btn ghost small" data-action="sync-push">Envoyer maintenant</button>
-        <button class="btn ghost small" data-action="sync-pull">Récupérer du cloud</button>
-        <button class="btn danger small" data-action="sync-off">Déconnecter</button>
-      </div>
-      ${state.syncErr && state.syncErr.auth ? `
-      <div class="row" style="margin-top:10px">
-        <input class="field" id="gh-token" type="password" placeholder="Nouveau jeton GitHub (ghp_…)" aria-label="Nouveau jeton GitHub">
-        <button class="btn small" data-action="sync-connect">Renouveler</button>
-      </div>
-      <p id="sync-status" style="margin:8px 0 0"></p>` : ''}`
-    : `
-      <p>Sauvegarde automatique de tes données dans un espace privé de <b>ton</b> compte GitHub — et restauration sur un nouveau téléphone en collant le même jeton. <b>Chaque personne utilise son propre compte</b> : si quelqu'un d'autre installe l'app, ses données restent les siennes.</p>
-      <p>1. Crée un compte sur <a href="https://github.com/signup" target="_blank" rel="noopener">github.com</a> (gratuit) si besoin.<br>
-      2. Va sur <a href="https://github.com/settings/tokens/new?scopes=gist&description=mes-series-sync" target="_blank" rel="noopener">ce lien direct</a>, choisis <b>Expiration : No expiration</b> (sinon la synchro s'arrêtera au bout de 30 jours), puis « Generate token » (la case <b>gist</b> est déjà cochée) et colle le jeton ici :</p>
-      <div class="row">
-        <input class="field" id="gh-token" type="password" placeholder="Jeton GitHub (ghp_…)" aria-label="Jeton GitHub">
-        <button class="btn small" data-action="sync-connect">Connecter</button>
-      </div>
-      <p id="sync-status" style="margin:8px 0 0"></p>`}
+  <div class="pf-liste">
+    ${ligne('open-synchro', connectee && !err ? ICONS.nuageOk : ICONS.nuage, 'Synchronisation cloud', [classeSync, etatSync], !connectee ? '' : err ? 'ambre' : 'or')}
+    ${state.hidden.size ? ligne('clear-hidden', ICONS.oeil, `Réafficher ${pl(state.hidden.size, 'suggestion masquée', 'suggestions masquées')}`, ['', 'Les titres écartés dans Explorer']) : ''}
+    ${ligne('clear-all', ICONS.poubelle, 'Tout effacer', ['', 'Séries, films et réglages de ce téléphone'], 'rouge')}
   </div>
+  <p class="pf-pied">Mes Séries · données 100&nbsp;% locales<br>Métadonnées : TMDB, TVMaze, IMDb (non affiliés)</p>`;
+}
 
-  <div class="panel">
-    <h3>🧨 Zone dangereuse</h3>
-    <div class="row">
-      ${state.hidden.size ? `<button class="btn ghost small" data-action="clear-hidden">Réafficher ${pl(state.hidden.size, 'suggestion masquée', 'suggestions masquées')}</button>` : ''}
-      <button class="btn danger small" data-action="clear-all">Tout effacer</button>
+/* Feuille « Synchronisation cloud » : les étapes pour la connecter, puis son état et ses boutons */
+const LIEN_JETON = 'https://github.com/settings/tokens/new?scopes=gist&description=mes-series-sync';
+function openSynchro() {
+  const cle = 'synchro';
+  if (!ficheOuverte(cle) && !modaleOuverte()) pushLayer('modal');
+  modaleCourante = { cle, fn: openSynchro };
+  const connectee = !!state.settings.gistId, err = state.syncErr;
+  const tete = (ok, etat) => `<div class="grab"></div>
+    <div class="sy-tete">
+      <span class="sy-rond${ok ? ' ok' : ''}">${ok ? ICONS.nuageOk : ICONS.nuage}</span>
+      <div><h3>Synchronisation cloud</h3>${etat}</div>
+    </div>`;
+  if (!connectee) {
+    afficherFiche(cle, `${tete(false, '<span class="sy-etat"><i></i>Non connectée</span>')}
+    <p class="sy-intro">Tes données partent toutes seules dans un espace privé de <b>ton</b> compte GitHub. Sur un nouveau téléphone, tu colles le même jeton et tout revient. <b>Chaque personne utilise son propre compte.</b></p>
+    <ol class="sy-etapes">
+      <li><span class="sy-n">1</span><div class="sy-et">Crée un compte GitHub (gratuit) si tu n'en as pas.<br>
+        <a class="sy-lien" href="https://github.com/signup" target="_blank" rel="noopener">github.com ${ICONS.sortie}</a></div></li>
+      <li><span class="sy-n">2</span><div class="sy-et">Ouvre le lien direct, choisis <b>Expiration : No expiration</b> (sinon la synchro s'arrêtera au bout de 30 jours), puis « Generate token ». La case <b>gist</b> est déjà cochée.<br>
+        <a class="sy-lien" href="${LIEN_JETON}" target="_blank" rel="noopener">Ouvrir le lien direct ${ICONS.sortie}</a></div></li>
+      <li><span class="sy-n">3</span><div class="sy-et"><label for="gh-token">Colle le jeton ici :</label>
+        <input class="field" id="gh-token" type="password" placeholder="Jeton GitHub (ghp_…)" autocomplete="off"></div></li>
+    </ol>
+    <button class="btn large" data-action="sync-connect">Connecter</button>
+    <p id="sync-status" class="sy-statut"></p>`, 'sy');
+    return;
+  }
+  const vieille = !state.lastSync || Date.now() - new Date(state.lastSync) > 7 * 86400000;
+  const panne = err ? `<div class="sy-panne"><b>En panne depuis le ${fmtDate(err.at)}</b> : ${esc(err.msg)}.${err.auth
+    ? ` Crée un nouveau jeton (même lien que pour la connexion, en choisissant « No expiration ») et colle-le ci-dessous : ta sauvegarde est conservée.<br>
+      <a class="sy-lien" href="${LIEN_JETON}" target="_blank" rel="noopener">Ouvrir le lien direct ${ICONS.sortie}</a>
+      <div class="sy-renouv">
+        <input class="field" id="gh-token" type="password" placeholder="Nouveau jeton (ghp_…)" aria-label="Nouveau jeton GitHub" autocomplete="off">
+        <button class="btn" data-action="sync-connect">Renouveler</button>
+      </div>
+      <p id="sync-status" class="sy-statut"></p>`
+    : ' Elle réessaiera toute seule.'}</div>` : '';
+  afficherFiche(cle, `${tete(!err, err ? '<span class="sy-etat panne"><i></i>En panne</span>' : '<span class="sy-etat ok"><i></i>Connectée</span>')}
+    ${panne}
+    <div class="sy-infos">
+      <div class="sy-info"><span>Compte</span><b>@${esc(state.settings.ghLogin || '')}</b></div>
+      <div class="sy-info"><span>Dernière synchro</span><b${vieille ? ' class="ambre"' : ''}>${state.lastSync ? majuscule(quandRelatif(state.lastSync)) : 'Jamais'}</b></div>
     </div>
-  </div>
-  <p style="text-align:center;color:var(--txt2);font-size:12px;margin-top:20px">
-    Mes Séries · v2 · données 100% locales<br>
-    Métadonnées : TMDB / TVMaze / IMDb (produits non affiliés).
-  </p>`;
+    <p class="sy-note">Envoi automatique quand tu quittes l'appli, mise à jour à chaque retour.</p>
+    <div class="sy-bts">
+      <button class="verre" data-action="sync-push">${ICONS.envoyer} Envoyer</button>
+      <button class="verre" data-action="sync-pull">${ICONS.recuperer} Récupérer</button>
+    </div>
+    <button class="sy-deco" data-action="sync-off">Déconnecter</button>`, 'sy');
 }
 
 /* ---------------- Statistiques ---------------- */
@@ -5567,6 +5768,7 @@ document.body.addEventListener('click', async e => {
   else if (act === 'wrapped-year') { state.wrappedYear = +el.dataset.y; renderWrapped(); }
   else if (act === 'journal-more') { state.journalLimit += 120; renderJournal(); }
   else if (act === 'open-menage') openOverlay('menage');
+  else if (act === 'open-synchro') openSynchro();
   else if (act === 'share-wrapped') { el.textContent = '…'; await partagerRetro().catch(err => toast('Erreur : ' + err.message)); renderWrapped(); }
   else if (act === 'menage-seuil') { state.menageMois = +el.dataset.m; renderMenage(); }
   else if (act === 'menage-stop') {
@@ -5832,6 +6034,7 @@ document.body.addEventListener('click', async e => {
       const login = await syncConnect(token);
       toast(`☁️ Sync activée pour @${login} ✓`);
       render();
+      redessinerModale(); // la feuille de synchro passe à l'état « Connectée »
     } catch (err) {
       if ($('#sync-status')) $('#sync-status').textContent = '❌ ' + err.message;
     }
@@ -5844,6 +6047,7 @@ document.body.addEventListener('click', async e => {
       else { toast('☁️ Le cloud a changé depuis un autre appareil — réconciliation…'); await syncAuto(); }
     } catch (err) { await noterErreurSynchro(err); toast('Erreur : ' + err.message); }
     render();
+    redessinerModale();
   }
   else if (act === 'sync-pull') {
     if (state.refreshing) { toast('Actualisation en cours — réessaie dans un instant'); return; }
@@ -5854,6 +6058,7 @@ document.body.addEventListener('click', async e => {
         toast(`☁️ Restauré : ${compteSauvegarde(r)} ✓`);
       } catch (err) { await noterErreurSynchro(err); toast('Erreur : ' + err.message); }
       render();
+      redessinerModale();
     }
   }
   else if (act === 'sync-off') {
@@ -5861,6 +6066,7 @@ document.body.addEventListener('click', async e => {
       await deconnecterSynchro();
       toast('Synchronisation déconnectée');
       render();
+      redessinerModale();
     }
   }
   else if (act === 'clear-all') {
@@ -6119,7 +6325,7 @@ function feteSiTerminee(s, avant, annuler) {
 
 let lastViewKey = null;
 /* cartes qui apparaissent en cascade quand on arrive sur un écran */
-const CARTES_CASCADE = '.rcard, .hsec, .lcard, .mcard, .scard, .pcard, .panel, .erow, .ajour, .cesoir, .bfilm, .t10, .gtuile';
+const CARTES_CASCADE = '.rcard, .hsec, .lcard, .mcard, .scard, .pcard, .panel, .erow, .ajour, .cesoir, .bfilm, .t10, .gtuile, .pf-ticket, .pf-pm, .pf-tuile, .pf-carte, .pf-liste';
 function afterRender() {
   loadVisiblePosters();
   animateBars($('#view'));
