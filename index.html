@@ -1037,6 +1037,169 @@ html[data-vt="retour"]::view-transition-new(root){animation:vtEntreRetour .42s v
 ::view-transition-old(fond){animation:bgOut .3s ease both}
 @keyframes vtFondIn{from{opacity:0;transform:scale(1.15)}}
 
+/* ================= Ordinateur (au moins 1100 px de large) =================
+   Menu de verre en haut au centre, contenu sur toute la largeur (centré au-delà de 1320 px),
+   grande image sur l'Accueil, fiche série en deux colonnes, feuilles en fenêtre au milieu.
+   Le téléphone garde sa mise en page : ces règles ne s'appliquent qu'aux grands écrans. */
+.logo-bureau,.seul-bureau{display:none}
+/* fiche série : les colonnes n'existent que sur ordinateur (sur téléphone, tout se suit comme avant) */
+.fcols,.fgauche,.fdroite{display:contents}
+@media (min-width:1100px){
+  :root{--gout:max(48px,calc((100vw - 1320px) / 2))}
+  body{padding-bottom:40px}
+  header.app{height:84px;padding:0 var(--gout);gap:10px}
+  header.app h1{display:none}
+  .logo-bureau{display:flex;align-items:center;gap:11px;margin-right:auto;font-size:19px;font-weight:800;letter-spacing:-.02em;color:var(--txt)}
+  .logo-bureau i{width:34px;height:34px;border-radius:10px;background:var(--bg);border:1.5px solid #E7E2DF;display:flex;align-items:center;justify-content:center;box-shadow:0 0 18px rgba(220,38,38,.45)}
+  .logo-bureau svg{width:14px;height:14px}
+  .seul-bureau{display:flex}
+  #btn-add{display:none} /* la loupe fait la même chose */
+  header.app .iconbtn{width:44px;height:44px;background:rgba(20,18,18,.45);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(14px)}
+  header.app .iconbtn.avatar{background:var(--grad);border:none}
+  /* le menu : la capsule de verre passe en haut, au centre */
+  nav.tabs{top:15px;bottom:auto;left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:none;height:54px;border-radius:27px;z-index:31}
+  nav.tabs button{flex:none;flex-direction:row;gap:9px;padding:0 20px;font-size:14.5px;border-radius:22px}
+  nav.tabs button svg{width:20px;height:20px}
+  nav.tabs .tabpill{border-radius:22px}
+  main#view{max-width:none;padding:12px var(--gout) 40px}
+  .hrow{margin:0 calc(-1 * var(--gout));padding-left:var(--gout);padding-right:var(--gout);scroll-padding:0 var(--gout);gap:16px}
+  .hsec{margin:34px 0 14px}
+  .hsec h2.section{font-size:21px}
+  .pcard{width:136px}
+  .pcard .poster,.pcard .poster.sk{width:136px;height:204px}
+  .lcard{width:290px}
+  .lcard-img{height:163px}
+  .t10 .poster{width:124px;height:186px}
+  .t10-num{font-size:150px}
+  .mgrid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px 16px}
+  .segbar{max-width:480px}
+  /* flèches des rangées, au passage de la souris */
+  .hzone{position:relative}
+  .hfl{position:absolute;top:calc(50% - 44px);z-index:4;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--txt);background:rgba(20,18,18,.75);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(12px);box-shadow:0 8px 22px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .2s}
+  .hfl svg{width:20px;height:20px}
+  .hfl.g{left:-22px}
+  .hfl.d{right:-22px}
+  .hzone:hover .hfl:not(.off){opacity:1;pointer-events:auto}
+  /* Accueil : la série reprise en grand, les autres en vignettes sur le bas de l'image */
+  .hb{position:relative;height:clamp(620px,82vh,800px);margin:-12px calc(-1 * var(--gout)) 0;overflow:hidden}
+  .hb-img{position:absolute;inset:0;background:var(--bg2) center 22%/cover no-repeat}
+  .hb::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(14,13,13,.92) 0%,rgba(14,13,13,.55) 38%,rgba(14,13,13,0) 70%),linear-gradient(180deg,rgba(14,13,13,.65) 0,rgba(14,13,13,0) 18%,rgba(14,13,13,0) 48%,var(--bg) 100%)}
+  .hb-txt{position:absolute;z-index:2;left:var(--gout);top:clamp(130px,17vh,190px);width:min(580px,44vw)}
+  .hb-tag{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#FCA5A5}
+  .hb-tag i{width:7px;height:7px;border-radius:50%;background:#EF4444;box-shadow:0 0 8px #EF4444}
+  .hb-tag.rv{color:var(--rv2)}
+  .hb-tag.rv i{background:var(--rv);box-shadow:0 0 8px var(--rv)}
+  .hb-txt h2{margin-top:12px;font-size:clamp(46px,4.8vw,72px);font-weight:800;letter-spacing:-.04em;line-height:.98;text-shadow:0 2px 20px rgba(0,0,0,.4);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .hb-ep{margin-top:14px;font-size:18px;font-weight:700;color:#E7E2DF}
+  .hb-txt p{margin-top:10px;font-size:15px;line-height:1.55;color:#C9C2BE;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .hb-prog{display:flex;align-items:center;gap:12px;margin-top:18px;max-width:420px}
+  .hb-prog .progress{flex:1;margin:0;height:5px;background:rgba(255,255,255,.18)}
+  .hb-prog span{font-size:13px;font-weight:700;color:#D6D0CC}
+  .hb-btns{display:flex;gap:12px;margin-top:24px}
+  .hb-btns .btn{height:52px;padding:0 26px;font-size:16px;border-radius:14px}
+  .hb-btns .verre{height:52px;padding:0 22px;font-size:15.5px;border-radius:14px}
+  .hb-btns .hb-rond{width:52px;padding:0}
+  .hb.maj .hb-img{animation:viewIn .5s ease both}
+  .hb.maj .hb-txt{animation:rouleIn .6s var(--ressort) both}
+  .hb-bande{position:absolute;z-index:2;left:0;right:0;bottom:0}
+  .hb-bande .hsec{margin:0 0 12px;padding:0 var(--gout)}
+  .hb-bande .hzone{position:static}
+  .hb-bande .hfl{top:auto;bottom:65px}
+  .hb-bande .hfl.g{left:calc(var(--gout) - 22px)}
+  .hb-bande .hfl.d{right:calc(var(--gout) - 22px)}
+  .hb-bande:hover .hfl:not(.off){opacity:1;pointer-events:auto}
+  .hb-row{margin:0;padding:4px var(--gout) 18px;gap:14px}
+  .hb-mini{flex:none;position:relative;width:250px;height:142px;border-radius:14px;overflow:hidden;background:var(--bg3) center/cover no-repeat;box-shadow:0 12px 30px rgba(0,0,0,.5);text-align:left;color:var(--txt)}
+  .hb-mini::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(14,13,13,0) 35%,rgba(14,13,13,.92) 100%)}
+  .hb-mini.on{box-shadow:0 0 0 2px rgba(248,113,113,.85),0 12px 30px rgba(0,0,0,.5)}
+  .hb-mini > *{position:absolute;z-index:1}
+  .hb-mini b{left:9px;top:9px;font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px;background:var(--acc);color:#FFFFFF}
+  .hb-mini b.rv{background:var(--rv)}
+  .hb-mini strong{left:12px;right:12px;bottom:14px;font-size:14.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hb-mini em{left:0;bottom:0;height:3px;background:#EF4444}
+  .hb-mini em.rv{background:#60A5FA}
+  /* Séries › À suivre : les épisodes sur deux colonnes, le calendrier à côté */
+  .suivre-cols.avec-agenda{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:56px;align-items:start}
+  .suivre-g .elist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 28px}
+  .suivre-cols:not(.avec-agenda) .elist{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .suivre-cols.avec-agenda .hrow{margin:0;padding-left:0;padding-right:0}
+  /* Films › À voir : « Ce soir ? » en bandeau */
+  .cesoir{height:320px;padding:30px 34px}
+  .cesoir h3{font-size:44px;max-width:56%}
+  .cesoir h3.long{font-size:36px}
+  .cesoir-m{font-size:15px}
+  .cesoir-btns .btn,.cesoir-btns .verre{height:48px}
+  .bfilm{width:340px}
+  .bfilm-img{height:190px}
+  /* Explorer : la vitrine en grand */
+  .vitrine-wrap{margin:-12px calc(-1 * var(--gout)) 0;height:clamp(560px,76vh,760px)}
+  .vbas{left:var(--gout);right:auto;width:min(600px,46vw);bottom:66px}
+  .vtitre{font-size:clamp(44px,4.6vw,64px)}
+  .vtitre.long{font-size:44px}
+  .vresume{font-size:15px;-webkit-line-clamp:3}
+  .vbtns .btn{flex:none;padding:0 28px}
+  .vcherche{left:auto;right:var(--gout);width:420px}
+  .vtirets{bottom:26px}
+  .gtuiles{grid-template-columns:repeat(6,minmax(0,1fr));gap:14px}
+  .gtuile{height:110px}
+  /* Profil : ticket et podium côte à côte, tuiles sur une ligne, données sur deux colonnes */
+  .pf-haut{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:end;margin-top:8px}
+  .pf-haut .hsec{margin-top:0}
+  .pf-tuiles{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+  .pf-tuile{height:120px}
+  .pf-donnees{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+  .pf-donnees .pf-liste{margin-top:0}
+  /* fiche d'une série : grande image, puis la série à gauche et les épisodes à droite */
+  .fiche .backdrop{height:clamp(440px,54vh,540px)}
+  .detbar{padding:24px 40px 8px}
+  .detbar .iconbtn{width:44px;height:44px}
+  .fhead{margin-top:-200px;padding:0 var(--gout)}
+  .fhead h2{font-size:clamp(44px,4.4vw,62px);letter-spacing:-.035em;max-width:900px}
+  .fmeta{font-size:15px}
+  .fhead .fprog{max-width:460px}
+  /* (au-dessus du bas de la grande image, qui déborde un peu sous le titre) */
+  .revi{position:relative;z-index:2;margin:20px var(--gout) 0;max-width:760px}
+  .fcols{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:56px;padding:26px var(--gout) 0;align-items:start}
+  .fgauche{display:block}
+  .fgauche .overview{padding:0;font-size:15px;line-height:1.65;color:#E7E2DF}
+  .fgauche #serie-extra{padding:0!important}
+  .fgauche .ft-puces{margin-top:14px}
+  .ft-casting{flex-wrap:wrap;overflow:visible;margin-right:0;row-gap:16px} /* la molette ne fait pas défiler de côté */
+  .fdroite{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;align-items:center;align-content:start}
+  .fdroite > *{grid-column:1 / -1}
+  .fdroite > .fichebar{grid-column:1;grid-row:1;position:static;margin:0;padding:0;background:none}
+  .fdroite > .saisons{grid-column:2;grid-row:1;justify-content:flex-end;padding:0}
+  .fichebar .fvu{flex:none;height:50px;padding:0 24px;font-size:15.5px;border-radius:14px}
+  .fichebar .fdate{width:50px;height:50px;border-radius:14px}
+  .fichebar .revoir{flex:none;height:50px;padding:0 22px;font-size:15px;border-radius:14px}
+  .fichebar .fbar-info{flex:none;padding:14px 20px;border-radius:14px}
+  .fdroite .saison-tete{padding:18px 2px 8px}
+  .fdroite .episodes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 14px;padding:0}
+  .eprow .epimg{width:150px;height:84px}
+  /* les feuilles s'ouvrent en fenêtre au milieu de l'écran */
+  .modal-bg{align-items:center;padding:40px}
+  .modal{max-width:560px;border-radius:22px;max-height:88vh;padding-bottom:22px;border:1px solid rgba(255,255,255,.09);box-shadow:0 30px 80px rgba(0,0,0,.6);animation:fenetreIn .32s var(--doux)}
+  .modal.fiche-t{max-width:660px}
+  .modal .grab{display:none}
+  .modal-bg.sortie .modal{animation:fenetreOut .2s ease forwards}
+}
+@media (min-width:1100px){
+  @supports (animation-timeline: scroll()){
+    html.sous-entete .vitrine-wrap,html.sous-entete .hb{margin-top:-96px}
+    html.sous-entete .vcherche{top:100px}
+  }
+}
+@keyframes fenetreIn{from{opacity:0;transform:translateY(14px) scale(.97)}}
+@keyframes fenetreOut{to{opacity:0;transform:translateY(10px) scale(.97)}}
+/* souris : les cartes s'éclairent au passage */
+@media (hover:hover) and (pointer:fine){
+  .lcard,.pcard,.mcard,.t10,.pf-tuile,.bfilm,.hb-mini,.gtuile{transition:transform .25s var(--doux),filter .25s}
+  .lcard:hover,.pcard:hover,.mcard:hover,.t10:hover,.pf-tuile:hover,.bfilm:hover,.hb-mini:hover,.gtuile:hover{transform:translateY(-3px);filter:brightness(1.12)}
+  .eprow:hover{background:var(--bg2)}
+  .erow{border-radius:12px}
+  .erow:hover{background:var(--bg2);box-shadow:0 0 0 6px var(--bg2)} /* fond un peu plus large que la ligne, sans la décaler */
+}
+
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}
   .sk,.vimg,.overlay .backdrop,.overlay .detbar{animation:none!important}
@@ -1065,7 +1228,10 @@ html[data-vt="retour"]::view-transition-new(root){animation:vtEntreRetour .42s v
 </div>
 
 <header class="app">
+  <!-- ordinateur : le logo à gauche (le titre de l'onglet est remplacé par le menu du haut) -->
+  <button class="logo-bureau" data-action="aller" data-tab="home" aria-label="Accueil"><i><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="7 4 20 12 7 20" fill="#DC2626"/></svg></i>Mes Séries</button>
   <h1 id="apptitle">Accueil</h1>
+  <button class="iconbtn seul-bureau" id="btn-cherche" title="Rechercher" aria-label="Rechercher"></button>
   <button class="iconbtn hidden" id="btn-add" title="Ajouter"></button>
   <button class="iconbtn hidden" id="btn-refresh" title="Actualiser"></button>
   <button class="iconbtn avatar" id="btn-profil" title="Mon profil" aria-label="Mon profil"></button>
@@ -2967,6 +3133,12 @@ function setTab(tab) {
 /* rafraîchit l'onglet ET l'écran plein page ouvert (Journal, Ménage…) s'il y en a un */
 function rafraichirEcrans() { render(); if (overlayMode && !detailUuid) renderOverlay(); }
 
+/* Ordinateur : à partir de 1100 px de large, mise en page « grand écran » (menu en haut,
+   grande image sur l'Accueil, fiche série en deux colonnes). Le téléphone n'est pas concerné. */
+const ECRAN_BUREAU = matchMedia('(min-width: 1100px)');
+const estBureau = () => ECRAN_BUREAU.matches;
+ECRAN_BUREAU.addEventListener('change', () => { render(); if (detailUuid) renderDetail(); });
+
 let lastRenderedTab = null;
 function render() {
   // conserve la position de défilement si on reste sur le même onglet
@@ -3002,8 +3174,8 @@ function renderView() {
   else if (state.tab === 'discover') v.innerHTML = viewDiscover();
   else if (state.tab === 'movies') v.innerHTML = viewMovies();
   else v.innerHTML = viewSettings();
-  // Explorer : la grande image passe sous l'en-tête
-  document.documentElement.classList.toggle('sous-entete', !!v.querySelector('.vitrine-wrap'));
+  // Explorer (et l'Accueil sur ordinateur) : la grande image passe sous l'en-tête
+  document.documentElement.classList.toggle('sous-entete', !!v.querySelector('.vitrine-wrap, .hb'));
   afterRender();
 }
 
@@ -3256,8 +3428,10 @@ function viewNext() {
     return html;
   })();
 
+  // sur ordinateur, le calendrier se met à côté des épisodes à regarder
   return `
     <div class="nxhead"><p>${etat}</p>${lienNv}</div>
+    <div class="suivre-cols${agenda ? ' avec-agenda' : ''}"><div class="suivre-g">
     ${teteSection(`À regarder <span class="cnt">${watchable.length}</span>`)}
     ${watchable.length ? `<div class="elist">${watchable.map(ligneEpisode).join('')}</div>`
       : aCommencer.length
@@ -3265,7 +3439,7 @@ function viewNext() {
         : `<div class="empty">Rien à regarder — tout est vu ! 🎉</div>`}
     ${aCommencer.length ? teteSection(`À commencer <span class="cnt">${aCommencer.length}</span>`, '', 'a-commencer')
       + `<div class="hrow">${aCommencer.map(({ s }) => carteAffiche('open-series', s, 'tv', pl(nbSaisons(s), 'saison'))).join('')}</div>` : ''}
-    ${agenda}`;
+    </div>${agenda ? `<div class="suivre-d">${agenda}</div>` : ''}</div>`;
 }
 
 /* ---------------- Accueil ----------------
@@ -3296,6 +3470,47 @@ function carteReprendre({ s, nx, revoir }) {
     </div>
   </div>`;
 }
+/* image TMDB en plus grand pour un écran d'ordinateur (w780 → w1280) */
+const imageGrande = u => u ? u.replace('image.tmdb.org/t/p/w780/', 'image.tmdb.org/t/p/w1280/') : u;
+/* Accueil sur ordinateur : la série choisie en grand (Vu, Voir la fiche, au hasard) et toutes
+   les séries en cours en vignettes sur le bas de l'image ; une vignette touchée passe en grand */
+function grandeImageAccueil(watchable) {
+  const sel = watchable.find(w => w.s.uuid === carrouselUuid) || watchable[0];
+  carrouselUuid = sel.s.uuid;
+  const anime = carrouselAnim === sel.s.uuid;
+  carrouselAnim = null;
+  const { s, nx, revoir } = sel, meta = state.tmdb[s.uuid] || {};
+  const p = progress(s), r = revoir ? progresRevision(s) : null;
+  const faits = r ? r.faits : p.watched, total = r ? r.total : p.total;
+  const code = epCode(nx.season, nx.ep.number), fond = imageGrande(fondSerie(s));
+  const mini = ({ s: x, nx: n, revoir: rv }) => {
+    const px = rv ? progresRevision(x) : progress(x), f = rv ? px.faits : px.watched;
+    const img = fondSerie(x);
+    return `<button class="hb-mini${x.uuid === s.uuid ? ' on' : ''}" data-action="hero-serie" data-uuid="${x.uuid}"${img ? ` style="background-image:url('${img}')"` : ''} aria-label="${esc(x.title)}, ${epCode(n.season, n.ep.number)}">
+      <b${rv ? ' class="rv"' : ''}>${epCode(n.season, n.ep.number)}</b><strong>${esc(x.title)}</strong>
+      <em${rv ? ' class="rv"' : ''} style="width:${px.total ? Math.round(f / px.total * 100) : 0}%"></em>
+    </button>`;
+  };
+  return `<section class="hb${anime ? ' maj' : ''}">
+    <div class="hb-img" data-morph="${s.uuid}"${fond ? ` style="background-image:url('${fond}')"` : ''}></div>
+    <div class="hb-txt">
+      <span class="hb-tag${revoir ? ' rv' : ''}"><i></i>Reprendre · ${code} · ${revoir ? `${nieme(revoir)} fois` : pl(episodesRestants(s), 'restant')}</span>
+      <h2>${esc(s.title)}</h2>
+      ${nx.ep.name ? `<div class="hb-ep">${esc(nx.ep.name)}</div>` : ''}
+      ${meta.overview ? `<p>${esc(meta.overview)}</p>` : ''}
+      <div class="hb-prog"><div class="progress ${revoir ? 'rv' : faits === total ? 'full' : ''}"><i style="width:0" data-w="${total ? Math.round(faits / total * 100) : 0}%" data-k="h-${s.uuid}"></i></div><span>${faits}/${total}</span></div>
+      <div class="hb-btns">
+        <button class="btn" data-action="mark-next" data-uuid="${s.uuid}">${revoir ? ICONS.refresh : ICONS.check} ${revoir ? 'Revu' : 'Vu'} ${code}</button>
+        <button class="verre" data-action="open-series" data-uuid="${s.uuid}">${ICONS.info} Voir la fiche</button>
+        <button class="verre hb-rond" data-action="roulette" aria-label="Que regarder ce soir ?" title="Que regarder ce soir ?">${ICONS.dice}</button>
+      </div>
+    </div>
+    <div class="hb-bande">
+      <div class="hsec"><h2 class="section">Reprendre <span class="cnt">${pl(watchable.length, 'série')} en cours</span></h2></div>
+      <div class="hrow hb-row">${watchable.map(mini).join('')}</div>
+    </div>
+  </section>`;
+}
 /* grande vignette (image de fond + pastille) pour les rangées « Nouveaux épisodes » et « Sortent bientôt » */
 const carteLarge = c => `<div class="lcard" data-action="open-series" data-uuid="${c.uuid}">
   <div class="lcard-img" data-morph="${c.uuid}"${c.fond ? ` style="background-image:url('${c.fond}')"` : ''}>${c.puce ? `<span class="lcard-puce">${esc(c.puce)}</span>` : ''}</div>
@@ -3314,12 +3529,13 @@ function viewHome() {
   const parts = [];
   const auj = todayStr();
 
+  // Ordinateur : la série reprise s'affiche en grand, les autres en vignettes sur le bas de l'image
+  if (estBureau() && watchable.length) parts.push(grandeImageAccueil(watchable));
   // Reprendre : toutes les séries en cours, la plus récemment regardée d'abord
-  parts.push(`<div class="hsec" style="margin-top:4px">
+  else parts.push(`<div class="hsec" style="margin-top:4px">
     <h2 class="section">Reprendre <span class="cnt">${pl(watchable.length, 'série')} en cours</span></h2>
     <button class="iconbtn petit" data-action="roulette" aria-label="Que regarder ce soir ?" title="Que regarder ce soir ?">${ICONS.dice}</button>
-  </div>`);
-  parts.push(watchable.length
+  </div>`, watchable.length
     ? `<div class="reprendre" id="reprendre">${watchable.map(carteReprendre).join('')}</div>
        ${watchable.length > 1 ? `<div class="reprendre-pos" id="reprendre-pos">1 / ${watchable.length}</div>` : ''}`
     : `<div class="empty" style="padding:28px 20px">${aCommencer.length ? 'Tu es à jour dans tes séries en cours 🎉' : 'Rien à reprendre pour le moment.'}</div>`);
@@ -4115,6 +4331,18 @@ function chargerDetailsFiche(cle, type, provider, id, apres) {
   }).catch(() => {}).finally(() => detailsEnCours.delete(k));
 }
 
+/* fiche série sur ordinateur : les mêmes détails que les feuilles (casting en photos…), une fois
+   par session ; la fiche se redessine à leur arrivée */
+function chargerDetailsSerie(s, meta) {
+  const k = 'tv:tmdb:' + meta.id;
+  if (detailsTitres.has(k) || detailsEnCours.has(k) || !tmdbKey()) return;
+  detailsEnCours.add(k);
+  detailsTitre('tv', 'tmdb', meta.id).then(d => {
+    detailsTitres.set(k, d);
+    if (detailUuid === s.uuid) renderDetail();
+  }).catch(() => {}).finally(() => detailsEnCours.delete(k));
+}
+
 function enteteFiche({ image, affiche, titre, raison, meta, origine, puces }) {
   return `<div class="ft-img${image ? '' : ' vide'}"${image ? ` style="background-image:url('${image}')"` : ''}><div class="grab"></div></div>
     <div class="ft-haut">
@@ -4291,7 +4519,7 @@ function viewMoviesWatchlist() {
 /* « Ce soir ? » : grande carte d'un film de la liste, avec « Vu » et « Un autre » */
 let ceSoirUuid = null, ceSoirEviter = null, ceSoirAnim = false;
 function carteCeSoir(m, autre) {
-  const mt = state.tmdb[m.uuid] || {}, fond = mt.backdrop || mt.posterBig || mt.poster;
+  const mt = state.tmdb[m.uuid] || {}, fond = mt.backdrop ? (estBureau() ? imageGrande(mt.backdrop) : mt.backdrop) : mt.posterBig || mt.poster;
   const genres = (mt.genres || []).map(g => GENRE_NAMES[g]).filter(Boolean).slice(0, 2).map((g, i) => i ? g.toLowerCase() : g);
   const infos = [m.year, mt.runtime ? fmtDuree(mt.runtime) : null, genres.join(', ')].filter(Boolean).join(' · ');
   const anim = ceSoirAnim ? ' maj' : '';
@@ -4484,10 +4712,11 @@ function viewSettings() {
       <span class="pf-lt"><b>${titre}</b><span${sous[0] ? ` class="${sous[0]}"` : ''}>${sous[1]}</span></span>${ICONS.chevron}
     </button>`;
 
-  return `${ticket}
-  ${podium}
+  // sur ordinateur : le ticket et le podium côte à côte, la sauvegarde et la liste aussi
+  return `<div class="pf-haut"><div>${ticket}</div>${podium ? `<div>${podium}</div>` : ''}</div>
   ${teteSection('Ma collection')}${tuiles}
   ${teteSection('Mes données')}
+  <div class="pf-donnees">
   <div class="pf-carte">
     <div class="pf-sl">
       <span class="pf-ico ${vieille ? 'ambre' : 'or'}">${ICONS.sauver}</span>
@@ -4505,6 +4734,7 @@ function viewSettings() {
     ${ligne('open-synchro', connectee && !err ? ICONS.nuageOk : ICONS.nuage, 'Synchronisation cloud', [classeSync, etatSync], !connectee ? '' : err ? 'ambre' : 'or')}
     ${state.hidden.size ? ligne('clear-hidden', ICONS.oeil, `Réafficher ${pl(state.hidden.size, 'suggestion masquée', 'suggestions masquées')}`, ['', 'Les titres écartés dans Explorer']) : ''}
     ${ligne('clear-all', ICONS.poubelle, 'Tout effacer', ['', 'Séries, films et réglages de ce téléphone'], 'rouge')}
+  </div>
   </div>
   <p class="pf-pied">Mes Séries · données 100&nbsp;% locales<br>Métadonnées : TMDB, TVMaze, IMDb (non affiliés)</p>`;
 }
@@ -5467,6 +5697,17 @@ function renderDetail() {
   const images = (numImages !== null && episodesSaison.get(cleSaison(s, numImages))) || {};
 
   const bg = meta.backdrop || meta.posterBig || meta.poster;
+  // ordinateur : colonne de gauche comme les feuilles des films (casting en photos, infos, bande-annonce)
+  const bureau = estBureau(), tmdbId = meta.provider === 'tmdb' && meta.id;
+  const det = bureau && tmdbId ? detailsTitres.get('tv:tmdb:' + meta.id) : null;
+  if (bureau && tmdbId && !det) chargerDetailsSerie(s, meta);
+  const resume = meta.overview || (det && det.overview);
+  const gauche = det
+    ? `${resume ? `<p class="overview">${esc(resume)}</p>` : ''}
+       <div class="ft-puces">${puceNote(det.note)}${det.genres.slice(0, 3).map(g => `<span class="ft-puce">${esc(g)}</span>`).join('')}${puceAge(det.age)}</div>
+       ${castingFiche(det)}${blocSerie(det.serie)}${liensFiche(det.bandeAnnonce, null)}`
+    : `${meta.overview ? `<p class="overview clamp" data-action="expand-overview">${esc(meta.overview)}</p>` : ''}
+       ${serieExtraHtml(meta)}`;
   const genres = (meta.genres || []).filter(g => GENRE_NAMES[g]).slice(0, 2).map(g => GENRE_NAMES[g]);
   const note = meta.detail && meta.detail.rating;
   const infos = [meta.year || titleYear(s.title), ...genres, saisons.length ? pl(saisons.length, 'saison') : null,
@@ -5541,7 +5782,7 @@ function renderDetail() {
       <button class="iconbtn ${s.is_favorite ? 'fav' : ''}" data-action="toggle-fav" aria-label="${s.is_favorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}">${s.is_favorite ? ICONS.star : ICONS.starO}</button>
       <button class="iconbtn" data-action="fiche-menu" aria-label="Plus d'options">${ICONS.more}</button>
     </div>
-    <div class="backdrop fhero"${bg ? ` style="background-image:url('${bg}')"` : ''}></div>
+    <div class="backdrop fhero"${bg ? ` style="background-image:url('${bureau ? imageGrande(bg) : bg}')"` : ''}></div>
     <div class="fhead">
       <h2>${esc(s.title)}</h2>
       ${infos ? `<div class="fmeta">${esc(infos)}</div>` : ''}
@@ -5554,8 +5795,9 @@ function renderDetail() {
       <div class="fprog"><div class="progress ${pct === 100 ? 'full' : ''}"><i style="width:0" data-w="${pct}%" data-k="d-${s.uuid}"></i></div><span>${p.watched} / ${p.total}</span></div>
     </div>
     ${carteRevision}
-    ${meta.overview ? `<p class="overview clamp" data-action="expand-overview">${esc(meta.overview)}</p>` : ''}
-    ${serieExtraHtml(meta)}
+    <div class="fcols">
+    <div class="fgauche">${gauche}</div>
+    <div class="fdroite">
     ${onglets ? `<div class="saisons" role="tablist" aria-label="Saisons">${onglets}</div>` : ''}
     <div class="saison-tete">${revision && !special
       ? `<span>Saison ${choix} · ${revusSaison}/${liste.length} revus</span>
@@ -5565,6 +5807,8 @@ function renderDetail() {
     </div>
     <div class="episodes">${liste.length ? liste.map(carte).join('') : '<p class="loadrow">Aucun épisode.</p>'}</div>
     <div class="fichebar">${barre}</div>
+    </div>
+    </div>
   </div>`);
   loadVisiblePosters();
   animateBars($('#overlay-root'));
@@ -5932,13 +6176,17 @@ document.querySelectorAll('nav.tabs button').forEach((b, i) => {
   b.addEventListener('click', () => setTab(b.dataset.tab));
 });
 $('#btn-add').innerHTML = ICONS.plus;
+$('#btn-cherche').innerHTML = ICONS.search;
 $('#btn-refresh').innerHTML = ICONS.refresh;
 $('#btn-profil').innerHTML = ICONS.user;
 $('#btn-profil').addEventListener('click', () => setTab('settings'));
-$('#btn-add').addEventListener('click', () => {
+// « + » (téléphone) et la loupe (ordinateur) mènent à la recherche d'Explorer
+const allerRecherche = () => {
   // le champ n'existe qu'une fois la transition vers Explorer faite
   setTab('discover').then(() => { const i = $('#discover-search'); if (i) i.focus(); });
-});
+};
+$('#btn-add').addEventListener('click', allerRecherche);
+$('#btn-cherche').addEventListener('click', allerRecherche);
 $('#btn-refresh').addEventListener('click', () => refreshAll(false));
 
 let discoverTimer = null, rechercheNo = 0;
@@ -6012,6 +6260,11 @@ document.body.addEventListener('click', async e => {
   else if (act === 'movie-filter') { state.movieFilter = el.dataset.f; state.movieSearch = ''; state.movieLimit = 60; render(); }
   else if (act === 'series-reset-filters') { state.seriesSort = 'recent'; state.seriesGenre = -1; state.seriesDecade = 'all'; render(); }
   else if (act === 'open-series') openSeries(el.dataset.uuid, el);
+  else if (act === 'hero-serie') {
+    // Accueil sur ordinateur : la vignette touchée passe en grand ; touchée une 2e fois, sa fiche s'ouvre
+    if (carrouselUuid === el.dataset.uuid) openSeries(el.dataset.uuid, el);
+    else { carrouselUuid = carrouselAnim = el.dataset.uuid; render(); }
+  }
   else if (act === 'roulette') { state.roulettePick = null; openRoulette(); }
   else if (act === 'aller') {
     // liens de l'Accueil (« Tout voir », « Calendrier »…) vers le bon onglet, au bon endroit
@@ -6809,6 +7062,40 @@ function afterRender() {
   }
   if (state.tab === 'home') initAccueil();
   initVitrine();
+  if (estBureau()) {
+    flechesRangees($('#view')); // (avant le défilement : déplacer une rangée la ramène au début)
+    // la vignette de la série affichée en grand reste visible dans sa bande
+    const on = $('#view .hb-mini.on'), bande = on && on.parentElement;
+    if (bande && on.offsetLeft + on.offsetWidth > bande.clientWidth) bande.scrollLeft = on.offsetLeft - (bande.clientWidth - on.offsetWidth) / 2;
+  }
+}
+
+/* Ordinateur : flèches ‹ › sur les rangées qui défilent de côté (la molette de la souris ne
+   les fait pas défiler) ; elles apparaissent au passage de la souris */
+function flechesRangees(root) {
+  root.querySelectorAll('.hrow').forEach(row => {
+    if (row.parentElement.classList.contains('hzone')) return;
+    const zone = document.createElement('div');
+    zone.className = 'hzone';
+    row.before(zone);
+    zone.append(row);
+    const fleche = (sens, label) => {
+      const b = document.createElement('button');
+      b.className = 'hfl ' + (sens < 0 ? 'g' : 'd');
+      b.setAttribute('aria-label', label);
+      b.innerHTML = sens < 0 ? ICONS.back : ICONS.chevron;
+      b.addEventListener('click', () => row.scrollBy({ left: sens * Math.max(240, row.clientWidth * 0.8), behavior: mouvementReduit() ? 'auto' : 'smooth' }));
+      zone.append(b);
+      return b;
+    };
+    const g = fleche(-1, 'Précédents'), d = fleche(1, 'Suivants');
+    const maj = () => {
+      g.classList.toggle('off', row.scrollLeft < 8);
+      d.classList.toggle('off', row.scrollLeft + row.clientWidth >= row.scrollWidth - 8);
+    };
+    row.addEventListener('scroll', maj, { passive: true });
+    maj();
+  });
 }
 
 /* Vitrine d'Explorer : reste sur la même image après un rafraîchissement ; les tirets et
